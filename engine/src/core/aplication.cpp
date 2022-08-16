@@ -22,5 +22,12 @@ namespace fuse{
         IMG_Quit();
         TTF_Quit();
         Mix_Quit();
+
+        FUSE_INFO("this is an info");
+        FUSE_ERROR("this is an info");
+        FUSE_WARNING("this is an info");
+
+//        FUSE_ASSERT(false && "runtime assertion");
+        FUSE_STATIC_ASSERT(true && "static assertion!");
     }
 }
