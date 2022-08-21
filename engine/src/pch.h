@@ -77,7 +77,7 @@ fprintf(stderr, "\n");
 #define FUSE_NOINLINE
 #endif
 
-#define FUSE_DELETE(m) if (m!=NULL) {delete (m); m = NULL}
+#define FUSE_DELETE(m) if (m!=NULL) {delete (m); m = NULL;}
 #define FUSE_BIND(f) [this](auto&&.. args)->decltype(auto) \
 {return this->f(std::forward<decltype(args)>(args)...);}
 #define get_ticks() SDL_GetTicks()/1000f
