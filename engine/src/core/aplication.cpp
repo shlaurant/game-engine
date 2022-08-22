@@ -1,3 +1,4 @@
+#include <ecs/scene.h>
 #include "pch.h"
 #include "application.h"
 #include "inputs.h"
@@ -47,15 +48,25 @@ namespace fuse {
 
         inputs::initialize(window);
         inputs::get_dispatcher()->add_callback<quite_event>(on_quit);
+        FUSE_INFO("Added input callbacks");
+
+        auto scene = new ecs::scene(renderer);
+        scene->start();
+        FUSE_INFO("Scene started");
 
         while (is_running) {
             inputs::dispatch_events();
-            if (inputs::is_button(SDL_BUTTON_LEFT)) {
-                auto mouse = inputs::mouse_offset();
-                FUSE_INFO("(%f, %f)", mouse.x, mouse.y);
-            }
             SDL_RenderClear(renderer);
+            scene->update(0.0f);
             SDL_RenderPresent(renderer);
         }
+
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        FUSE_DELETE(scene);
+        IMG_Quit();
+        Mix_Quit();
+        TTF_Quit();
+        SDL_Quit();
     }
 }

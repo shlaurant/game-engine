@@ -1,8 +1,30 @@
-//
-// Created by shkla on 2022-08-22.
-//
+#pragma once
 
-#ifndef GAME_ENGINE_SYSTEM_H
-#define GAME_ENGINE_SYSTEM_H
+#include "entity.h"
 
-#endif //GAME_ENGINE_SYSTEM_H
+namespace fuse::ecs {
+    struct system {
+        FUSE_INLINE virtual ~system() = default;
+
+        FUSE_INLINE void prepare(registry *rg, SDL_Renderer *rd) {
+            this->_registry = rg;
+            this->_renderer = rd;
+        }
+
+        template<typename T>
+        FUSE_INLINE auto view(){
+            std::vector<entity> entities;
+            for(auto &e:_registry->view<T>()){
+                entities.push_back(entity(e, _registry));
+            }
+            return entities;
+        }
+
+        FUSE_INLINE virtual void update(float) {}
+        FUSE_INLINE virtual void start() {}
+
+    private:
+        SDL_Renderer *_renderer = nullptr;
+        registry *_registry = nullptr;
+    };
+}

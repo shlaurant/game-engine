@@ -28,6 +28,7 @@ namespace fuse::ecs {
         FUSE_INLINE T &push(entityid e, const T &data) {
             if (exist(e)) { return get(e); }
             _data.push_back(array_entry(e, data));
+            return _data.back().data;
         }
 
         FUSE_INLINE void erase(entityid e) {

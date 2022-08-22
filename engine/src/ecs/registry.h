@@ -40,19 +40,41 @@ namespace fuse::ecs {
             return list;
         }
 
-        template <typename T>
-        FUSE_INLINE T& get_component(entityid e){
-            FUSE_ASSERT(_signatures.template count(e) && "out of range!");
+        template<typename T>
+        FUSE_INLINE T &get_component(entityid e) {
+                    FUSE_ASSERT(_signatures.count(e) && "out of range!");
             return get_component_array<T>()->get(e);
         }
-        //TODO 101p
 
-        template <typename T>
-        FUSE_INLINE component_array<T> *get_component_array(){
+        template<typename T, typename... Args>
+        FUSE_INLINE T &add_component(entityid e, Args &&... args) {
+                    FUSE_ASSERT(_signatures.count(e) && "out of range!");
+            auto data = T(std::forward<Args>(args)...);
+            _signatures[e].insert(type_id<T>());
+            return get_component_array<T>()->push(e, data);
+        }
+
+        template<typename T>
+        FUSE_INLINE void remove_component(entityid e) {
+            _signatures.at(e).erase(type_id<T>());
+            get_component_array<T>()->erase(e);
+        }
+
+        template<typename T>
+        FUSE_INLINE bool has_component(entityid e) {
+            return _signatures.count(e) && _signatures.at(e).count(type_id<T>);
+        }
+
+        template<typename T>
+        FUSE_INLINE component_array<T> *get_component_array() {
             componentid type = type_id<T>();
-            if(_components.count(type)){
-                return static_cast<component_array<T>*>(_components.at(type));
+            if (_components.count(type)) {
+                return static_cast<component_array<T> *>(_components.at(type));
             }
+
+            auto array = new component_array<T>();
+            _components[type] = array;
+            return array;
         }
 
     private:
