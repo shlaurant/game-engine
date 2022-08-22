@@ -1,14 +1,16 @@
 #pragma once
-
 #include "entity.h"
+#include "assets/registry.h"
 
 namespace fuse::ecs {
-    struct system {
+    class system {
+    public:
         FUSE_INLINE virtual ~system() = default;
 
-        FUSE_INLINE void prepare(registry *rg, SDL_Renderer *rd) {
-            this->_registry = rg;
-            this->_renderer = rd;
+        FUSE_INLINE void prepare(registry *rg, SDL_Renderer *rd, asset_registry *as) {
+            _registry = rg;
+            _renderer = rd;
+            _assets = as;
         }
 
         template<typename T>
@@ -26,5 +28,6 @@ namespace fuse::ecs {
     private:
         SDL_Renderer *_renderer = nullptr;
         registry *_registry = nullptr;
+        asset_registry *_assets = nullptr;
     };
 }

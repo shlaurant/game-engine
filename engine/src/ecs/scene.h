@@ -1,9 +1,10 @@
 #pragma once
-
 #include "systems/test_system.h"
+#include "assets/registry.h"
 
 namespace fuse::ecs {
-    struct scene {
+    class scene {
+    public:
         FUSE_INLINE scene(SDL_Renderer *rd) : _renderer(rd) {
             register_system<ecs::test_system>();
         }
@@ -26,8 +27,14 @@ namespace fuse::ecs {
         }
 
         FUSE_INLINE void start() {
-            auto e = add_entity("test");
-            e.add_component<transform_component>();
+            auto frame1 = _assets.add<texture_asset>("frame1");
+            auto frame2 = _assets.add<texture_asset>("frame2");
+            auto anim = _assets.add<animation_asset>("test");
+
+            anim->instance.frames.push_back(frame1->id);
+            anim->instance.frames.push_back(frame2->id);
+            anim->instance.speed = 200;
+
             for (auto &sys: _systems) { sys->start(); }
         }
 
@@ -35,7 +42,7 @@ namespace fuse::ecs {
         FUSE_INLINE void register_system() {
             FUSE_STATIC_ASSERT(std::is_base_of<ecs::system, T>::value);
             auto new_system = new T();
-            new_system->prepare(&_registry, _renderer);
+            new_system->prepare(&_registry, _renderer, &_assets);
             _systems.push_back(new_system);
         }
 
@@ -43,5 +50,6 @@ namespace fuse::ecs {
         std::vector<ecs::system *> _systems;
         SDL_Renderer *_renderer = nullptr;
         ecs::registry _registry;
+        asset_registry _assets;
     };
 }
