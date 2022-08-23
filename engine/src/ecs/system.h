@@ -1,6 +1,8 @@
 #pragma once
 #include "entity.h"
 #include "assets/registry.h"
+#include "ecs/components/graphics.h"
+#include "ecs/components/common.h"
 
 namespace fuse::ecs {
     class system {
@@ -25,7 +27,7 @@ namespace fuse::ecs {
         FUSE_INLINE virtual void update(float) {}
         FUSE_INLINE virtual void start() {}
 
-    private:
+    protected:
         SDL_Renderer *_renderer = nullptr;
         registry *_registry = nullptr;
         asset_registry *_assets = nullptr;

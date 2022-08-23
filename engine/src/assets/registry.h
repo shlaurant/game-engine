@@ -20,7 +20,7 @@ namespace fuse {
         template<typename T>
         FUSE_INLINE T *get(asset_id id) {
             FUSE_STATIC_ASSERT(std::is_base_of<asset, T>::value);
-            const auto type = type_id<T>;
+            const auto type = type_id<T>();
             if (!_data.count(type)) { return nullptr; }
 
             for (auto &asset: _data.at(type)) {
@@ -58,6 +58,27 @@ namespace fuse {
             auto asset = new T();
             asset->name = name;
             _data[type_id<T>()].push_back(asset);
+            return asset;
+        }
+
+        FUSE_INLINE texture_asset *
+        load_texture(const std::string &src, const std::string &name,
+                     SDL_Renderer *rd) {
+            texture texture;
+            texture.data = IMG_LoadTexture(rd, src.c_str());
+            texture.filename = src;
+
+            if (!texture.data) {
+                FUSE_ERROR("%s", IMG_GetError());
+                return nullptr;
+            }
+
+            SDL_QueryTexture(texture.data, nullptr, nullptr, &texture.width,
+                             &texture.height);
+            auto asset = new texture_asset();
+            asset->instance = texture;
+            asset->name = name;
+            _data[type_id<texture_asset>()].push_back(asset);
             return asset;
         }
 

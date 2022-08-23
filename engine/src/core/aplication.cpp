@@ -48,11 +48,9 @@ namespace fuse {
 
         inputs::initialize(window);
         inputs::get_dispatcher()->add_callback<quite_event>(on_quit);
-        FUSE_INFO("Added input callbacks");
 
         auto scene = new ecs::scene(renderer);
         scene->start();
-        FUSE_INFO("Scene started");
 
         while (is_running) {
             inputs::dispatch_events();
