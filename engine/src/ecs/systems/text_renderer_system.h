@@ -4,6 +4,7 @@
 
 namespace fuse::ecs {
     class text_renderer_system : public system {
+    public:
         FUSE_INLINE void update(float) {
             for (auto &e: view<text_component>()) {
                 auto &tr = e.get_component<transform_component>();

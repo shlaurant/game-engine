@@ -1,4 +1,5 @@
 #pragma once
+
 #include "assets/asset.h"
 
 namespace fuse::ecs {
@@ -18,5 +19,13 @@ namespace fuse::ecs {
         SDL_Color color = {0, 0, 0, 255};
         asset_id font = INVALID_ID;
         std::string text;
+    };
+
+    struct animation_component {
+        FUSE_INLINE animation_component(const animation_component &) = default;
+        FUSE_INLINE animation_component() = default;
+
+        SDL_RendererFlip flip = SDL_FLIP_NONE;
+        asset_id animation = INVALID_ID;
     };
 }
