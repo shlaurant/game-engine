@@ -4,6 +4,7 @@
 #include "ecs/systems/sprite_renderer_system.h"
 #include "ecs/systems/text_renderer_system.h"
 #include "ecs/systems/frame_animation_system.h"
+#include "ecs/systems/tilemap_renderer_system.h"
 
 namespace fuse::ecs {
     class scene {
@@ -12,6 +13,7 @@ namespace fuse::ecs {
             register_system<ecs::sprite_renderer_system>();
             register_system<ecs::text_renderer_system>();
             register_system<ecs::frame_animation_system>();
+            register_system<ecs::tilemap_renderer_system>();
         }
 
         FUSE_INLINE ~scene() {
@@ -32,19 +34,29 @@ namespace fuse::ecs {
         }
 
         FUSE_INLINE void start() {
-            auto f1 = _assets.load_texture("assets/f1.png", "f1", _renderer);
-            auto f2 = _assets.load_texture("assets/f2.png", "f2", _renderer);
-            auto f3 = _assets.load_texture("assets/f3.png", "f3", _renderer);
+            auto ts = _assets.load_texture("assets/tex.png", "", _renderer);
+            auto tm = _assets.add<tilemap_asset>("tm");
 
-            auto animation = _assets.add<animation_asset>("dance");
-            animation->instance.frames.push_back(f1->id);
-            animation->instance.frames.push_back(f2->id);
-            animation->instance.frames.push_back(f3->id);
-            animation->instance.speed = 300;
+            tm->instance.tilesets.insert(ts->id);
+            tm->instance.col_count = 16;
+            tm->instance.row_count = 8;
+            tm->instance.tilesize = 64;
 
-            ecs::entity entity = add_entity("entity");
-            auto &a = entity.add_component<ecs::animation_component>();
-            a.animation = animation->id;
+            ecs::entity entity = add_entity("tilemap");
+            entity.add_component<tilemap_component>().tilemap = tm->id;
+
+            for (int col = 0; col < tm->instance.col_count; ++col) {
+                for (int row = 0; row < tm->instance.row_count; ++row) {
+                    auto e = add_entity("entity");
+                    auto &tile = e.add_component<tile_component>();
+                    tile.tileset = ts->id;
+                    tile.tilemap = tm->id;
+                    tile.offset_x = col;
+                    tile.offset_y = row;
+                    tile.row = col;
+                    tile.col = row;
+                }
+            }
 
             for (auto &sys: _systems) { sys->start(); }
         }

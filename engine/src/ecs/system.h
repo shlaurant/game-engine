@@ -15,8 +15,11 @@ namespace fuse::ecs {
             _assets = as;
         }
 
+        /// Get vector of entities having certain component T
+        /// \tparam T Inherits component
+        /// \return Vector of entities having component of type T
         template<typename T>
-        FUSE_INLINE auto view(){
+        FUSE_INLINE std::vector<entity> view(){
             std::vector<entity> entities;
             for(auto &e:_registry->view<T>()){
                 entities.push_back(entity(e, _registry));
