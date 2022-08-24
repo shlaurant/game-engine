@@ -82,6 +82,25 @@ namespace fuse {
             return asset;
         }
 
+        FUSE_INLINE font_asset *load_font(const std::string &src, const std::string &name, int size){
+            font font;
+            font.data = TTF_OpenFont(src.c_str(), size);
+            font.filename = src;
+            font.size = size;
+
+            if(!font.data){
+                FUSE_ERROR("%s", TTF_GetError());
+                return nullptr;
+            }
+
+            auto asset = new font_asset();
+            asset->instance = font;
+            asset->name = name;
+
+            _data[type_id<font_asset>()].push_back(asset);
+            return asset;
+        }
+
     private:
         std::unordered_map<asset_typeid, std::vector<asset *>> _data;
     };

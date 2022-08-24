@@ -1,13 +1,15 @@
 #pragma once
 
-#include "ecs/systems/sprite_renderer_system.h"
 #include "assets/registry.h"
+#include "ecs/systems/sprite_renderer_system.h"
+#include "ecs/systems/text_renderer_system.h"
 
 namespace fuse::ecs {
     class scene {
     public:
         FUSE_INLINE scene(SDL_Renderer *rd) : _renderer(rd) {
             register_system<ecs::sprite_renderer_system>();
+            register_system<ecs::text_renderer_system>();
         }
 
         FUSE_INLINE ~scene() {
@@ -24,14 +26,16 @@ namespace fuse::ecs {
         }
 
         FUSE_INLINE void update(float dt) {
+            SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
             for (auto &sys: _systems) { sys->update(dt); }
         }
 
         FUSE_INLINE void start() {
-            auto sprite = _assets.load_texture("assets/test.png", "test",
-                                               _renderer);
-            ecs::entity entity = add_entity("entity");
-            entity.add_component<ecs::sprite_component>().sprite = sprite->id;
+            auto font = _assets.load_font("assets/font.ttf", "ft", 30);
+            ecs::entity entity = add_entity("ett");
+            auto &tx = entity.add_component<ecs::text_component>();
+            tx.text = "hihi";
+            tx.font = font->id;
 
             for (auto &sys: _systems) { sys->start(); }
         }
