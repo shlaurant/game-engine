@@ -4,32 +4,26 @@
 
 namespace fuse {
     class player_controller : public script_instance {
-        FUSE_INLINE void on_start() override {
-            FUSE_INFO("player_script started!");
-        }
 
         FUSE_INLINE void on_collision(ecs::entity e) override {
-            FUSE_INFO("colliding with %d", e.id());
+            play_audio("boom");
+            Mix_HaltChannel(1);
+            auto &sp = get_component<ecs::sprite_component>();
+            sp.sprite = get_asset<texture_asset>("dead")->id;
+            get_component<ecs::collider_component>().disabled = true;
+            get_component<ecs::rigidbody_component>().disabled = true;
         }
 
         FUSE_INLINE void on_update(float dt) override {
-            auto &t = get_component<ecs::transform_component>();
-
-            if (inputs::is_key(SDL_SCANCODE_A)) {
-                t.translate.x -= (speed * dt);
-            }
-            if (inputs::is_key(SDL_SCANCODE_D)) {
-                t.translate.x += (speed * dt);
-            }
-            if (inputs::is_key(SDL_SCANCODE_W)) {
-                t.translate.y -= (speed * dt);
-            }
-            if (inputs::is_key(SDL_SCANCODE_S)) {
-                t.translate.y += (speed * dt);
+            auto &body = get_component<ecs::rigidbody_component>();
+            if (inputs::is_key(SDL_SCANCODE_SPACE)) {
+                body.body.set_force_y(force);
+            } else {
+                body.body.set_force_y(0);
             }
         }
 
     private:
-        float speed = 300.0f;
+        float force = -1000.0f;
     };
 }

@@ -82,13 +82,14 @@ namespace fuse {
             return asset;
         }
 
-        FUSE_INLINE font_asset *load_font(const std::string &src, const std::string &name, int size){
+        FUSE_INLINE font_asset *
+        load_font(const std::string &src, const std::string &name, int size) {
             font font;
             font.data = TTF_OpenFont(src.c_str(), size);
             font.filename = src;
             font.size = size;
 
-            if(!font.data){
+            if (!font.data) {
                 FUSE_ERROR("%s", TTF_GetError());
                 return nullptr;
             }
@@ -98,6 +99,25 @@ namespace fuse {
             asset->name = name;
 
             _data[type_id<font_asset>()].push_back(asset);
+            return asset;
+        }
+
+        FUSE_INLINE audio_asset *
+        load_audio(const std::string &src, const std::string &name) {
+            audio_clip audio;
+            audio.data = Mix_LoadWAV(src.c_str());
+            audio.filename = src;
+
+            if (!audio.data) {
+                FUSE_ERROR("%s", IMG_GetError());
+                return nullptr;
+            }
+
+            auto asset = new audio_asset();
+            asset->instance = audio;
+            asset->name = name;
+
+            _data[type_id<audio_asset>()].push_back(asset);
             return asset;
         }
 

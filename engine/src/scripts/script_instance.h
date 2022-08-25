@@ -61,6 +61,34 @@ namespace fuse {
             return ecs::entity(entity, _registry);
         }
 
+        FUSE_INLINE void destory() {
+            _registry->destroy(_entity);
+        }
+
+        FUSE_INLINE ecs::entity find_entity(const std::string &name) {
+            for (auto &e: _registry->view<ecs::info_component>()) {
+                auto &i = _registry->get_component<ecs::info_component>(e);
+
+                if (i.name == name) {
+                    return ecs::entity(e, _registry);
+                }
+            }
+            return ecs::entity();
+        }
+
+        template<typename T>
+        FUSE_INLINE T *get_asset(const std::string &name) {
+            return _assets->get<T>(name);
+        }
+
+        FUSE_INLINE void
+        play_audio(std::string name, int channel = -1, int loops = 0,
+                   int vol = 50) {
+            auto &chunk = _assets->get<audio_asset>(name)->instance.data;
+            Mix_VolumeChunk(chunk, vol);
+            Mix_PlayChannel(channel, chunk, loops);
+        }
+
     private:
         ecs::entityid _entity = INVALID_ID;
         ecs::registry *_registry = nullptr;
