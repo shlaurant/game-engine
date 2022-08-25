@@ -63,7 +63,7 @@ namespace fuse::ecs {
 
         template<typename T>
         FUSE_INLINE bool has_component(entityid e) {
-            return _signatures.count(e) && _signatures.at(e).count(type_id<T>);
+            return _signatures.count(e) && _signatures.at(e).count(type_id<T>());
         }
 
         template<typename T>

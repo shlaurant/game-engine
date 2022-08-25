@@ -31,7 +31,10 @@ namespace fuse::ecs {
                     auto &oc = o.get_component<collider_component>();
 
                     if (check_collision(col.collider, oc.collider)) {
-                        e.get_component<rigidbody_component>().body.gravity_scale = 1;
+                        if (e.has_component<script_component>()) {
+                            auto &script = e.get_component<script_component>();
+                            script.instance->on_collision(o);
+                        }
                     }
                 }
             }

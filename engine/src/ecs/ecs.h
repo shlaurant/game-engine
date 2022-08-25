@@ -5,7 +5,7 @@
 namespace fuse::ecs {
     using entityid = size_t;
     using componentid = uint32_t;
-    using signature = std::set<uint32_t>;
+    using signature = std::set<componentid>;
     using entitylist = std::set<entityid>;
 
     struct array_instance {
