@@ -6,9 +6,18 @@
 
 namespace fuse {
     static bool is_running = true;
+    static float deltatime, last_tick;
 
     FUSE_INLINE bool on_quit(const quite_event &) {
         return is_running = false;
+    }
+
+    FUSE_INLINE void compute_deltatime() {
+        deltatime = get_ticks() - last_tick;
+        if (deltatime > MAX_DELTATIME) {
+            deltatime = MAX_DELTATIME;
+        }
+        last_tick = get_ticks();
     }
 
     FUSE_API void run_application(const app_config &config) {
@@ -52,10 +61,13 @@ namespace fuse {
         auto scene = new ecs::scene(renderer);
         scene->start();
 
+        last_tick = get_ticks();
+
         while (is_running) {
+            compute_deltatime();
             inputs::dispatch_events();
             SDL_RenderClear(renderer);
-            scene->update(0.0f);
+            scene->update(deltatime);
             SDL_RenderPresent(renderer);
         }
 

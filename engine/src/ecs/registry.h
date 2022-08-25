@@ -3,7 +3,8 @@
 #include "ecs.h"
 
 namespace fuse::ecs {
-    struct registry {
+    class registry {
+    public:
         FUSE_INLINE void clear() {
             for (auto &[_, a]: _components) { FUSE_DELETE(a); }
             _components.clear();

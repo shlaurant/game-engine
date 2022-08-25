@@ -3,6 +3,7 @@
 #include "assets/registry.h"
 #include "ecs/components/graphics.h"
 #include "ecs/components/common.h"
+#include "ecs/components/physics.h"
 
 namespace fuse::ecs {
     class system {

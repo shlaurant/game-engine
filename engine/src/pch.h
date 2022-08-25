@@ -80,10 +80,10 @@ fprintf(stderr, "\n");
 #define FUSE_DELETE(m) if (m!=NULL) {delete (m); m = NULL;}
 #define FUSE_BIND(f) [this](auto&&.. args)->decltype(auto) \
 {return this->f(std::forward<decltype(args)>(args)...);}
-#define get_ticks() SDL_GetTicks()/1000f
+#define get_ticks() SDL_GetTicks()/1000.0f
 #define get_ticks_ms() SDL_GetTicks()
 #define INVALID_ID 0
-#define MAX_DELTATIME 0.05f;
+#define MAX_DELTATIME 0.05f
 
 namespace fuse{
     using uuid64 = size_t;

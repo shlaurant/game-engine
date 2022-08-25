@@ -5,6 +5,8 @@
 #include "ecs/systems/text_renderer_system.h"
 #include "ecs/systems/frame_animation_system.h"
 #include "ecs/systems/tilemap_renderer_system.h"
+#include "ecs/systems/rigidbody_system.h"
+#include "ecs/systems/collision_system.h"
 
 namespace fuse::ecs {
     class scene {
@@ -14,6 +16,8 @@ namespace fuse::ecs {
             register_system<ecs::text_renderer_system>();
             register_system<ecs::frame_animation_system>();
             register_system<ecs::tilemap_renderer_system>();
+            register_system<ecs::rigidbody_system>();
+            register_system<ecs::collision_system>();
         }
 
         FUSE_INLINE ~scene() {
@@ -34,29 +38,19 @@ namespace fuse::ecs {
         }
 
         FUSE_INLINE void start() {
-            auto ts = _assets.load_texture("assets/tex.png", "", _renderer);
-            auto tm = _assets.add<tilemap_asset>("tm");
+            auto sp1 = _assets.load_texture("assets/obj1.png", "", _renderer);
+            auto sp2 = _assets.load_texture("assets/obj2.png", "", _renderer);
 
-            tm->instance.tilesets.insert(ts->id);
-            tm->instance.col_count = 16;
-            tm->instance.row_count = 8;
-            tm->instance.tilesize = 64;
+            auto e1 = add_entity("e1");
+            e1.add_component<rigidbody_component>().body.set_force_x(-50);
+            e1.get_component<transform_component>().translate.x = 500;
+            e1.add_component<sprite_component>().sprite = sp1->id;
+            e1.add_component<collider_component>();
 
-            ecs::entity entity = add_entity("tilemap");
-            entity.add_component<tilemap_component>().tilemap = tm->id;
-
-            for (int col = 0; col < tm->instance.col_count; ++col) {
-                for (int row = 0; row < tm->instance.row_count; ++row) {
-                    auto e = add_entity("entity");
-                    auto &tile = e.add_component<tile_component>();
-                    tile.tileset = ts->id;
-                    tile.tilemap = tm->id;
-                    tile.offset_x = col;
-                    tile.offset_y = row;
-                    tile.row = col;
-                    tile.col = row;
-                }
-            }
+            auto e2 = add_entity("e1");
+            e2.add_component<rigidbody_component>().body.set_force_x(50);
+            e2.add_component<sprite_component>().sprite = sp2->id;
+            e2.add_component<collider_component>();
 
             for (auto &sys: _systems) { sys->start(); }
         }
