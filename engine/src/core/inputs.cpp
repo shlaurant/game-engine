@@ -43,8 +43,10 @@ namespace fuse::inputs {
                     break;
                 case SDL_KEYDOWN:
                     keyboard = SDL_GetKeyboardState(nullptr);
+                    disp.post<keydown_event>(event.key.keysym.scancode);
                     break;
                 case SDL_KEYUP:
+                    disp.post<keyup_event>(event.key.keysym.scancode);
                     keyboard = SDL_GetKeyboardState(nullptr);
                     break;
             }

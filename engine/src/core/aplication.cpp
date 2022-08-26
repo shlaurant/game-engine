@@ -5,11 +5,21 @@
 #include "events/system.h"
 
 namespace fuse {
+    static app_config config;
     static bool is_running = true;
+    static ecs::scene *scene = nullptr;
     static float deltatime, last_tick;
 
     FUSE_INLINE bool on_quit(const quite_event &) {
         return is_running = false;
+    }
+
+    FUSE_INLINE bool on_key(const keydown_event &e){
+        if(e.key == SDL_SCANCODE_R){
+            std::cout << "DFDF";
+            scene->deserialize(config.scene);
+        }
+        return false;
     }
 
     FUSE_INLINE void compute_deltatime() {
@@ -20,7 +30,9 @@ namespace fuse {
         last_tick = get_ticks();
     }
 
-    FUSE_API void run_application(const app_config &config) {
+    FUSE_API void run_application(const app_config &cfg) {
+        config = cfg;
+
         if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
             FUSE_ERROR("%s", SDL_GetError())
             exit(EXIT_FAILURE);
@@ -41,10 +53,10 @@ namespace fuse {
 
         auto w_flags = (SDL_WindowFlags) (SDL_WINDOW_RESIZABLE |
                                           SDL_WINDOW_ALLOW_HIGHDPI);
-        auto window = SDL_CreateWindow(config.title.c_str(),
+        auto window = SDL_CreateWindow(cfg.title.c_str(),
                                        SDL_WINDOWPOS_CENTERED,
-                                       SDL_WINDOWPOS_CENTERED, config.width,
-                                       config.height, w_flags);
+                                       SDL_WINDOWPOS_CENTERED, cfg.width,
+                                       cfg.height, w_flags);
 
         auto r_flags = (SDL_RendererFlags) (SDL_RENDERER_ACCELERATED |
                                             SDL_RENDERER_PRESENTVSYNC);
@@ -56,10 +68,16 @@ namespace fuse {
         }
 
         inputs::initialize(window);
-        inputs::get_dispatcher()->add_callback<quite_event>(on_quit);
+        auto disp = inputs::get_dispatcher();
+        disp->add_callback<quite_event>(on_quit);
+        disp->add_callback<keydown_event>(on_key);
 
-        auto scene = new ecs::scene(renderer);
-        scene->start();
+        scene = new ecs::scene(renderer);
+        scene->deserialize("assets/scene.yaml");
+
+//        scene->start();
+//        scene->serialize("assets/scene.yaml");
+
 
         last_tick = get_ticks();
 

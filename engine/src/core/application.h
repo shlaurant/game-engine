@@ -5,6 +5,7 @@ namespace fuse{
         int width = 0;
         int height = 0;
         std::string title;
+        std::string scene;
         std::string version;
     };
 

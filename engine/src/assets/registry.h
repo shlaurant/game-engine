@@ -122,6 +122,7 @@ namespace fuse {
         }
 
     private:
+        friend class asset_serializer;
         std::unordered_map<asset_typeid, std::vector<asset *>> _data;
     };
 }

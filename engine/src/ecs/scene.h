@@ -12,10 +12,13 @@
 #include "ecs/systems/collision_system.h"
 #include "ecs/systems/script_system.h"
 
+#include "serializer.h"
+#include "assets/serializer.h"
+
 namespace fuse::ecs {
     class scene {
     public:
-        FUSE_INLINE scene(SDL_Renderer *rd) : _renderer(rd) {
+        FUSE_INLINE explicit scene(SDL_Renderer *rd) : _renderer(rd) {
             register_system<ecs::sprite_renderer_system>();
             register_system<ecs::text_renderer_system>();
             register_system<ecs::frame_animation_system>();
@@ -83,8 +86,10 @@ namespace fuse::ecs {
             auto &cl = player.add_component<collider_component>();
             cl.collider = {0, 0, 58, 58};
 
-            auto spawner = add_entity("spawner");
-            spawner.add_component<script_component>().bind<pipe_spawner>();
+            auto spawner = add_entity("pipe_spawner");
+            auto &sc = spawner.add_component<script_component>();
+            sc.bind<pipe_spawner>();
+            sc.name = "pipe_spawner";
 
             auto score = add_entity("score");
             auto &s_tr = score.get_component<transform_component>();
@@ -105,6 +110,39 @@ namespace fuse::ecs {
             auto new_system = new T();
             new_system->prepare(&_registry, _renderer, &_assets);
             _systems.push_back(new_system);
+        }
+
+        FUSE_INLINE void serialize(const std::string &path) {
+            YAML::Emitter em;
+            em << YAML::BeginMap;
+            asset_serializer(&_assets).serialize(em);
+            ecs::serializer(&_registry).serialize(em);
+            em << YAML::EndMap;
+
+            std::ofstream filepath(path);
+            filepath << em.c_str();
+        }
+
+        FUSE_INLINE bool deserialize(const std::string &path) {
+            YAML::Node root;
+            try {
+                root = YAML::LoadFile(path);
+            } catch (YAML::ParserException &e) {
+                FUSE_INFO("failed to deserialize scene!")
+                return false;
+            }
+
+            if (auto assets = root["assets"]) {
+                asset_serializer(&_assets).deserialize(assets, _renderer);
+            }
+
+            if (auto entities = root["entities"]) {
+                ecs::serializer(&_registry).deserialize(entities);
+            }
+
+            for (auto &sys: _systems) { sys->start(); }
+
+            return true;
         }
 
     private:
