@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 #include <imfilebrowser.h>
+#include "../data.h"
 
 namespace editor::gui {
     class scene_window {
@@ -10,7 +11,10 @@ namespace editor::gui {
         void show();
 
     private:
-        ImGui::FileBrowser load_dialog;
-        std::filesystem::path path;
+        bool _loaded = false;
+
+        ImGui::FileBrowser _load_dialog;
+        std::filesystem::path _path;
+        scene_data _data;
     };
 }

@@ -2,8 +2,8 @@
 
 namespace editor::gui {
     scene_window::scene_window() {
-        load_dialog.SetTitle("Load");
-        load_dialog.SetTypeFilters({".yaml"});
+        _load_dialog.SetTitle("Load");
+        _load_dialog.SetTypeFilters({".yaml"});
     }
 
     void scene_window::show() {
@@ -13,21 +13,34 @@ namespace editor::gui {
         ImGui::BeginMenuBar();
         if (ImGui::BeginMenu("Menu")) {
             if (ImGui::MenuItem("Load")) {
-                load_dialog.Open();
+                _load_dialog.Open();
             }
             if (ImGui::MenuItem("Save")) {}
             ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
 
-        ImGui::Text("%s", path.string().c_str());
+        ImGui::Text("%s", _path.string().c_str());
+        for (const auto &e: _data.entities()) {
+            ImGui::Text("%s", e.name().c_str());
+        }
+
+        if (_loaded) {
+            ImGui::Button("Add new entity");
+        }
 
         ImGui::End();
 
-        load_dialog.Display();
-        if (load_dialog.HasSelected()) {
-            path = load_dialog.GetSelected();
-            load_dialog.ClearSelected();
+        _load_dialog.Display();
+        if (_load_dialog.HasSelected()) {
+            _path = _load_dialog.GetSelected();
+            try {
+                _data.load(_path);
+                _loaded = true;
+            } catch (...) {
+                //TODO: show error gui
+            }
+            _load_dialog.ClearSelected();
         }
     }
 }
