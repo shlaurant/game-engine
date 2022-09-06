@@ -2,7 +2,9 @@
 
 namespace editor::gui {
     scene_window::scene_window() {
+        _save_dialog.SetTitle("Load");
         _load_dialog.SetTitle("Load");
+        _save_dialog.SetTypeFilters({".yaml"});
         _load_dialog.SetTypeFilters({".yaml"});
     }
 
@@ -15,7 +17,9 @@ namespace editor::gui {
             if (ImGui::MenuItem("Load")) {
                 _load_dialog.Open();
             }
-            if (ImGui::MenuItem("Save")) {}
+            if (ImGui::MenuItem("Save")) {
+                _save_dialog.Open();
+            }
             ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
@@ -27,7 +31,7 @@ namespace editor::gui {
 
         if (_loaded) {
             if(ImGui::Button("Add new entity")){
-                _data.AddEntity();
+                _data.add_entity();
             }
         }
 
@@ -43,6 +47,12 @@ namespace editor::gui {
                 //TODO: show error gui
             }
             _load_dialog.ClearSelected();
+        }
+
+        _save_dialog.Display();
+        if(_save_dialog.HasSelected()){
+            auto save_path = _save_dialog.GetSelected();
+            _data.save(save_path);
         }
     }
 }

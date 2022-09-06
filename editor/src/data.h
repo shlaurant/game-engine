@@ -9,12 +9,16 @@ namespace editor {
         size_t uuid = fuse::generate_uuid();
         std::string name = "new entity";
         std::string tag = "default";
+
+        void serialize(YAML::Emitter &) const;
     };
 
     class entity_data {
     public:
         entity_data() = default;
         explicit entity_data(const YAML::Node &);
+
+        void serialize(YAML::Emitter &) const;
         std::string name() const;
 
     private:
@@ -23,9 +27,10 @@ namespace editor {
 
     class scene_data {
     public:
+        void save(const std::filesystem::path &) const;
         void load(const std::filesystem::path &);
         std::vector<entity_data> entities() const;
-        void AddEntity();
+        void add_entity();
 
     private:
         std::vector<entity_data> _entities;
