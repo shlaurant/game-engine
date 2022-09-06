@@ -19,13 +19,19 @@ namespace editor {
         return _entities;
     }
 
+    void scene_data::AddEntity() {
+        _entities.push_back(entity_data());
+    }
+
     entity_data::entity_data(const YAML::Node &ett_node) {
-        if(auto info = ett_node["info_component"]){
-            _name = info["name"].as<std::string>();
+        if (auto info = ett_node["info_component"]) {
+            _info.uuid = info["uuid"].as<size_t>();
+            _info.name = info["name"].as<std::string>();
+            _info.tag = info["tag"].as<std::string>();
         }
     }
 
     std::string entity_data::name() const {
-        return _name;
+        return _info.name;
     }
 }

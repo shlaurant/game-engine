@@ -26,7 +26,9 @@ namespace editor::gui {
         }
 
         if (_loaded) {
-            ImGui::Button("Add new entity");
+            if(ImGui::Button("Add new entity")){
+                _data.AddEntity();
+            }
         }
 
         ImGui::End();

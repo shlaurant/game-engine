@@ -12,5 +12,5 @@ target_include_directories(editor PUBLIC
         ${CMAKE_SOURCE_DIR}/windows/includes
         ${CMAKE_SOURCE_DIR}/windows/includes/SDL2)
 
-target_link_libraries(editor SDL2 SDL2main yaml-cppd)
+target_link_libraries(editor SDL2 SDL2main yaml-cppd engine)
 target_link_directories(editor PUBLIC ${CMAKE_SOURCE_DIR}/windows/libs)
