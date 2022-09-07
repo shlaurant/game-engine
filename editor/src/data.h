@@ -20,6 +20,7 @@ namespace editor {
 
         void serialize(YAML::Emitter &) const;
         std::string name() const;
+        size_t uuid() const;
 
     private:
         info_data _info;
@@ -31,6 +32,7 @@ namespace editor {
         void load(const std::filesystem::path &);
         std::vector<entity_data> entities() const;
         void add_entity();
+        void delete_entity(const entity_data &);
 
     private:
         std::vector<entity_data> _entities;

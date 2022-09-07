@@ -4,7 +4,7 @@ namespace editor {
 
     /// Guarantees basic exception safety
     /// \param path
-    void scene_data::save(const std::filesystem::path &path) const{
+    void scene_data::save(const std::filesystem::path &path) const {
         YAML::Emitter em;
         em << YAML::BeginMap << YAML::Key << "entities";
         em << YAML::BeginSeq;
@@ -40,6 +40,16 @@ namespace editor {
         _entities.push_back(entity_data());
     }
 
+    void scene_data::delete_entity(const entity_data &ett) {
+        auto it = std::find_if(_entities.begin(), _entities.end(),
+                               [ett](const entity_data &e) -> bool {
+                                   return e.uuid() == ett.uuid();
+                               });
+        if(it != _entities.end()){
+            _entities.erase(it);
+        }
+    }
+
     /// \throw std::domain_error when the node is malformed
     /// \param ett_node
     entity_data::entity_data(const YAML::Node &ett_node) {
@@ -60,6 +70,10 @@ namespace editor {
 
     std::string entity_data::name() const {
         return _info.name;
+    }
+
+    size_t entity_data::uuid() const {
+        return _info.uuid;
     }
 
     void info_data::serialize(YAML::Emitter &em) const {
