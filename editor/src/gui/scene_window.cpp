@@ -1,4 +1,4 @@
-#include "scene.h"
+#include "scene_window.h"
 #include "common.h"
 
 namespace editor::gui {

@@ -4,7 +4,7 @@
 #include <imgui_impl_sdlrenderer.h>
 #include <imfilebrowser.h>
 #include <SDL2/SDL.h>
-#include "gui/scene.h"
+#include "gui/scene_window.h"
 #include "gui/log_window.h"
 #include "gui/common.h"
 
