@@ -54,7 +54,8 @@ int main(int arg, char **argv) {
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    editor::gui::scene_window scene_window;
+    editor::scene_data data;
+    editor::gui::scene_window scene_window(data);
     auto &log_window = editor::gui::get_log_window();
 
     // Main loop

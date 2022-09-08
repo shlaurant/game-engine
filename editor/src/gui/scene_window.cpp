@@ -2,7 +2,7 @@
 #include "common.h"
 
 namespace editor::gui {
-    scene_window::scene_window() {
+    scene_window::scene_window(scene_data &data) : _data(data) {
         _save_dialog.SetTitle("Load");
         _load_dialog.SetTitle("Load");
         _save_dialog.SetTypeFilters({".yaml"});
