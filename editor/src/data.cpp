@@ -1,4 +1,5 @@
 #include "data.h"
+#include "common/log.h"
 
 namespace editor {
 
@@ -16,12 +17,15 @@ namespace editor {
 
         std::ofstream filepath(path);
         filepath << em.c_str();
+
+        log_info("saved " + path.string());
     }
 
     /// Guarantees basic exception safety
     /// \param path
     void scene_data::load(const std::filesystem::path &path) {
         auto root = YAML::LoadFile(path.string());
+
 
         if (auto ett_node = root["entities"]) {
             std::vector<entity_data> new_entities;
@@ -30,6 +34,8 @@ namespace editor {
             }
             _entities = new_entities;
         }
+
+        log_info("loaded " + path.string());
     }
 
     std::vector<entity_data> scene_data::entities() const {

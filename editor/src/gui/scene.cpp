@@ -72,6 +72,7 @@ namespace editor::gui {
         if (_save_dialog.HasSelected()) {
             auto save_path = _save_dialog.GetSelected();
             _data.save(save_path);
+            _save_dialog.ClearSelected();
         }
     }
 }
