@@ -2,8 +2,8 @@
 
 #include <imgui.h>
 #include <imfilebrowser.h>
-#include "../data.h"
-#include "../event/core.h"
+#include "data/data.h"
+#include "event/core.h"
 
 namespace editor::gui {
     class scene_window {

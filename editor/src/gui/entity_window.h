@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../event/core.h"
-#include "../data.h"
+#include "event/core.h"
+#include "data/data.h"
 
 namespace editor::gui {
 

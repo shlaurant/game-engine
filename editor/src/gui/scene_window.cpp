@@ -1,6 +1,6 @@
 #include "scene_window.h"
 #include "common.h"
-#include "../event/events.h"
+#include "event/events.h"
 
 namespace editor::gui {
     scene_window::scene_window(scene_data &data, dispatcher &disp) : _data(

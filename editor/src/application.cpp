@@ -5,7 +5,6 @@
 #include <imfilebrowser.h>
 #include <SDL2/SDL.h>
 #include "gui/scene_window.h"
-#include "gui/log_window.h"
 #include "gui/common.h"
 #include "event/core.h"
 #include "gui/entity_window.h"

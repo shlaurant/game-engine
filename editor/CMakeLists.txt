@@ -10,7 +10,8 @@ target_include_directories(editor PUBLIC
         ${CMAKE_SOURCE_DIR}/imgui
         ${CMAKE_SOURCE_DIR}/imgui/backends
         ${CMAKE_SOURCE_DIR}/windows/includes
-        ${CMAKE_SOURCE_DIR}/windows/includes/SDL2)
+        ${CMAKE_SOURCE_DIR}/windows/includes/SDL2
+        ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 target_link_libraries(editor SDL2 SDL2main yaml-cppd engine)
 target_link_directories(editor PUBLIC ${CMAKE_SOURCE_DIR}/windows/libs)

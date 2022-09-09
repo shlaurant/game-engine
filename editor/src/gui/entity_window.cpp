@@ -1,7 +1,7 @@
 #include <imgui.h>
 #include "entity_window.h"
-#include "../common/log.h"
-#include "../event/events.h"
+#include "common/log.h"
+#include "event/events.h"
 
 namespace editor::gui {
     bool info_tab::show(entity_data &entity) {
