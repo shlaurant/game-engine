@@ -1,6 +1,5 @@
 #include "data.h"
 #include "common/log.h"
-#include "event/events.h"
 
 namespace editor {
 
