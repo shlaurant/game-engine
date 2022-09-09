@@ -12,7 +12,6 @@ namespace editor::gui {
 
     private:
         const static int BuffSize = 24;
-        char _uuid[BuffSize] = "";
         char _name[BuffSize] = "";
         char _tag[BuffSize] = "";
     };
