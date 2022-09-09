@@ -2,7 +2,8 @@
 #include "common.h"
 
 namespace editor::gui {
-    scene_window::scene_window(scene_data &data) : _data(data) {
+    scene_window::scene_window(scene_data &data, dispatcher &disp) : _data(
+            data), _disp(disp) {
         _save_dialog.SetTitle("Load");
         _load_dialog.SetTitle("Load");
         _save_dialog.SetTypeFilters({".yaml"});
@@ -35,6 +36,7 @@ namespace editor::gui {
                 label += "##" + std::to_string(i);
                 if (ImGui::Selectable(label.c_str(), i == _selection)) {
                     _selection = i;
+                    _disp.post<entity_sel_event>(entities[i]);
                 }
                 if (ImGui::BeginPopupContextItem()) // <-- use last item id as popup id
                 {

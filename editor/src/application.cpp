@@ -7,6 +7,8 @@
 #include "gui/scene_window.h"
 #include "gui/log_window.h"
 #include "gui/common.h"
+#include "common/event.h"
+#include "gui/entity_window.h"
 
 int main(int arg, char **argv) {
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
@@ -54,9 +56,13 @@ int main(int arg, char **argv) {
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    editor::dispatcher disp;
+
     editor::scene_data data;
-    editor::gui::scene_window scene_window(data);
+    editor::gui::scene_window scene_window(data, disp);
+    editor::gui::entity_window entity_window(disp);
     auto &log_window = editor::gui::get_log_window();
+
 
     // Main loop
     bool done = false;
@@ -84,6 +90,7 @@ int main(int arg, char **argv) {
 
         scene_window.show();
         log_window.show();
+        entity_window.show();
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         if (show_demo_window)
@@ -139,6 +146,8 @@ int main(int arg, char **argv) {
         SDL_RenderClear(renderer);
         ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
         SDL_RenderPresent(renderer);
+
+        disp.dispatch();
     }
 
     // Cleanup
