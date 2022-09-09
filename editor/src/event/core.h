@@ -3,17 +3,10 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
-#include "../data.h"
 
 namespace editor {
     struct event {
         virtual ~event() = default;
-    };
-
-    struct entity_sel_event : event {
-        entity_sel_event(entity_data data) : data(data) {}
-
-        entity_data data;
     };
 
     class listener {
@@ -58,7 +51,8 @@ namespace editor {
         };
 
     private:
-        std::unordered_map<event_id, std::vector<std::shared_ptr<listener>>> _listeners;
+        std::unordered_map<event_id, std::vector<std::shared_ptr<listener>>>
+                _listeners;
         std::unordered_map<event_id, std::shared_ptr<event>> _events;
 
         template<typename T>

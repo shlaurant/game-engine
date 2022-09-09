@@ -1,10 +1,22 @@
 #pragma once
 
-#include "../common/event.h"
+#include "../event/core.h"
 #include "../data.h"
 
 namespace editor::gui {
-    class entity_window:public listener {
+
+    class info_tab {
+    public:
+        bool show(entity_data &);
+
+    private:
+        const static int BuffSize = 24;
+        char _uuid[BuffSize] = "";
+        char _name[BuffSize] = "";
+        char _tag[BuffSize] = "";
+    };
+
+    class entity_window : public listener {
     public:
         entity_window(dispatcher &disp);
 
@@ -16,5 +28,7 @@ namespace editor::gui {
         bool _show_entity = false;
         dispatcher &_disp;
         entity_data _entity_data;
+
+        info_tab _info_tab;
     };
 }

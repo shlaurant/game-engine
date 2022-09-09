@@ -3,7 +3,7 @@
 #include <imgui.h>
 #include <imfilebrowser.h>
 #include "../data.h"
-#include "../common/event.h"
+#include "../event/core.h"
 
 namespace editor::gui {
     class scene_window {

@@ -7,7 +7,7 @@
 #include "gui/scene_window.h"
 #include "gui/log_window.h"
 #include "gui/common.h"
-#include "common/event.h"
+#include "event/core.h"
 #include "gui/entity_window.h"
 
 int main(int arg, char **argv) {
@@ -58,7 +58,7 @@ int main(int arg, char **argv) {
 
     editor::dispatcher disp;
 
-    editor::scene_data data;
+    editor::scene_data data(disp);
     editor::gui::scene_window scene_window(data, disp);
     editor::gui::entity_window entity_window(disp);
     auto &log_window = editor::gui::get_log_window();

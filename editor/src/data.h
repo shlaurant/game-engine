@@ -3,6 +3,7 @@
 #include <string>
 #include <filesystem>
 #include <yaml-cpp/yaml.h>
+#include "event/core.h"
 
 namespace editor {
     struct info_data {
@@ -13,8 +14,7 @@ namespace editor {
         void serialize(YAML::Emitter &) const;
     };
 
-    class entity_data {
-    public:
+    struct entity_data {
         entity_data() = default;
         explicit entity_data(const YAML::Node &);
 
@@ -22,12 +22,19 @@ namespace editor {
         std::string name() const;
         size_t uuid() const;
 
-    private:
-        info_data _info;
+        bool operator==(const entity_data &rhs) const {
+            return rhs.info.uuid == info.uuid;
+        }
+
+        info_data info;
     };
 
-    class scene_data {
+    class scene_data : public listener {
     public:
+        explicit scene_data(dispatcher &disp);
+
+        void on_event(std::shared_ptr<event> e) override;
+
         void save(const std::filesystem::path &) const;
         void load(const std::filesystem::path &);
         std::vector<entity_data> entities() const;
@@ -35,6 +42,7 @@ namespace editor {
         void delete_entity(const entity_data &);
 
     private:
+        dispatcher &_disp;
         std::vector<entity_data> _entities;
     };
 }
