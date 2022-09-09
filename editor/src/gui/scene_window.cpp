@@ -60,7 +60,6 @@ namespace editor::gui {
         _load_dialog.Display();
         if (_load_dialog.HasSelected()) {
             _path = _load_dialog.GetSelected();
-            log(_path.string() + " selected in load dialog");
             try {
                 _data.load(_path);
                 _loaded = true;
