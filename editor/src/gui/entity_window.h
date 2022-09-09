@@ -1,6 +1,7 @@
 #pragma once
 
 #include "event/core.h"
+#include "event/events.h"
 #include "data/data.h"
 
 namespace editor::gui {
@@ -16,19 +17,21 @@ namespace editor::gui {
         char _tag[BuffSize] = "";
     };
 
-    class entity_window : public listener {
+    class entity_window : public listener<entity_sel_event> {
     public:
-        entity_window(dispatcher &disp);
+        entity_window(std::shared_ptr<dispatcher>, std::shared_ptr<scene_data>);
 
         void show();
 
-        void on_event(std::shared_ptr<event> e) override;
+        void on_event_t(std::shared_ptr<entity_sel_event> e) override;
 
     private:
         bool _show_entity = false;
-        dispatcher &_disp;
-        entity_data _entity_data;
 
+        std::shared_ptr<dispatcher> _disp;
+        std::shared_ptr<scene_data> _data;
+
+        entity_data _entity_data;
         info_tab _info_tab;
     };
 }

@@ -10,7 +10,7 @@ namespace editor {
         entity_data data;
     };
 
-    struct entity_change_event : public event {
+    struct entity_change_event : event {
         entity_change_event(entity_data data) : new_data(data) {}
 
         entity_data new_data;

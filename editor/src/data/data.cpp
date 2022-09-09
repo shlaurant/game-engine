@@ -4,17 +4,6 @@
 
 namespace editor {
 
-    scene_data::scene_data(dispatcher &disp) : _disp(disp) {
-        auto p = std::shared_ptr<listener>(this);
-        disp.add_listener<entity_change_event>(p);
-    }
-
-    void scene_data::on_event(std::shared_ptr<event> e) {
-        auto p = std::static_pointer_cast<entity_change_event>(e);
-        auto it = find(_entities.begin(), _entities.end(), p->new_data);
-        if(it != _entities.end()) *it = p->new_data;
-    }
-
     /// Guarantees basic exception safety
     /// \param path
     void scene_data::save(const std::filesystem::path &path) const {
@@ -65,6 +54,11 @@ namespace editor {
         if (it != _entities.end()) {
             _entities.erase(it);
         }
+    }
+
+    void scene_data::change_entity(entity_data e) {
+        auto it = find(_entities.begin(), _entities.end(), e);
+        if (it != _entities.end()) *it = std::move(e);
     }
 
     /// \throw std::domain_error when the node is malformed

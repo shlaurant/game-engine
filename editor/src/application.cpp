@@ -3,9 +3,8 @@
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_sdlrenderer.h>
 #include <SDL2/SDL.h>
-#include "gui/scene_window.h"
 #include "event/core.h"
-#include "gui/entity_window.h"
+#include "gui/gui.h"
 
 int main(int arg, char **argv) {
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
@@ -38,11 +37,10 @@ int main(int arg, char **argv) {
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    editor::dispatcher disp;
+    auto disp = std::make_shared<editor::dispatcher>();
+    auto data = std::make_shared<editor::scene_data>();
 
-    editor::scene_data data(disp);
-    editor::gui::scene_window scene_window(data, disp);
-    editor::gui::entity_window entity_window(disp);
+    editor::gui::gui gui(disp, data);
 
     // Main loop
     bool done = false;
@@ -64,8 +62,7 @@ int main(int arg, char **argv) {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        scene_window.show();
-        entity_window.show();
+        gui.show();
 
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
@@ -80,7 +77,7 @@ int main(int arg, char **argv) {
         ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
         SDL_RenderPresent(renderer);
 
-        disp.dispatch();
+        disp->dispatch();
     }
 
     // Cleanup

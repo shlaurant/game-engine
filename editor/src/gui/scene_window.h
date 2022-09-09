@@ -8,12 +8,13 @@
 namespace editor::gui {
     class scene_window {
     public:
-        explicit scene_window(scene_data &, dispatcher &);
+        scene_window(std::shared_ptr<dispatcher>, std::shared_ptr<scene_data>);
+
         void show();
 
     private:
-        scene_data &_data;
-        dispatcher &_disp;
+        std::shared_ptr<dispatcher> _disp;
+        std::shared_ptr<scene_data> _data;
 
         bool _loaded = false;
         ImGui::FileBrowser _load_dialog;

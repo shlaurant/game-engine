@@ -1,10 +1,13 @@
 #include "scene_window.h"
+
+#include <utility>
 #include "common.h"
 #include "event/events.h"
 
 namespace editor::gui {
-    scene_window::scene_window(scene_data &data, dispatcher &disp) : _data(
-            data), _disp(disp) {
+    scene_window::scene_window(std::shared_ptr<dispatcher> disp,
+                               std::shared_ptr<scene_data> data) : _disp(
+            std::move(disp)), _data(std::move(data)) {
         _save_dialog.SetTitle("Load");
         _load_dialog.SetTitle("Load");
         _save_dialog.SetTypeFilters({".yaml"});
@@ -31,18 +34,18 @@ namespace editor::gui {
             ImGui::Text("%s", _path.string().c_str());
             ImGui::Indent(15);
 
-            const auto &&entities = _data.entities();
+            const auto &&entities = _data->entities();
             for (auto i = 0; i < entities.size(); ++i) {
                 auto label = entities[i].name();
                 label += "##" + std::to_string(i);
                 if (ImGui::Selectable(label.c_str(), i == _selection)) {
                     _selection = i;
-                    _disp.post<entity_sel_event>(entities[i]);
+                    _disp->post<entity_sel_event>(entities[i]);
                 }
                 if (ImGui::BeginPopupContextItem()) // <-- use last item id as popup id
                 {
                     if (ImGui::Button("Delete")) {
-                        _data.delete_entity(entities[i]);
+                        _data->delete_entity(entities[i]);
                         ImGui::CloseCurrentPopup();
                     }
                     ImGui::EndPopup();
@@ -50,7 +53,7 @@ namespace editor::gui {
             }
 
             if (ImGui::Button("Add new entity")) {
-                _data.add_entity();
+                _data->add_entity();
             }
         }
 
@@ -61,7 +64,7 @@ namespace editor::gui {
         if (_load_dialog.HasSelected()) {
             _path = _load_dialog.GetSelected();
             try {
-                _data.load(_path);
+                _data->load(_path);
                 _loaded = true;
                 _selection = -1;
             } catch (...) {
@@ -73,7 +76,7 @@ namespace editor::gui {
         _save_dialog.Display();
         if (_save_dialog.HasSelected()) {
             auto save_path = _save_dialog.GetSelected();
-            _data.save(save_path);
+            _data->save(save_path);
             _save_dialog.ClearSelected();
         }
     }
