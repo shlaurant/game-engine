@@ -6,16 +6,6 @@
 
 namespace editor::gui {
 
-    class info_tab {
-    public:
-        bool show(entity_data &);
-
-    private:
-        const static int BuffSize = 24;
-        char _name[BuffSize] = "";
-        char _tag[BuffSize] = "";
-    };
-
     class entity_window : public listener<entity_sel_event> {
     public:
         entity_window(std::shared_ptr<dispatcher>, std::shared_ptr<scene_data>);
@@ -31,6 +21,6 @@ namespace editor::gui {
         std::shared_ptr<scene_data> _data;
 
         entity_data _entity_data;
-        info_tab _info_tab;
+        std::vector<std::function<bool(entity_data &)>> _tabs;
     };
 }
