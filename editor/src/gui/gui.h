@@ -2,7 +2,7 @@
 
 #include <memory>
 #include "scene_window.h"
-#include "entity_window.h"
+#include "entity/entity_window.h"
 #include "event/core.h"
 
 namespace editor::gui {
