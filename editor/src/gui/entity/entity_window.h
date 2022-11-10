@@ -2,7 +2,7 @@
 
 #include "event/core.h"
 #include "event/events.h"
-#include "data/data.h"
+#include "data/scene_data.h"
 
 namespace editor::gui {
 

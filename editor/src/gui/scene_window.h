@@ -2,7 +2,7 @@
 
 #include <imgui.h>
 #include <imfilebrowser.h>
-#include "data/data.h"
+#include "data/scene_data.h"
 #include "event/core.h"
 
 namespace editor::gui {

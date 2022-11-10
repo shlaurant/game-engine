@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core.h"
-#include "data/data.h"
+#include "data/entity_data.h"
 
 namespace editor {
     struct entity_sel_event : event {

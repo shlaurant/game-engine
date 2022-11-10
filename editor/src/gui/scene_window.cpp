@@ -1,6 +1,7 @@
 #include "scene_window.h"
 
 #include <utility>
+#include <data/info_data.h>
 #include "common.h"
 #include "event/events.h"
 
@@ -36,7 +37,7 @@ namespace editor::gui {
 
             const auto &&entities = _data->entities();
             for (auto i = 0; i < entities.size(); ++i) {
-                auto label = entities[i].name();
+                auto label = entities[i].comp_data<info_data>()->name;
                 label += "##" + std::to_string(i);
                 if (ImGui::Selectable(label.c_str(), i == _selection)) {
                     _selection = i;
@@ -56,7 +57,6 @@ namespace editor::gui {
                 _data->add_entity();
             }
         }
-
 
         ImGui::End();
 

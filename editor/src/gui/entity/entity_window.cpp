@@ -12,6 +12,8 @@ namespace editor::gui {
     }
 
     void entity_window::show() {
+        if (!_show_entity) return;
+
         bool is_changed = false;
 
         ImGui::Begin("Entity");
