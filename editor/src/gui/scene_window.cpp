@@ -4,12 +4,13 @@
 #include <data/info_data.h>
 #include "common.h"
 #include "event/events.h"
+#include <fstream>
 
 namespace editor::gui {
     scene_window::scene_window(std::shared_ptr<dispatcher> disp,
                                std::shared_ptr<scene_data> data) : _disp(
             std::move(disp)), _data(std::move(data)) {
-        _save_dialog.SetTitle("Load");
+        _save_dialog.SetTitle("Save");
         _load_dialog.SetTitle("Load");
         _save_dialog.SetTypeFilters({".yaml"});
         _load_dialog.SetTypeFilters({".yaml"});
@@ -21,6 +22,9 @@ namespace editor::gui {
 
         ImGui::BeginMenuBar();
         if (ImGui::BeginMenu("Menu")) {
+            if (ImGui::MenuItem("New")) {
+                _create_new = true;
+            }
             if (ImGui::MenuItem("Load")) {
                 _load_dialog.Open();
             }
@@ -59,6 +63,23 @@ namespace editor::gui {
         }
 
         ImGui::End();
+
+        if (_create_new) {
+            static const int buf_size = 24;
+            static char file_name_buf[buf_size] = {0,};
+            ImGui::Begin("New");
+            ImGui::InputText("name", file_name_buf, buf_size);
+            if (ImGui::Button("Create")) {
+                std::ofstream file(std::string(file_name_buf) + ".yaml");
+                file.close();
+                _create_new = false;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel")) {
+                _create_new = false;
+            }
+            ImGui::End();
+        }
 
         _load_dialog.Display();
         if (_load_dialog.HasSelected()) {

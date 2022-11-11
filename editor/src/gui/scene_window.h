@@ -13,6 +13,7 @@ namespace editor::gui {
         void show();
 
     private:
+        bool _create_new = false;
         std::shared_ptr<dispatcher> _disp;
         std::shared_ptr<scene_data> _data;
 
