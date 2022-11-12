@@ -9,6 +9,11 @@
 namespace editor {
     class scene_data {
     public:
+        static scene_data *instance(){
+            static scene_data i;
+            return &i;
+        }
+
         void save(const std::filesystem::path &) const;
         void load(const std::filesystem::path &);
         std::vector<entity_data> entities() const;
@@ -17,6 +22,8 @@ namespace editor {
         void change_entity(entity_data);
 
     private:
+        scene_data() = default;
+
         std::vector<entity_data> _entities;
     };
 }

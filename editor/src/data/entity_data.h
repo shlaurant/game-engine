@@ -5,7 +5,7 @@
 
 namespace editor {
     struct component_data {
-        virtual ~component_data() = 0;
+        virtual ~component_data() = default;
 
         virtual void serialize(YAML::Emitter &) const = 0;
 
@@ -15,7 +15,7 @@ namespace editor {
     };
 
     struct entity_data {
-        entity_data() = default;
+        entity_data();
 
         explicit entity_data(const YAML::Node &);
 

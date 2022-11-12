@@ -1,26 +1,27 @@
 #pragma once
 
+#include "gui/gui.h"
 #include "event/core.h"
 #include "event/events.h"
 #include "data/scene_data.h"
 
 namespace editor::gui {
 
-    class entity_window : public listener<entity_sel_event> {
+    class entity_window : public window {
     public:
-        entity_window(std::shared_ptr<dispatcher>, std::shared_ptr<scene_data>);
+        entity_window();
 
-        void show();
+        void show() override;
 
-        void on_event_t(std::shared_ptr<entity_sel_event> e) override;
+        void load_entity(entity_data);
 
     private:
-        bool _show_entity = false;
+        bool _entity_loaded = false;
 
         std::shared_ptr<dispatcher> _disp;
-        std::shared_ptr<scene_data> _data;
 
         entity_data _entity_data;
+
         std::vector<std::function<bool(entity_data &)>> _tabs;
     };
 }

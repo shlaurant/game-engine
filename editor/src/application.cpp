@@ -38,9 +38,7 @@ int main(int arg, char **argv) {
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     auto disp = std::make_shared<editor::dispatcher>();
-    auto data = std::make_shared<editor::scene_data>();
-
-    editor::gui::gui gui(disp, data);
+//    auto data = std::make_shared<editor::scene_data>();
 
     // Main loop
     bool done = false;
@@ -62,7 +60,7 @@ int main(int arg, char **argv) {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        gui.show();
+        editor::gui::gui::instance()->show();
 
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);

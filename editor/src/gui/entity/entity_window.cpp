@@ -1,36 +1,36 @@
 #include <imgui.h>
 #include "entity_window.h"
-#include "common/log.h"
-#include "event/events.h"
 #include "tabs.h"
 
 namespace editor::gui {
-    entity_window::entity_window(std::shared_ptr<dispatcher> disp,
-                                 std::shared_ptr<scene_data> data) :
-            _disp(std::move(disp)), _data(std::move(data)) {
+    entity_window::entity_window() {
         _tabs.push_back(tab::information);
     }
 
     void entity_window::show() {
-        if (!_show_entity) return;
-
-        bool is_changed = false;
+        if (!_is_open) return;
 
         ImGui::Begin("Entity");
+        if (_entity_loaded) {
+            bool is_changed = false;
 
-        for (auto &e: _tabs) {
-            is_changed = e(_entity_data);
+
+            for (auto &e: _tabs) {
+                is_changed = e(_entity_data);
+            }
+
+            if (is_changed) {
+                scene_data::instance()->change_entity(_entity_data);
+            }
+
+        } else {
+            ImGui::Text("No scene loaded");
         }
-
-        if (is_changed) {
-            _data->change_entity(_entity_data);
-        }
-
         ImGui::End();
     }
 
-    void entity_window::on_event_t(std::shared_ptr<entity_sel_event> e) {
-        _entity_data = e->data;
-        _show_entity = true;
+    void entity_window::load_entity(entity_data e) {
+        _entity_data = std::move(e);
+        _entity_loaded = true;
     }
 }
