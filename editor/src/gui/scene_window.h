@@ -20,5 +20,10 @@ namespace editor::gui {
         ImGui::FileBrowser _save_dialog;
         std::filesystem::path _path;
         int _selection = -1;
+
+        void show_entities();
+        void show_new();
+        void show_load();
+        void show_save();
     };
 }
