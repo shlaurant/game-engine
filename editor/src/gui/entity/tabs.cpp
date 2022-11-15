@@ -1,5 +1,5 @@
 #include <imgui.h>
-#include <data/transform_data.h>
+#include "data/transform_data.h"
 #include "data/info_data.h"
 #include "tabs.h"
 
@@ -36,9 +36,13 @@ namespace editor::gui::tab {
 
     bool transform(entity_data &entity) {
         if (!entity.has_comp<transform_data>()) return false;
+
+        bool is_changed = false;
+
         if (ImGui::TreeNode("transform")) {
-            ImGui::Indent();
             const static float align = 150.f;
+
+            ImGui::Indent();
 
             auto p_tr = entity.comp_data<transform_data>();
 
@@ -49,16 +53,28 @@ namespace editor::gui::tab {
             sprintf(tr_y, "%f", p_tr->translate.y);
             ImGui::Text("translation: ");
             ImGui::SameLine(align);
-            ImGui::InputText("x", tr_x, BuffSize, ImGuiInputTextFlags_CharsDecimal);
+            if (input_text("x##tr", tr_x, ImGuiInputTextFlags_CharsDecimal)) {
+                entity.comp_data<transform_data>()->translate.x = (float) atof(
+                        tr_x);
+                is_changed = true;
+            }
             ImGui::SameLine();
-            ImGui::InputText("y", tr_y, BuffSize, ImGuiInputTextFlags_CharsDecimal);
+            if (input_text("y##tr", tr_y, ImGuiInputTextFlags_CharsDecimal)) {
+                entity.comp_data<transform_data>()->translate.y = (float) atof(
+                        tr_y);
+                is_changed = true;
+            }
 
             static char rot[BuffSize] = "";
             sprintf(rot, "%f", p_tr->rotation);
             ImGui::Text("rotation: ");
             ImGui::SameLine(align);
-            ImGui::InputText("##rotation", rot, BuffSize,
-                             ImGuiInputTextFlags_CharsDecimal);
+            if (input_text("##rotation", rot,
+                           ImGuiInputTextFlags_CharsDecimal)) {
+                entity.comp_data<transform_data>()->rotation = (float) atof(
+                        rot);
+                is_changed = true;
+            }
 
             static char sc_x[BuffSize] = "";
             static char sc_y[BuffSize] = "";
@@ -66,15 +82,27 @@ namespace editor::gui::tab {
             sprintf(sc_y, "%f", p_tr->scale.y);
             ImGui::Text("scale: ");
             ImGui::SameLine(align);
-            ImGui::InputText("x", sc_x, BuffSize, ImGuiInputTextFlags_CharsDecimal);
+            if (input_text("x##sc", sc_x, ImGuiInputTextFlags_CharsDecimal)) {
+                entity.comp_data<transform_data>()->scale.x = (float) atof(
+                        sc_x);
+            }
             ImGui::SameLine();
-            ImGui::InputText("y", sc_y, BuffSize, ImGuiInputTextFlags_CharsDecimal);
+            if (input_text("y##sc", sc_y, ImGuiInputTextFlags_CharsDecimal)) {
+                entity.comp_data<transform_data>()->scale.y = (float) atof(
+                        sc_y);
+            }
             ImGui::PopItemWidth();
 
             ImGui::Unindent();
             ImGui::TreePop();
         }
 
-        return false;
+        return is_changed;
+    }
+
+    bool input_text(const char *tag, char (&buf)[BuffSize],
+                    ImGuiInputTextFlags_ flags = ImGuiInputTextFlags_None) {
+        return ImGui::InputText(tag, buf, BuffSize, flags) &&
+               ImGui::IsItemDeactivatedAfterEdit();
     }
 }
