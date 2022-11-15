@@ -1,6 +1,5 @@
 #include "entity_data.h"
-#include "info_data.h"
-#include "transform_data.h"
+#include "common.h"
 
 namespace editor {
     entity_data::entity_data() {

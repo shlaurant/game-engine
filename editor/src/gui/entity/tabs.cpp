@@ -1,6 +1,5 @@
 #include <imgui.h>
-#include "data/transform_data.h"
-#include "data/info_data.h"
+#include "data/common.h"
 #include "tabs.h"
 
 namespace editor::gui::tab {

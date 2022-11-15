@@ -1,7 +1,6 @@
 #include "scene_window.h"
-#include <data/info_data.h>
 #include "entity/entity_window.h"
-#include "common.h"
+#include "data/common.h"
 
 namespace editor::gui {
     scene_window::scene_window() {

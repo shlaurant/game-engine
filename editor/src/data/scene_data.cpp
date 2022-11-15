@@ -1,5 +1,5 @@
 #include "scene_data.h"
-#include "info_data.h"
+#include "common.h"
 
 namespace editor {
     /// Guarantees basic exception safety
