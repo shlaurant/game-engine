@@ -4,8 +4,7 @@
 
 namespace editor::gui::tab {
     const static int BuffSize = 24;
-    static char name[BuffSize] = "";
-    static char tag[BuffSize] = "";
 
     bool information(entity_data &);
+    bool transform(entity_data &);
 }
