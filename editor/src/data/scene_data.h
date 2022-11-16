@@ -16,14 +16,13 @@ namespace editor {
 
         void save(const std::filesystem::path &) const;
         void load(const std::filesystem::path &);
-        std::vector<entity_data> entities() const;
+        std::vector<std::weak_ptr<entity_data>> entities();
         void add_entity();
         void delete_entity(const entity_data &);
-        void change_entity(entity_data);
 
     private:
         scene_data() = default;
 
-        std::vector<entity_data> _entities;
+        std::vector<std::shared_ptr<entity_data>> _entities;
     };
 }

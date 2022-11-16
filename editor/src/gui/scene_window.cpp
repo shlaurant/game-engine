@@ -51,21 +51,22 @@ namespace editor::gui {
 
         const auto &&entities = scene_data::instance()->entities();
         for (auto i = 0; i < entities.size(); ++i) {
-            auto label = entities[i].comp_data<info_data>()->name;
-            label += "##" + std::to_string(i);
-            if (ImGui::Selectable(label.c_str(), i == _selection)) {
-                _selection = i;
-                gui::instance()->p_window<entity_window>()->open();
-                gui::instance()->p_window<entity_window>()->load_entity(
-                        scene_data::instance()->entities()[i]);
-            }
-            if (ImGui::BeginPopupContextItem()) // <-- use last item id as popup id
-            {
-                if (ImGui::Button("Delete")) {
-                    scene_data::instance()->delete_entity(entities[i]);
-                    ImGui::CloseCurrentPopup();
+            if (auto p_ett = entities[i].lock()) {
+                auto label = p_ett->comp_data<info_data>()->name;
+                label += "##" + std::to_string(i);
+                if (ImGui::Selectable(label.c_str(), i == _selection)) {
+                    _selection = i;
+                    gui::instance()->p_window<entity_window>()->open();
+                    gui::instance()->p_window<entity_window>()->load_entity(p_ett);
                 }
-                ImGui::EndPopup();
+                if (ImGui::BeginPopupContextItem()) // <-- use last item id as popup id
+                {
+                    if (ImGui::Button("Delete")) {
+                        scene_data::instance()->delete_entity(*p_ett);
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
+                }
             }
         }
 

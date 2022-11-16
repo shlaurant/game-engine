@@ -9,7 +9,7 @@ namespace editor {
         em << YAML::BeginMap << YAML::Key << "entities";
         em << YAML::BeginSeq;
         for (const auto &e: _entities) {
-            e.serialize(em);
+            e->serialize(em);
         }
         em << YAML::EndSeq;
         em << YAML::EndMap;
@@ -25,33 +25,31 @@ namespace editor {
 
 
         if (auto ett_node = root["entities"]) {
-            std::vector<entity_data> new_entities;
+            std::vector<std::shared_ptr<entity_data>> new_entities;
             for (const auto &ett: ett_node) {
-                new_entities.push_back(entity_data(ett));
+                new_entities.push_back(std::make_shared<entity_data>(ett));
             }
             _entities = new_entities;
         }
     }
 
-    std::vector<entity_data> scene_data::entities() const {
-        return _entities;
+    std::vector<std::weak_ptr<entity_data>> scene_data::entities() {
+        std::vector<std::weak_ptr<entity_data>> ret;
+        for (auto &e: _entities) ret.push_back(e);
+        return ret;
     }
 
     void scene_data::add_entity() {
-        _entities.push_back(entity_data());
+        _entities.push_back(std::make_shared<entity_data>());
     }
+
     void scene_data::delete_entity(const entity_data &ett) {
         auto it = std::find_if(_entities.begin(), _entities.end(),
-                               [ett](const entity_data &e) -> bool {
-                                   return e == ett;
+                               [ett](const std::shared_ptr<entity_data> &e) -> bool {
+                                   return *e == ett;
                                });
         if (it != _entities.end()) {
             _entities.erase(it);
         }
-    }
-
-    void scene_data::change_entity(entity_data e) {
-        auto it = find(_entities.begin(), _entities.end(), e);
-        if (it != _entities.end()) *it = std::move(e);
     }
 }

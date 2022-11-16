@@ -1,4 +1,6 @@
 #include <imgui.h>
+
+#include <utility>
 #include "data/physics.h"
 #include "data/common.h"
 #include "entity_window.h"
@@ -16,13 +18,9 @@ namespace editor::gui {
         if (!_is_open) return;
 
         ImGui::Begin("Entity");
-        if (_entity_loaded) {
-            bool is_changed = false;
-
-            for (auto &e: _tabs) is_changed = e(_entity_data);
-            add_comp_popup(is_changed);
-
-            if (is_changed) scene_data::instance()->change_entity(_entity_data);
+        if (auto data = _entity_data.lock()) {
+            for (auto &e: _tabs) e(*data);
+            add_comp_popup(*data);
 
         } else {
             ImGui::Text("No scene loaded");
@@ -30,12 +28,11 @@ namespace editor::gui {
         ImGui::End();
     }
 
-    void entity_window::load_entity(entity_data e) {
-        _entity_data = std::move(e);
-        _entity_loaded = true;
+    void entity_window::load_entity(std::weak_ptr<entity_data> p) {
+        _entity_data = std::move(p);
     }
 
-    void entity_window::add_comp_popup(bool &is_changed) {
+    void entity_window::add_comp_popup(entity_data &data) {
         static int selected_comp = -1;
         const char *comps[] = {"transform", "rigidbody", "collider"};
 
@@ -54,16 +51,13 @@ namespace editor::gui {
 
         switch (selected_comp) {
             case 0:
-                _entity_data.add_comp<transform_data>();
-                is_changed = true;
+                data.add_comp<transform_data>();
                 break;
             case 1:
-                _entity_data.add_comp<rigidbody_data>();
-                is_changed = true;
+                data.add_comp<rigidbody_data>();
                 break;
             case 2:
-                _entity_data.add_comp<collider_data>();
-                is_changed = true;
+                data.add_comp<collider_data>();
                 break;
             default:
                 //do nothing

@@ -13,17 +13,15 @@ namespace editor::gui {
 
         void show() override;
 
-        void load_entity(entity_data);
+        void load_entity(std::weak_ptr<entity_data>);
 
     private:
-        bool _entity_loaded = false;
-
         std::shared_ptr<dispatcher> _disp;
 
-        entity_data _entity_data;
+        std::weak_ptr<entity_data> _entity_data;
 
         std::vector<std::function<bool(entity_data &)>> _tabs;
 
-        void add_comp_popup(bool &);
+        void add_comp_popup(entity_data &);
     };
 }
