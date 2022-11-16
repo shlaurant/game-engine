@@ -108,18 +108,43 @@ namespace editor::gui::tab {
     }
 
     bool sprite(entity_data &entity) {
-//        PREFIX(sprite_data, "sprite")
-//
-//            auto p = entity.comp_data<sprite_data>();
-//
-//
-//        SUFFIX(sprite_data)
+        PREFIX(sprite_data, "sprite")
+
+            auto p = entity.comp_data<sprite_data>();
+            INPUT_UUID64(sprite, sprite, p->sprite)
+            INPUT_INT(flip, flip, p->flip);
+
+        SUFFIX(sprite_data)
     }
-    bool animation(entity_data &) {
-        return false;
+
+    bool animation(entity_data &entity) {
+        PREFIX(animation_data, "animation")
+
+            auto p = entity.comp_data<animation_data>();
+            INPUT_UUID64(animation, animation, p->animation);
+            INPUT_INT(flip, flip, p->flip);
+
+        SUFFIX(animation_data)
     }
-    bool text(entity_data &) {
-        return false;
+
+    bool text(entity_data &entity) {
+        PREFIX(text_data, "text")
+
+            auto p = entity.comp_data<text_data>();
+            INPUT_UUID64(font, font, p->font)
+            INPUT_STR(text, text, p->text)
+            INPUT_INT(flip, flip, p->flip)
+            ImGui::Text("color: ");
+            ImGui::SameLine(Align);
+            INPUT_UINT8(r, c_r, p->color.r);
+            ImGui::SameLine();
+            INPUT_UINT8(g, c_g, p->color.g);
+            ImGui::SameLine();
+            INPUT_UINT8(b, c_b, p->color.b);
+            ImGui::SameLine();
+            INPUT_UINT8(a, c_a, p->color.a);
+
+        SUFFIX(text_data)
     }
 
     bool input_text(const char *tag, char (&buf)[BuffSize],
@@ -128,7 +153,20 @@ namespace editor::gui::tab {
                ImGui::IsItemDeactivatedAfterEdit();
     }
 
-    float to_float(char *arr) {
+    float to_float(const char *arr) {
         return (float) atof(arr);
+    }
+
+    fuse::uuid64 to_uuid64(const char *arr) {
+        char *end;
+        return strtoull(arr, &end, 0);
+    }
+
+    std::string to_str(const char *arr) {
+        return {arr};
+    }
+
+    uint8_t to_uint8(const char *arr) {
+        return (uint8_t) atoi(arr);
     }
 }
