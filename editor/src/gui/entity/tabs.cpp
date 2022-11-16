@@ -41,56 +41,25 @@ namespace editor::gui::tab {
 
         if (ImGui::TreeNode("transform")) {
             ImGui::Indent();
+            ImGui::PushItemWidth(ItemWidth);
 
             auto p_tr = entity.comp_data<transform_data>();
 
-            ImGui::PushItemWidth(ItemWidth);
-            static char tr_x[BuffSize] = "";
-            static char tr_y[BuffSize] = "";
-            sprintf(tr_x, "%f", p_tr->translate.x);
-            sprintf(tr_y, "%f", p_tr->translate.y);
             ImGui::Text("translation: ");
             ImGui::SameLine(Align);
-            if (input_text("x##tr", tr_x, ImGuiInputTextFlags_CharsDecimal)) {
-                entity.comp_data<transform_data>()->translate.x = (float) atof(
-                        tr_x);
-                is_changed = true;
-            }
+            INPUT_FLOAT(x, tr_x, p_tr->translate.x);
             ImGui::SameLine();
-            if (input_text("y##tr", tr_y, ImGuiInputTextFlags_CharsDecimal)) {
-                entity.comp_data<transform_data>()->translate.y = (float) atof(
-                        tr_y);
-                is_changed = true;
-            }
+            INPUT_FLOAT(y, tr_y, p_tr->translate.y);
 
-            static char rot[BuffSize] = "";
-            sprintf(rot, "%f", p_tr->rotation);
-            ImGui::Text("rotation: ");
-            ImGui::SameLine(Align);
-            if (input_text("##rotation", rot,
-                           ImGuiInputTextFlags_CharsDecimal)) {
-                entity.comp_data<transform_data>()->rotation = (float) atof(
-                        rot);
-                is_changed = true;
-            }
+            INPUT_FLOAT_A(rotation: , rot, p_tr->rotation, Align)
 
-            static char sc_x[BuffSize] = "";
-            static char sc_y[BuffSize] = "";
-            sprintf(sc_x, "%f", p_tr->scale.x);
-            sprintf(sc_y, "%f", p_tr->scale.y);
             ImGui::Text("scale: ");
             ImGui::SameLine(Align);
-            if (input_text("x##sc", sc_x, ImGuiInputTextFlags_CharsDecimal)) {
-                entity.comp_data<transform_data>()->scale.x = (float) atof(
-                        sc_x);
-            }
+            INPUT_FLOAT(x, sc_x, p_tr->scale.x)
             ImGui::SameLine();
-            if (input_text("y##sc", sc_y, ImGuiInputTextFlags_CharsDecimal)) {
-                entity.comp_data<transform_data>()->scale.y = (float) atof(
-                        sc_y);
-            }
-            ImGui::PopItemWidth();
+            INPUT_FLOAT(x, sc_y, p_tr->scale.y)
 
+            ImGui::PopItemWidth();
             ImGui::Unindent();
             ImGui::TreePop();
         }
@@ -111,19 +80,19 @@ namespace editor::gui::tab {
                 is_changed = true;
             }
 
-            INPUT_FLOAT(gravity_scale, gs, rb->gravity_scale, float)
+            INPUT_FLOAT(gravity_scale, gs, rb->gravity_scale)
 
             ImGui::Text("velocity");
             ImGui::SameLine();
-            INPUT_FLOAT(x, vx, rb->velocity.x, float)
+            INPUT_FLOAT(x, vx, rb->velocity.x)
             ImGui::SameLine();
-            INPUT_FLOAT(y, vy, rb->velocity.y, float);
+            INPUT_FLOAT(y, vy, rb->velocity.y);
 
             ImGui::Text("force");
             ImGui::SameLine();
-            INPUT_FLOAT(x, fx, rb->force.x, float);
+            INPUT_FLOAT(x, fx, rb->force.x);
             ImGui::SameLine();
-            INPUT_FLOAT(y, fy, rb->force.y, float);
+            INPUT_FLOAT(y, fy, rb->force.y);
 
             ImGui::Unindent();
             ImGui::PopItemWidth();

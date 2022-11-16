@@ -28,6 +28,9 @@ namespace editor::gui::tab {
 
     float to_float(char *arr);
 
-#define INPUT_FLOAT(text, tag, out, T) static char tag[BuffSize] = ""; sprintf(tag, "%f", out); ImGui::Text(#text); \
+#define INPUT_FLOAT(text, tag, out) static char tag[BuffSize] = ""; sprintf(tag, "%f", out); ImGui::Text(#text); \
 ImGui::SameLine(); is_changed = is_changed || input_text<float>("##" #tag, tag, ImGuiInputTextFlags_CharsDecimal, out, to_float);
+
+#define INPUT_FLOAT_A(text, tag, out, align) static char tag[BuffSize] = ""; sprintf(tag, "%f", out); ImGui::Text(#text); \
+ImGui::SameLine(align); is_changed = is_changed || input_text<float>("##" #tag, tag, ImGuiInputTextFlags_CharsDecimal, out, to_float);
 }
