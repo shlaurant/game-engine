@@ -134,8 +134,8 @@ namespace editor::gui::tab {
             INPUT_UUID64(font, font, p->font)
             INPUT_STR(text, text, p->text)
             INPUT_INT(flip, flip, p->flip)
-            ImGui::Text("color: ");
-            ImGui::SameLine(Align);
+            ImGui::Text("color");
+            ImGui::SameLine(90.f);
             INPUT_UINT8(r, c_r, p->color.r);
             ImGui::SameLine();
             INPUT_UINT8(g, c_g, p->color.g);

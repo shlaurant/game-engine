@@ -43,10 +43,10 @@ namespace editor {
     void text_data::serialize(YAML::Emitter &em) const {
         em << YAML::Key << "text_component";
         em << YAML::BeginMap;
-        em << YAML::Key << "R" << YAML::Value << color.r;
-        em << YAML::Key << "G" << YAML::Value << color.g;
-        em << YAML::Key << "B" << YAML::Value << color.b;
-        em << YAML::Key << "A" << YAML::Value << color.a;
+        em << YAML::Key << "R" << YAML::Value << (int) color.r;
+        em << YAML::Key << "G" << YAML::Value << (int) color.g;
+        em << YAML::Key << "B" << YAML::Value << (int) color.b;
+        em << YAML::Key << "A" << YAML::Value << (int) color.a;
         em << YAML::Key << "text" << YAML::Value << text;
         em << YAML::Key << "font" << YAML::Value << font;
         em << YAML::Key << "flip" << YAML::Value << flip;
