@@ -42,6 +42,11 @@ namespace editor {
             return data_map[fuse::type_id<T>()] != nullptr;
         }
 
+        template<typename T>
+        void delete_comp() {
+            data_map.erase(fuse::type_id<T>());
+        }
+
         bool operator==(const entity_data &) const;
 
         std::map<uint32_t, std::shared_ptr<component_data>> data_map;

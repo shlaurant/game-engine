@@ -16,6 +16,16 @@ namespace editor::gui::tab {
     bool input_text(const char *, char (&)[BuffSize], ImGuiInputTextFlags_);
 
     template<typename T>
+    void delete_context_menu(entity_data &entity){
+        if(ImGui::BeginPopupContextItem()){
+            if(ImGui::Button("delete")){
+                entity.delete_comp<T>();
+            }
+            ImGui::EndPopup();
+        }
+    }
+
+    template<typename T>
     bool input_text(const char *tag, char (&buf)[BuffSize],
                     ImGuiInputTextFlags_ flags, T &out,
                     const std::function<T(char *)> &cf) {

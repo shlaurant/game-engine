@@ -40,6 +40,8 @@ namespace editor::gui::tab {
         bool is_changed = false;
 
         if (ImGui::TreeNode("transform")) {
+            delete_context_menu<transform_data>(entity);
+
             ImGui::Indent();
             ImGui::PushItemWidth(ItemWidth);
 
@@ -62,7 +64,10 @@ namespace editor::gui::tab {
             ImGui::PopItemWidth();
             ImGui::Unindent();
             ImGui::TreePop();
+        } else {
+            delete_context_menu<transform_data>(entity);
         }
+
 
         return is_changed;
     }
@@ -72,6 +77,7 @@ namespace editor::gui::tab {
         bool is_changed = false;
 
         if (ImGui::TreeNode("rigidbody")) {
+            delete_context_menu<rigidbody_data>(entity);
             ImGui::PushItemWidth(ItemWidth);
             ImGui::Indent();
             auto rb = entity.comp_data<rigidbody_data>();
@@ -98,6 +104,8 @@ namespace editor::gui::tab {
             ImGui::Unindent();
             ImGui::PopItemWidth();
             ImGui::TreePop();
+        } else {
+            delete_context_menu<rigidbody_data>(entity);
         }
 
         return is_changed;
@@ -108,6 +116,8 @@ namespace editor::gui::tab {
         bool is_changed = false;
 
         if (ImGui::TreeNode("collider")) {
+            delete_context_menu<collider_data>(entity);
+
             auto p_col = entity.comp_data<collider_data>();
 
             ImGui::PushItemWidth(ItemWidth);
@@ -127,6 +137,8 @@ namespace editor::gui::tab {
             ImGui::Unindent();
             ImGui::PopItemWidth();
             ImGui::TreePop();
+        } else{
+            delete_context_menu<collider_data>(entity);
         }
 
         return is_changed;
