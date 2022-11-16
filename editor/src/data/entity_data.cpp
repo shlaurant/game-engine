@@ -1,6 +1,7 @@
 #include "entity_data.h"
 #include "common.h"
 #include "physics.h"
+#include "graphics.h"
 
 namespace editor {
     entity_data::entity_data() {
@@ -33,16 +34,16 @@ namespace editor {
         auto info = std::make_shared<info_data>();
         data_map[fuse::type_id<info_data>()] = info;
 
-        if (ett_node["transform_component"]) {
-            add_comp<transform_data>();
-        }
+        if (ett_node["transform_component"]) add_comp<transform_data>();
 
-        if (ett_node["rigidbody_component"]) {
-            add_comp<rigidbody_data>();
-        }
+        if (ett_node["rigidbody_component"]) add_comp<rigidbody_data>();
 
-        if (ett_node["collider_component"]) {
-            add_comp<collider_data>();
-        }
+        if (ett_node["collider_component"]) add_comp<collider_data>();
+
+        if (ett_node["sprite_component"]) add_comp<sprite_data>();
+
+        if (ett_node["animation_component"]) add_comp<animation_data>();
+
+        if (ett_node["text_component"]) add_comp<text_data>();
     }
 }

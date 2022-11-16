@@ -11,14 +11,17 @@ namespace editor::gui::tab {
     bool transform(entity_data &);
     bool rigidbody(entity_data &);
     bool collider(entity_data &);
+    bool sprite(entity_data &);
+    bool animation(entity_data &);
+    bool text(entity_data &);
 
     //helper method used as if it were macro
     bool input_text(const char *, char (&)[BuffSize], ImGuiInputTextFlags_);
 
     template<typename T>
-    void delete_context_menu(entity_data &entity){
-        if(ImGui::BeginPopupContextItem()){
-            if(ImGui::Button("delete")){
+    void delete_context_menu(entity_data &entity) {
+        if (ImGui::BeginPopupContextItem()) {
+            if (ImGui::Button("delete")) {
                 entity.delete_comp<T>();
             }
             ImGui::EndPopup();
@@ -38,6 +41,13 @@ namespace editor::gui::tab {
     }
 
     float to_float(char *arr);
+
+#define PREFIX(T, name) if(!entity.has_comp<T>()) return false; \
+bool is_changed = false; if(ImGui::TreeNode(name)) {             \
+delete_context_menu<T>(entity); ImGui::PushItemWidth(ItemWidth); ImGui::Indent();
+
+#define SUFFIX(T) ImGui::Unindent(); ImGui::PopItemWidth(); ImGui::TreePop(); \
+} else {delete_context_menu<T>(entity);} return is_changed;
 
 #define INPUT_FLOAT(text, tag, out) static char tag[BuffSize] = ""; sprintf(tag, "%f", out); ImGui::Text(#text); \
 ImGui::SameLine(); is_changed = is_changed || input_text<float>("##" #tag, tag, ImGuiInputTextFlags_CharsDecimal, out, to_float);

@@ -1,6 +1,7 @@
 #include <imgui.h>
 #include "data/physics.h"
 #include "data/common.h"
+#include "data/graphics.h"
 #include "tabs.h"
 
 namespace editor::gui::tab {
@@ -35,15 +36,8 @@ namespace editor::gui::tab {
     }
 
     bool transform(entity_data &entity) {
-        if (!entity.has_comp<transform_data>()) return false;
 
-        bool is_changed = false;
-
-        if (ImGui::TreeNode("transform")) {
-            delete_context_menu<transform_data>(entity);
-
-            ImGui::Indent();
-            ImGui::PushItemWidth(ItemWidth);
+        PREFIX(transform_data, "transform")
 
             auto p_tr = entity.comp_data<transform_data>();
 
@@ -61,25 +55,15 @@ namespace editor::gui::tab {
             ImGui::SameLine();
             INPUT_FLOAT(y, sc_y, p_tr->scale.y)
 
-            ImGui::PopItemWidth();
-            ImGui::Unindent();
-            ImGui::TreePop();
-        } else {
-            delete_context_menu<transform_data>(entity);
-        }
+        SUFFIX(transform_data)
 
 
         return is_changed;
     }
 
     bool rigidbody(entity_data &entity) {
-        if (!entity.has_comp<rigidbody_data>()) return false;
-        bool is_changed = false;
+        PREFIX(rigidbody_data, "rigidbody")
 
-        if (ImGui::TreeNode("rigidbody")) {
-            delete_context_menu<rigidbody_data>(entity);
-            ImGui::PushItemWidth(ItemWidth);
-            ImGui::Indent();
             auto rb = entity.comp_data<rigidbody_data>();
 
             if (ImGui::Checkbox("disable", &(rb->disabled)) &&
@@ -101,27 +85,13 @@ namespace editor::gui::tab {
             ImGui::SameLine();
             INPUT_FLOAT(y, fy, rb->force.y);
 
-            ImGui::Unindent();
-            ImGui::PopItemWidth();
-            ImGui::TreePop();
-        } else {
-            delete_context_menu<rigidbody_data>(entity);
-        }
-
-        return is_changed;
+        SUFFIX(rigidbody_data)
     }
 
     bool collider(entity_data &entity) {
-        if (!entity.has_comp<collider_data>()) return false;
-        bool is_changed = false;
-
-        if (ImGui::TreeNode("collider")) {
-            delete_context_menu<collider_data>(entity);
+        PREFIX(collider_data, "collider")
 
             auto p_col = entity.comp_data<collider_data>();
-
-            ImGui::PushItemWidth(ItemWidth);
-            ImGui::Indent();
 
             if (ImGui::Checkbox("disable", &(p_col->disabled)) &&
                 ImGui::IsItemDeactivatedAfterEdit()) {
@@ -134,14 +104,22 @@ namespace editor::gui::tab {
             ImGui::SameLine();
             INPUT_FLOAT(h, col_h, p_col->h);
 
-            ImGui::Unindent();
-            ImGui::PopItemWidth();
-            ImGui::TreePop();
-        } else{
-            delete_context_menu<collider_data>(entity);
-        }
+        SUFFIX(collider_data)
+    }
 
-        return is_changed;
+    bool sprite(entity_data &entity) {
+//        PREFIX(sprite_data, "sprite")
+//
+//            auto p = entity.comp_data<sprite_data>();
+//
+//
+//        SUFFIX(sprite_data)
+    }
+    bool animation(entity_data &) {
+        return false;
+    }
+    bool text(entity_data &) {
+        return false;
     }
 
     bool input_text(const char *tag, char (&buf)[BuffSize],
