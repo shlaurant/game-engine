@@ -57,7 +57,7 @@ namespace editor::gui::tab {
             ImGui::SameLine(Align);
             INPUT_FLOAT(x, sc_x, p_tr->scale.x)
             ImGui::SameLine();
-            INPUT_FLOAT(x, sc_y, p_tr->scale.y)
+            INPUT_FLOAT(y, sc_y, p_tr->scale.y)
 
             ImGui::PopItemWidth();
             ImGui::Unindent();
