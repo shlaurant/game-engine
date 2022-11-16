@@ -2,6 +2,7 @@
 
 #include <utility>
 #include "data/physics.h"
+#include "data/graphics.h"
 #include "data/common.h"
 #include "entity_window.h"
 #include "tabs.h"
@@ -12,6 +13,9 @@ namespace editor::gui {
         _tabs.push_back(tab::transform);
         _tabs.push_back(tab::rigidbody);
         _tabs.push_back(tab::collider);
+        _tabs.push_back(tab::sprite);
+        _tabs.push_back(tab::animation);
+        _tabs.push_back(tab::text);
     }
 
     void entity_window::show() {
@@ -33,7 +37,7 @@ namespace editor::gui {
 
     void entity_window::add_comp_popup(entity_data &data) {
         int selected_comp = -1;
-        const char *comps[] = {"transform", "rigidbody", "collider"};
+        const char *comps[] = {"transform", "rigidbody", "collider", "sprite", "animation", "text"};
 
         if (ImGui::Button("Add")) {
             ImGui::OpenPopup("popup");
@@ -55,6 +59,15 @@ namespace editor::gui {
                 break;
             case 2:
                 data.add_comp<collider_data>();
+                break;
+            case 3:
+                data.add_comp<sprite_data>();
+                break;
+            case 4:
+                data.add_comp<animation_data>();
+                break;
+            case 5:
+                data.add_comp<text_data>();
                 break;
             default:
                 //do nothing
