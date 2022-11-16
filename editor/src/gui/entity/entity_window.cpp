@@ -9,6 +9,7 @@ namespace editor::gui {
         _tabs.push_back(tab::information);
         _tabs.push_back(tab::transform);
         _tabs.push_back(tab::rigidbody);
+        _tabs.push_back(tab::collider);
     }
 
     void entity_window::show() {
@@ -18,16 +19,11 @@ namespace editor::gui {
         if (_entity_loaded) {
             bool is_changed = false;
 
-
-            for (auto &e: _tabs) {
-                is_changed = e(_entity_data);
-            }
-
+            for (auto &e: _tabs) is_changed = e(_entity_data);
             add_comp_popup(is_changed);
 
-            if (is_changed) {
-                scene_data::instance()->change_entity(_entity_data);
-            }
+            if (is_changed) scene_data::instance()->change_entity(_entity_data);
+
         } else {
             ImGui::Text("No scene loaded");
         }
@@ -41,7 +37,7 @@ namespace editor::gui {
 
     void entity_window::add_comp_popup(bool &is_changed) {
         static int selected_comp = -1;
-        const char *comps[] = {"transform", "rigidbody"};
+        const char *comps[] = {"transform", "rigidbody", "collider"};
 
         if (ImGui::Button("Add")) {
             ImGui::OpenPopup("popup");
@@ -63,6 +59,10 @@ namespace editor::gui {
                 break;
             case 1:
                 _entity_data.add_comp<rigidbody_data>();
+                is_changed = true;
+                break;
+            case 2:
+                _entity_data.add_comp<collider_data>();
                 is_changed = true;
                 break;
             default:

@@ -51,7 +51,7 @@ namespace editor::gui::tab {
             ImGui::SameLine();
             INPUT_FLOAT(y, tr_y, p_tr->translate.y);
 
-            INPUT_FLOAT_A(rotation: , rot, p_tr->rotation, Align)
+            INPUT_FLOAT_A(rotation:, rot, p_tr->rotation, Align)
 
             ImGui::Text("scale: ");
             ImGui::SameLine(Align);
@@ -76,7 +76,8 @@ namespace editor::gui::tab {
             ImGui::Indent();
             auto rb = entity.comp_data<rigidbody_data>();
 
-            if(ImGui::Checkbox("disable", &(rb->disabled)) && ImGui::IsItemDeactivatedAfterEdit()){
+            if (ImGui::Checkbox("disable", &(rb->disabled)) &&
+                ImGui::IsItemDeactivatedAfterEdit()) {
                 is_changed = true;
             }
 
@@ -93,6 +94,38 @@ namespace editor::gui::tab {
             INPUT_FLOAT(x, fx, rb->force.x);
             ImGui::SameLine();
             INPUT_FLOAT(y, fy, rb->force.y);
+
+            ImGui::Unindent();
+            ImGui::PopItemWidth();
+            ImGui::TreePop();
+        }
+
+        return is_changed;
+    }
+
+    bool collider(entity_data &entity) {
+        if (!entity.has_comp<collider_data>()) return false;
+        bool is_changed = false;
+
+        if (ImGui::TreeNode("collider")) {
+            auto p_col = entity.comp_data<collider_data>();
+
+            ImGui::PushItemWidth(ItemWidth);
+            ImGui::Indent();
+
+            if (ImGui::Checkbox("disable", &(p_col->disabled)) &&
+                ImGui::IsItemDeactivatedAfterEdit()) {
+                is_changed = true;
+            }
+            if (is_changed) {
+                FUSE_INFO(std::to_string(p_col->disabled).c_str())
+            }
+
+            ImGui::Text("size: ");
+            ImGui::SameLine();
+            INPUT_FLOAT(w, col_w, p_col->w);
+            ImGui::SameLine();
+            INPUT_FLOAT(h, col_h, p_col->h);
 
             ImGui::Unindent();
             ImGui::PopItemWidth();

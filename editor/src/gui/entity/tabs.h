@@ -10,6 +10,7 @@ namespace editor::gui::tab {
     bool information(entity_data &);
     bool transform(entity_data &);
     bool rigidbody(entity_data &);
+    bool collider(entity_data &);
 
     //helper method used as if it were macro
     bool input_text(const char *, char (&)[BuffSize], ImGuiInputTextFlags_);

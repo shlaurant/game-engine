@@ -41,7 +41,7 @@ namespace editor {
             add_comp<rigidbody_data>();
         }
 
-        if (ett_node["collider_data"]) {
+        if (ett_node["collider_component"]) {
             add_comp<collider_data>();
         }
     }
