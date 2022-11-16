@@ -5,7 +5,7 @@ namespace editor {
     void rigidbody_data::serialize(YAML::Emitter &em) const {
         em << YAML::Key << "rigidbody_component";
         em << YAML::BeginMap;
-        em << YAML::Key << "gravity" << YAML::Value << gravity_scale;
+        em << YAML::Key << "gravity_scale" << YAML::Value << gravity_scale;
         em << YAML::Key << "velocity" << YAML::Value << velocity;
         em << YAML::Key << "disabled" << YAML::Value << disabled;
         em << YAML::Key << "force" << YAML::Value << force;

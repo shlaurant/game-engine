@@ -1,5 +1,6 @@
 #include "entity_data.h"
 #include "common.h"
+#include "physics.h"
 
 namespace editor {
     entity_data::entity_data() {
@@ -10,7 +11,7 @@ namespace editor {
     /// \throw std::domain_error when the node is malformed
     /// \param ett_node
     entity_data::entity_data(const YAML::Node &ett_node) {
-        add_comps(ett_node);
+        init_comps(ett_node);
         for (auto &p: data_map) {
             p.second->try_deserialize(ett_node);
         }
@@ -19,7 +20,7 @@ namespace editor {
     void entity_data::serialize(YAML::Emitter &em) const {
         em << YAML::BeginMap;
         for (auto &p: data_map) {
-            p.second->serialize(em);
+            if (p.second != nullptr) p.second->serialize(em);
         }
         em << YAML::EndMap;
     }
@@ -28,12 +29,20 @@ namespace editor {
         return rhs.comp_data<info_data>()->uuid == comp_data<info_data>()->uuid;
     }
 
-    void entity_data::add_comps(const YAML::Node &ett_node) {
+    void entity_data::init_comps(const YAML::Node &ett_node) {
         auto info = std::make_shared<info_data>();
         data_map[fuse::type_id<info_data>()] = info;
+
         if (ett_node["transform_component"]) {
-            auto tr = std::make_shared<transform_data>();
-            data_map[fuse::type_id<transform_data>()] = tr;
+            add_comp<transform_data>();
+        }
+
+        if (ett_node["rigidbody_component"]) {
+            add_comp<rigidbody_data>();
+        }
+
+        if (ett_node["collider_data"]) {
+            add_comp<collider_data>();
         }
     }
 }

@@ -23,5 +23,7 @@ namespace editor::gui {
         entity_data _entity_data;
 
         std::vector<std::function<bool(entity_data &)>> _tabs;
+
+        void add_comp_popup(bool &);
     };
 }

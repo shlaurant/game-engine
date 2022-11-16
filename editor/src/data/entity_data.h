@@ -47,6 +47,6 @@ namespace editor {
         std::map<uint32_t, std::shared_ptr<component_data>> data_map;
 
     private:
-        void add_comps(const YAML::Node &);
+        void init_comps(const YAML::Node &);
     };
 }
