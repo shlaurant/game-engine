@@ -117,9 +117,6 @@ namespace editor::gui::tab {
                 ImGui::IsItemDeactivatedAfterEdit()) {
                 is_changed = true;
             }
-            if (is_changed) {
-                FUSE_INFO(std::to_string(p_col->disabled).c_str())
-            }
 
             ImGui::Text("size: ");
             ImGui::SameLine();
