@@ -21,7 +21,6 @@ namespace editor::gui {
         if (auto data = _entity_data.lock()) {
             for (auto &e: _tabs) e(*data);
             add_comp_popup(*data);
-
         } else {
             ImGui::Text("No scene loaded");
         }
@@ -33,13 +32,11 @@ namespace editor::gui {
     }
 
     void entity_window::add_comp_popup(entity_data &data) {
-        static int selected_comp = -1;
+        int selected_comp = -1;
         const char *comps[] = {"transform", "rigidbody", "collider"};
 
         if (ImGui::Button("Add")) {
             ImGui::OpenPopup("popup");
-            ImGui::TextUnformatted(
-                    selected_comp == -1 ? "None" : comps[selected_comp]);
         }
 
         if (ImGui::BeginPopup("popup")) {
