@@ -14,6 +14,7 @@ namespace editor::gui::tab {
     bool sprite(entity_data &);
     bool animation(entity_data &);
     bool text(entity_data &);
+    bool script(entity_data &);
 
     //helper method used as if it were macro
     bool input_text(const char *, char (&)[BuffSize], ImGuiInputTextFlags_);

@@ -2,6 +2,7 @@
 #include "common.h"
 #include "physics.h"
 #include "graphics.h"
+#include "behaviour.h"
 
 namespace editor {
     entity_data::entity_data() {
@@ -45,5 +46,7 @@ namespace editor {
         if (ett_node["animation_component"]) add_comp<animation_data>();
 
         if (ett_node["text_component"]) add_comp<text_data>();
+
+        if(ett_node["script_component"]) add_comp<script_data>();
     }
 }

@@ -2,6 +2,7 @@
 #include "data/physics.h"
 #include "data/common.h"
 #include "data/graphics.h"
+#include "data/behaviour.h"
 #include "tabs.h"
 
 namespace editor::gui::tab {
@@ -145,6 +146,15 @@ namespace editor::gui::tab {
             INPUT_UINT8(a, c_a, p->color.a);
 
         SUFFIX(text_data)
+    }
+
+    bool script(entity_data &entity) {
+        PREFIX(script_data, "script")
+
+        auto p = entity.comp_data<script_data>();
+        INPUT_STR(script, script_name, p->name);
+
+        SUFFIX(script_data)
     }
 
     bool input_text(const char *tag, char (&buf)[BuffSize],

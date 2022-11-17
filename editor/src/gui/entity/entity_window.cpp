@@ -4,18 +4,20 @@
 #include "data/physics.h"
 #include "data/graphics.h"
 #include "data/common.h"
+#include "data/behaviour.h"
 #include "entity_window.h"
 #include "tabs.h"
 
 namespace editor::gui {
     entity_window::entity_window() {
-        _tabs.push_back(tab::information);
-        _tabs.push_back(tab::transform);
-        _tabs.push_back(tab::rigidbody);
-        _tabs.push_back(tab::collider);
-        _tabs.push_back(tab::sprite);
-        _tabs.push_back(tab::animation);
-        _tabs.push_back(tab::text);
+        _tabs.emplace_back(tab::information);
+        _tabs.emplace_back(tab::transform);
+        _tabs.emplace_back(tab::rigidbody);
+        _tabs.emplace_back(tab::collider);
+        _tabs.emplace_back(tab::sprite);
+        _tabs.emplace_back(tab::animation);
+        _tabs.emplace_back(tab::text);
+        _tabs.emplace_back(tab::script);
     }
 
     void entity_window::show() {
@@ -37,7 +39,7 @@ namespace editor::gui {
 
     void entity_window::add_comp_popup(entity_data &data) {
         int selected_comp = -1;
-        const char *comps[] = {"transform", "rigidbody", "collider", "sprite", "animation", "text"};
+        const char *comps[] = {"transform", "rigidbody", "collider", "sprite", "animation", "text", "script"};
 
         if (ImGui::Button("Add")) {
             ImGui::OpenPopup("popup");
@@ -68,6 +70,9 @@ namespace editor::gui {
                 break;
             case 5:
                 data.add_comp<text_data>();
+                break;
+            case 6:
+                data.add_comp<script_data>();
                 break;
             default:
                 //do nothing
