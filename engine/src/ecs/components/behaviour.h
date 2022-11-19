@@ -1,5 +1,7 @@
 #pragma once
+
 #include "scripts/script_instance.h"
+#include "scripts/script_factory.h"
 
 namespace fuse::ecs {
     struct script_component {
@@ -7,10 +9,18 @@ namespace fuse::ecs {
         FUSE_INLINE script_component() = default;
 
         template<typename T>
-        FUSE_INLINE void bind(){
+        FUSE_INLINE void bind() {
             instantiate = [](const script_props &props) {
                 auto script = static_cast<script_instance *>(new T());
-                script -> init(props);
+                script->init(props);
+                return script;
+            };
+        }
+
+        FUSE_INLINE void bind(const std::string &str) {
+            instantiate = [str](const script_props &props) {
+                auto script = script_factory::instance()->constructor(str)();
+                script->init(props);
                 return script;
             };
         }

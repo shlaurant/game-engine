@@ -2,6 +2,10 @@
 #include "common.h"
 
 namespace editor {
+    bool scene_data::is_loaded() {
+        return _is_loaded;
+    }
+
     /// Guarantees basic exception safety
     /// \param path
     void scene_data::save(const std::filesystem::path &path) const {
@@ -31,6 +35,8 @@ namespace editor {
             }
             _entities = new_entities;
         }
+
+        _is_loaded = true;
     }
 
     std::vector<std::weak_ptr<entity_data>> scene_data::entities() {
