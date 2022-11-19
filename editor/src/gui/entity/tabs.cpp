@@ -73,7 +73,7 @@ namespace editor::gui::tab {
                 is_changed = true;
             }
 
-            INPUT_FLOAT(gravity_scale, gs, rb->gravity_scale)
+            INPUT_FLOAT(gravity_scale, gs, rb->gravity)
 
             ImGui::Text("velocity");
             ImGui::SameLine();

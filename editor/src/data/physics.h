@@ -10,7 +10,7 @@ namespace editor {
         void deserialize(const YAML::Node &node) override;
 
         bool disabled = false;
-        float gravity_scale;
+        float gravity;
         fuse::vec2f velocity;
         fuse::vec2f force;
     };

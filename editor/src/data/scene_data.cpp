@@ -27,17 +27,17 @@ namespace editor {
     void scene_data::load(const std::filesystem::path &path) {
         auto root = YAML::LoadFile(path.string());
 
-
         if (auto ett_node = root["entities"]) {
             std::vector<std::shared_ptr<entity_data>> new_entities;
-            for (const auto &ett: ett_node) {
-                new_entities.push_back(std::make_shared<entity_data>(ett));
+            for (auto ett: ett_node) {
+                auto p = std::make_shared<entity_data>(ett);
+                new_entities.push_back(p);
             }
             _entities = new_entities;
         }
 
         if (auto asset_nodes = root["assets"]) {
-            for (const auto &e: asset_nodes) {
+            for (auto e: asset_nodes) {
                 auto p = asset::create(e);
                 _assets[p->type_id].push_back(p);
             }
