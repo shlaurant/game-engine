@@ -5,32 +5,22 @@
 
 namespace editor::gui::asset_tab {
     void animation() {
-        if (ImGui::TreeNode("animations")) {
-            ImGui::Indent();
-            auto animations = scene_data::instance()->assets<editor::animation>();
-            for (auto &tmp: animations) {
-                if (auto p = tmp.lock()) {
-                    ImGui::Separator();
-                    ImGui::Text("uuid");
-                    ImGui::SameLine();
-                    ImGui::Text("%s", std::to_string(p->asset_id).c_str());
-                    INPUT_STR(name, ani_name, p->name)
-                }
-            }
-            ImGui::Unindent();
-            ImGui::TreePop();
-        }
+        PREFIX_AS(animation)
+        SUFFIX_AS
     }
 
     void audio() {
-
+        PREFIX_AS(audio)
+        SUFFIX_AS
     }
 
     void font() {
-
+        PREFIX_AS(font)
+        SUFFIX_AS
     }
 
     void texture() {
-
+        PREFIX_AS(texture)
+        SUFFIX_AS
     }
 }
