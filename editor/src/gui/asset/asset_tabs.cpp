@@ -11,16 +11,20 @@ namespace editor::gui::asset_tab {
 
     void audio() {
         PREFIX_AS(audio)
+                    INPUT_STR(src, audio_src, p->source)
         SUFFIX_AS
     }
 
     void font() {
         PREFIX_AS(font)
+                    INPUT_INT(size, font_sz, p->size)
+                    INPUT_STR(src, texture_src, p->source)
         SUFFIX_AS
     }
 
     void texture() {
         PREFIX_AS(texture)
+                    INPUT_STR(src, texture_src, p->source)
         SUFFIX_AS
     }
 }
