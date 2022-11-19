@@ -5,6 +5,8 @@
 
 namespace editor::gui {
     asset_window::asset_window() {
+        _is_open = true;
+
         _tabs.emplace_back(asset_tab::font);
         _tabs.emplace_back(asset_tab::texture);
         _tabs.emplace_back(asset_tab::animation);

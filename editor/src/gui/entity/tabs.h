@@ -3,7 +3,6 @@
 #include "entity_window.h"
 
 namespace editor::gui::tab {
-    const static int BuffSize = 64;
     const static float Align = 150.f;
     const static float ItemWidth = 80.f;
 
@@ -16,9 +15,6 @@ namespace editor::gui::tab {
     bool text(entity_data &);
     bool script(entity_data &);
 
-    //helper method used as if it were macro
-    bool input_text(const char *, char (&)[BuffSize], ImGuiInputTextFlags_);
-
     template<typename T>
     void delete_context_menu(entity_data &entity) {
         if (ImGui::BeginPopupContextItem()) {
@@ -28,26 +24,6 @@ namespace editor::gui::tab {
             ImGui::EndPopup();
         }
     }
-
-    template<typename T>
-    bool input_text(const char *tag, char (&buf)[BuffSize],
-                    ImGuiInputTextFlags_ flags, T &out,
-                    const std::function<T(char *)> &cf) {
-        bool is_changed = false;
-        if (input_text(tag, buf, flags)) {
-            out = cf(buf);
-            is_changed = true;
-        }
-        return is_changed;
-    }
-
-    float to_float(const char *arr);
-
-    fuse::uuid64 to_uuid64(const char *arr);
-
-    uint8_t to_uint8(const char *arr);
-
-    std::string to_str(const char *arr);
 }
 
 

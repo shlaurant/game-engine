@@ -1,6 +1,7 @@
 #include <imgui.h>
 #include "asset_tabs.h"
 #include "data/scene_data.h"
+#include "gui/helper.h"
 
 namespace editor::gui::asset_tab {
     void animation() {
@@ -11,7 +12,9 @@ namespace editor::gui::asset_tab {
                 if (auto p = tmp.lock()) {
                     ImGui::Separator();
                     ImGui::Text("uuid");
-                    ImGui::Text("name");
+                    ImGui::SameLine();
+                    ImGui::Text("%s", std::to_string(p->asset_id).c_str());
+                    INPUT_STR(name, ani_name, p->name)
                 }
             }
             ImGui::Unindent();
