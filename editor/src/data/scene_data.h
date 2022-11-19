@@ -41,6 +41,6 @@ namespace editor {
         bool _is_loaded = false;
 
         std::vector<std::shared_ptr<entity_data>> _entities;
-        std::unordered_map<fuse::uuid64, std::vector<std::shared_ptr<asset>>> _assets;
+        std::unordered_map<uint32_t, std::vector<std::shared_ptr<asset>>> _assets;
     };
 }
