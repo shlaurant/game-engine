@@ -36,6 +36,13 @@ namespace editor {
             _entities = new_entities;
         }
 
+        if (auto asset_nodes = root["assets"]) {
+            for (const auto &e: asset_nodes) {
+                auto p = asset::create(e);
+                _assets[p->type_id].push_back(p);
+            }
+        }
+
         _is_loaded = true;
     }
 
