@@ -49,3 +49,11 @@ namespace editor::gui::tab {
 
     std::string to_str(const char *arr);
 }
+
+
+#define PREFIX(T, name) if(!entity.has_comp<T>()) return false; \
+bool is_changed = false; if(ImGui::TreeNode(name)) {             \
+delete_context_menu<T>(entity); ImGui::PushItemWidth(ItemWidth); ImGui::Indent();
+
+#define SUFFIX(T) ImGui::Unindent(); ImGui::PopItemWidth(); ImGui::TreePop(); \
+} else {delete_context_menu<T>(entity);} return is_changed;
