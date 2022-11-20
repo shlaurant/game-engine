@@ -47,10 +47,12 @@ namespace editor {
         }
 
         if (auto asset_nodes = root["assets"]) {
+            std::unordered_map<uint32_t, std::vector<std::shared_ptr<asset>>> tmp;
             for (auto e: asset_nodes) {
                 auto p = asset::create(e);
-                _assets[p->type_id].push_back(p);
+                tmp[p->type_id].emplace_back(p);
             }
+            _assets = tmp;
         }
 
         _is_loaded = true;
