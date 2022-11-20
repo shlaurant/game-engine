@@ -42,6 +42,14 @@ namespace editor {
             _assets[fuse::type_id<T>()].emplace_back(p);
         }
 
+        template<typename T>
+        void remove_asset(fuse::uuid64 id){
+            static_assert(std::is_base_of<asset, T>::value);
+            auto &v = _assets[fuse::type_id<T>()];
+            auto it = find_if(v.begin(), v.end(), [id](auto &p){return id == p->asset_id;});
+            if(it != v.end()) v.erase(it);
+        }
+
     private:
         scene_data() = default;
 

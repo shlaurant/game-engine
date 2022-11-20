@@ -2,6 +2,7 @@
 #include "asset_tabs.h"
 #include "data/scene_data.h"
 #include "gui/helper.h"
+#include "data/assets.h"
 
 namespace editor::gui::asset_tab {
     void animation() {
