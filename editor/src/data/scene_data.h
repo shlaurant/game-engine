@@ -35,6 +35,13 @@ namespace editor {
             return ret;
         }
 
+        template<typename T>
+        void add_asset() {
+            static_assert(std::is_base_of<asset, T>::value);
+            auto p = std::make_shared<T>();
+            _assets[fuse::type_id<T>()].emplace_back(p);
+        }
+
     private:
         scene_data() = default;
 

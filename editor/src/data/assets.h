@@ -7,8 +7,8 @@ namespace editor {
     struct asset {
         uint32_t type_id;
 
-        fuse::uuid64 asset_id;
-        std::string name;
+        fuse::uuid64 asset_id = fuse::generate_uuid();
+        std::string name = "new asset";
 
         static std::shared_ptr<asset> create(const YAML::Node &);
 

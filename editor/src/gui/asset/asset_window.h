@@ -10,6 +10,8 @@ namespace editor::gui {
         void show() override;
 
     private:
+        void show_add_menu();
+
         std::vector<std::function<void()>> _tabs;
     };
 }
