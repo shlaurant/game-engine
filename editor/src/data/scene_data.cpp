@@ -16,6 +16,16 @@ namespace editor {
             e->serialize(em);
         }
         em << YAML::EndSeq;
+
+        em << YAML::Key << "assets" << YAML::Value << YAML::BeginSeq;
+
+        for (const auto &e: _assets) {
+            for (auto &p: e.second) {
+                p->serialize(em);
+            }
+        }
+
+        em << YAML::EndSeq;
         em << YAML::EndMap;
 
         std::ofstream filepath(path);
