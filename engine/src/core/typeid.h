@@ -13,7 +13,6 @@ namespace fuse {
         template<typename T>
         uint32_t type_id(){
             static const uint32_t t = get_unique_typeid();
-            FUSE_INFO("type id %d for %s", t, typeid(T).name())
             return t;
         }
 
