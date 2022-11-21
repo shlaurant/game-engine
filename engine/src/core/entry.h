@@ -8,3 +8,5 @@ int main(int argc, char **argv){
     fuse::run_application(config);
     return 0;
 }
+
+#define REGISTER_SCRIPT(script) fuse::script_factory::instance()->register_script<script>(#script);

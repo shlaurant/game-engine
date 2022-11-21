@@ -215,16 +215,7 @@ namespace fuse::ecs {
             if (auto data = node["script_component"]) {
                 auto& s = e.add_component<script_component>();
                 s.name = data["name"].as<std::string>();
-
-                if(s.name =="player_controller") {
-                    s.bind<player_controller>();
-                }
-                else if(s.name =="scrolling_ground") {
-                    s.bind<scrolling_ground>();
-                }
-                else if(s.name =="pipe_spawner") {
-                    s.bind<pipe_spawner>();
-                }
+                s.bind(s.name);
             }
         }
 

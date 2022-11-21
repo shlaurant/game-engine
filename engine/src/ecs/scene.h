@@ -1,8 +1,5 @@
 #pragma once
 
-#include <scripts/player_controller.h>
-#include <scripts/scrolling_ground.h>
-#include <scripts/pipe_spawner.h>
 #include "assets/registry.h"
 #include "ecs/systems/sprite_renderer_system.h"
 #include "ecs/systems/text_renderer_system.h"
@@ -46,60 +43,60 @@ namespace fuse::ecs {
         }
 
         FUSE_INLINE void start() {
-            auto dead = _assets.load_texture("assets/dead.png", "dead",
-                                             _renderer);
-            auto fly = _assets.load_texture("assets/fly.png", "fly", _renderer);
-            auto pipe = _assets.load_texture("assets/pipe.png", "pipe",
-                                             _renderer);
-            auto ground = _assets.load_texture("assets/ground.png", "ground",
-                                               _renderer);
-            auto background = _assets.load_texture("assets/bg.png", "bg",
-                                                   _renderer);
-            auto font = _assets.load_font("assets/font.ttf", "font", 30);
-
-            auto bg = add_entity("background");
-            bg.add_component<sprite_component>().sprite = background->id;
-
-            auto gd = add_entity("ground");
-            auto &gds = gd.add_component<ecs::script_component>();
-            gds.bind<scrolling_ground>();
-            gds.name = "scrolling_ground";
-            auto &gd_tr = gd.get_component<ecs::transform_component>();
-            gd_tr.translate = vec2f(0.0f, 620);
-            gd.add_component<rigidbody_component>().body.velocity.x = -100.0f;
-            auto &gd_sp = gd.add_component<sprite_component>().sprite = ground->id;
-            auto &gd_cl = gd.add_component<collider_component>();
-            gd_cl.collider = {0, 0, (float) ground->instance.width,
-                              (float) ground->instance.height};
-
-
-            auto player = add_entity("player");
-            auto &ps = player.add_component<script_component>();
-            ps.bind<player_controller>();
-            ps.name = "player_controller";
-            auto &tr = player.get_component<transform_component>();
-            tr.translate = vec2f(126, 360);
-            tr.scale = vec2f(0.5f);
-            auto &rb = player.add_component<rigidbody_component>();
-            rb.body.gravity_scale = 25;
-            player.add_component<sprite_component>().sprite = fly->id;
-            auto &cl = player.add_component<collider_component>();
-            cl.collider = {0, 0, 58, 58};
-
-            auto spawner = add_entity("pipe_spawner");
-            auto &sc = spawner.add_component<script_component>();
-            sc.bind<pipe_spawner>();
-            sc.name = "pipe_spawner";
-
-            auto score = add_entity("score");
-            auto &s_tr = score.get_component<transform_component>();
-            s_tr.translate = vec2f(120, 20);
-            auto &tx = score.add_component<text_component>();
-            tx.text = "Score: 0";
-            tx.font = font->id;
-
-            _assets.load_audio("assets/song.mp3", "music");
-            _assets.load_audio("assets/boom.wav", "boom");
+//            auto dead = _assets.load_texture("assets/dead.png", "dead",
+//                                             _renderer);
+//            auto fly = _assets.load_texture("assets/fly.png", "fly", _renderer);
+//            auto pipe = _assets.load_texture("assets/pipe.png", "pipe",
+//                                             _renderer);
+//            auto ground = _assets.load_texture("assets/ground.png", "ground",
+//                                               _renderer);
+//            auto background = _assets.load_texture("assets/bg.png", "bg",
+//                                                   _renderer);
+//            auto font = _assets.load_font("assets/font.ttf", "font", 30);
+//
+//            auto bg = add_entity("background");
+//            bg.add_component<sprite_component>().sprite = background->id;
+//
+//            auto gd = add_entity("ground");
+//            auto &gds = gd.add_component<ecs::script_component>();
+//            gds.bind<scrolling_ground>();
+//            gds.name = "scrolling_ground";
+//            auto &gd_tr = gd.get_component<ecs::transform_component>();
+//            gd_tr.translate = vec2f(0.0f, 620);
+//            gd.add_component<rigidbody_component>().body.velocity.x = -100.0f;
+//            auto &gd_sp = gd.add_component<sprite_component>().sprite = ground->id;
+//            auto &gd_cl = gd.add_component<collider_component>();
+//            gd_cl.collider = {0, 0, (float) ground->instance.width,
+//                              (float) ground->instance.height};
+//
+//
+//            auto player = add_entity("player");
+//            auto &ps = player.add_component<script_component>();
+//            ps.bind<player_controller>();
+//            ps.name = "player_controller";
+//            auto &tr = player.get_component<transform_component>();
+//            tr.translate = vec2f(126, 360);
+//            tr.scale = vec2f(0.5f);
+//            auto &rb = player.add_component<rigidbody_component>();
+//            rb.body.gravity_scale = 25;
+//            player.add_component<sprite_component>().sprite = fly->id;
+//            auto &cl = player.add_component<collider_component>();
+//            cl.collider = {0, 0, 58, 58};
+//
+//            auto spawner = add_entity("pipe_spawner");
+//            auto &sc = spawner.add_component<script_component>();
+//            sc.bind<pipe_spawner>();
+//            sc.name = "pipe_spawner";
+//
+//            auto score = add_entity("score");
+//            auto &s_tr = score.get_component<transform_component>();
+//            s_tr.translate = vec2f(120, 20);
+//            auto &tx = score.add_component<text_component>();
+//            tx.text = "Score: 0";
+//            tx.font = font->id;
+//
+//            _assets.load_audio("assets/song.mp3", "music");
+//            _assets.load_audio("assets/boom.wav", "boom");
 
             for (auto &sys: _systems) { sys->start(); }
         }

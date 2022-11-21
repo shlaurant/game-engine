@@ -5,7 +5,7 @@
 namespace fuse {
     class script_factory {
     public:
-        static script_factory *instance();
+        FUSE_API static script_factory *instance();
 
         template<typename T>
         void register_script(const std::string &str) {
