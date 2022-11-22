@@ -1,4 +1,5 @@
 #include <ecs/scene.h>
+#include <SDL2/SDL_syswm.h>
 #include "pch.h"
 #include "application.h"
 #include "inputs.h"
@@ -66,6 +67,11 @@ namespace fuse {
             FUSE_ERROR("%s", SDL_GetError());
             exit(EXIT_FAILURE);
         }
+
+        SDL_SysWMinfo wm_info;
+        SDL_VERSION(&wm_info.version)
+        SDL_GetWindowWMInfo(window, &wm_info);
+        auto hwnd = wm_info.info.win.window;
 
         inputs::initialize(window);
         auto disp = inputs::get_dispatcher();
