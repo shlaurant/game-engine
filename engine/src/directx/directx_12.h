@@ -60,9 +60,14 @@ namespace fuse {
         const static int REGISTER_COUNT = CBV_REGISTER_COUNT + SRV_REGISTER_COUNT;
 
         void init(const WindowInfo &);
+
+        void render_begin();
+        void render_end();
     private:
         ComPtr <IDXGIFactory> _factory;
         ComPtr <ID3D12Device> _device;
+        D3D12_VIEWPORT _view_port;
+        D3D12_RECT _scissors_rect;
 
         //cmd queue
         ComPtr <ID3D12CommandQueue> _cmd_queue;
@@ -70,19 +75,17 @@ namespace fuse {
         ComPtr <ID3D12GraphicsCommandList> _cmd_list;
         ComPtr <ID3D12Fence> _fence;
         uint32_t _fence_value = 0;
-        HANDLE _fence_event = INVALID_HANDLE_VALUE;
 
         //swap chain & rtv
         ComPtr <IDXGISwapChain> _swap_chain;
         ComPtr <ID3D12Resource> _rtv_buffer[SWAP_CHAIN_BUFFER_COUNT];
         ComPtr <ID3D12DescriptorHeap> _rtv_heap;
         D3D12_CPU_DESCRIPTOR_HANDLE _rtv_handle[SWAP_CHAIN_BUFFER_COUNT];
+        uint32_t _back_buffer = 0;
 
         //root sig
         ComPtr <ID3D12RootSignature> _signature;
         D3D12_STATIC_SAMPLER_DESC _sampler_desc;
         ComPtr<ID3D12DescriptorHeap> _regi_heap;
-
-
     };
 }
