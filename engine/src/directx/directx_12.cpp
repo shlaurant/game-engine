@@ -85,5 +85,36 @@ namespace fuse {
         _device->CreateRootSignature(0, blob_signature->GetBufferPointer(),
                                      blob_signature->GetBufferSize(),
                                      IID_PPV_ARGS(&_signature));
+
+
+        //descriptor table
+        D3D12_DESCRIPTOR_HEAP_DESC regi_dh_desc= {};
+        regi_dh_desc.NumDescriptors = REGISTER_COUNT - 1;
+        regi_dh_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        regi_dh_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        _device->CreateDescriptorHeap(&regi_dh_desc, IID_PPV_ARGS(&_regi_heap));
+
+        //constant buffer
+        ComPtr<ID3D12Resource> upload_buffer;
+        auto buffer_heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+        auto res_desc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(light_param));
+        _device->CreateCommittedResource(&buffer_heap_prop, D3D12_HEAP_FLAG_NONE, &res_desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+                                         IID_PPV_ARGS(&upload_buffer));
+
+        D3D12_DESCRIPTOR_HEAP_DESC cbv_dh_desc;
+        cbv_dh_desc.NumDescriptors = 1;
+        cbv_dh_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        cbv_dh_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        cbv_dh_desc.NodeMask = 0;
+
+        //buffers. more implementation needed
+        ComPtr<ID3D12DescriptorHeap> cbv_dh;
+        _device->CreateDescriptorHeap(&cbv_dh_desc, IID_PPV_ARGS(&cbv_dh));
+
+
+        //window resize;
+        RECT rect = {0, 0, info.width, info.height};
+        AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
+        SetWindowPos(info.hwnd, 0, 100, 100, info.width, info.height, 0);
     }
 }
