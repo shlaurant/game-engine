@@ -2,68 +2,44 @@
 
 namespace fuse {
     void directx_12::init(const WindowInfo &info) {
-        CreateDXGIFactory(IID_PPV_ARGS(&_factory));
-        D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0,
-                          IID_PPV_ARGS(&_device));
-        _view_port = {0, 0, static_cast<float>(info.width),
-                      static_cast<float>(info.height), 0, 0};
-        _scissors_rect = CD3DX12_RECT{0, 0, info.width, info.height};
+        init_base(info);
+        init_swap_chain(info);
+        init_rtv();
+        init_root_signature();
+        init_shader();
+        init_cmds();
 
-        //create cmd brothers
-        D3D12_COMMAND_QUEUE_DESC queue_desc = {D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                               0, D3D12_COMMAND_QUEUE_FLAG_NONE,
-                                               0};
-        _device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&_cmd_queue));
-        _device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                        IID_PPV_ARGS(&_cmd_alloc));
-        _device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                   _cmd_alloc.Get(), nullptr,
-                                   IID_PPV_ARGS(&_cmd_list));
-        _cmd_list->Close();
-        _device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&_fence));
 
-        //create swap chain
-        _swap_chain.Reset();
-        DXGI_SWAP_CHAIN_DESC swap_desc;
-        swap_desc.BufferDesc.Width = static_cast<uint32_t>(info.width);
-        swap_desc.BufferDesc.Height = static_cast<uint32_t>(info.height);
-        swap_desc.BufferDesc.RefreshRate.Numerator = 60;
-        swap_desc.BufferDesc.RefreshRate.Denominator = 1;
-        swap_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        swap_desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-        swap_desc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-        swap_desc.SampleDesc.Count = 1;
-        swap_desc.SampleDesc.Quality = 0;
-        swap_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swap_desc.BufferCount = SWAP_CHAIN_BUFFER_COUNT;
-        swap_desc.OutputWindow = info.hwnd;
-        swap_desc.Windowed = info.windowed;
-        swap_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-        swap_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-        _factory->CreateSwapChain(_cmd_queue.Get(), &swap_desc, &_swap_chain);
+        //constant buffer
+        auto buffer_heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+        auto res_desc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(light_param));
+        _device->CreateCommittedResource(&buffer_heap_prop,
+                                         D3D12_HEAP_FLAG_NONE, &res_desc,
+                                         D3D12_RESOURCE_STATE_GENERIC_READ,
+                                         nullptr,
+                                         IID_PPV_ARGS(&_t0));
 
-        for (auto i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i) {
-            _swap_chain->GetBuffer(i, IID_PPV_ARGS(&_rtv_buffer[i]));
-        }
 
-        //create desc heap and bind desc cpu handle with member
-        auto rtv_heap_size = _device->GetDescriptorHandleIncrementSize(
-                D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-        D3D12_DESCRIPTOR_HEAP_DESC rtv_dh_desc;
-        rtv_dh_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-        rtv_dh_desc.NumDescriptors = SWAP_CHAIN_BUFFER_COUNT;
-        rtv_dh_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-        rtv_dh_desc.NodeMask = 0;
-        _device->CreateDescriptorHeap(&rtv_dh_desc, IID_PPV_ARGS(&_rtv_heap));
-        auto rtv_dh_begin = _rtv_heap->GetCPUDescriptorHandleForHeapStart();
-        for (auto i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i) {
-            _rtv_handle[i] = CD3DX12_CPU_DESCRIPTOR_HANDLE(rtv_dh_begin,
-                                                           rtv_heap_size * i);
-            _device->CreateRenderTargetView(_rtv_buffer[i].Get(), nullptr,
-                                            _rtv_handle[i]);
-        }
+        D3D12_DESCRIPTOR_HEAP_DESC cbv_dh_desc;
+        cbv_dh_desc.NumDescriptors = 1;
+        cbv_dh_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        cbv_dh_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        cbv_dh_desc.NodeMask = 0;
+        _device->CreateDescriptorHeap(&cbv_dh_desc,
+                                      IID_PPV_ARGS(&_t0_desc_heap));
 
-        //root signature
+        //buffers. more implementation needed
+//        ComPtr<ID3D12DescriptorHeap> cbv_dh;
+//        _device->CreateDescriptorHeap(&cbv_dh_desc, IID_PPV_ARGS(&cbv_dh));
+
+
+        //window resize;
+        RECT rect = {0, 0, info.width, info.height};
+        AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
+        SetWindowPos(info.hwnd, 0, 100, 100, info.width, info.height, 0);
+    }
+
+    void directx_12::init_root_signature() {
         _sampler_desc = CD3DX12_STATIC_SAMPLER_DESC(0);
         CD3DX12_DESCRIPTOR_RANGE ranges[] = {
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV,
@@ -94,33 +70,71 @@ namespace fuse {
         regi_dh_desc.NumDescriptors = REGISTER_COUNT - 1;
         regi_dh_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         regi_dh_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        _device->CreateDescriptorHeap(&regi_dh_desc, IID_PPV_ARGS(&_regi_heap));
+        _device->CreateDescriptorHeap(&regi_dh_desc,
+                                      IID_PPV_ARGS(&_root_desc_table));
+    }
 
-        //constant buffer
-        ComPtr<ID3D12Resource> upload_buffer;
-        auto buffer_heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-        auto res_desc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(light_param));
-        _device->CreateCommittedResource(&buffer_heap_prop,
-                                         D3D12_HEAP_FLAG_NONE, &res_desc,
-                                         D3D12_RESOURCE_STATE_GENERIC_READ,
-                                         nullptr,
-                                         IID_PPV_ARGS(&upload_buffer));
+    void directx_12::init_swap_chain(const WindowInfo &info) {
+        _swap_chain.Reset();
+        DXGI_SWAP_CHAIN_DESC swap_desc;
+        swap_desc.BufferDesc.Width = static_cast<uint32_t>(info.width);
+        swap_desc.BufferDesc.Height = static_cast<uint32_t>(info.height);
+        swap_desc.BufferDesc.RefreshRate.Numerator = 60;
+        swap_desc.BufferDesc.RefreshRate.Denominator = 1;
+        swap_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        swap_desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+        swap_desc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+        swap_desc.SampleDesc.Count = 1;
+        swap_desc.SampleDesc.Quality = 0;
+        swap_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        swap_desc.BufferCount = SWAP_CHAIN_BUFFER_COUNT;
+        swap_desc.OutputWindow = info.hwnd;
+        swap_desc.Windowed = info.windowed;
+        swap_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        swap_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+        _factory->CreateSwapChain(_cmd_queue.Get(), &swap_desc, &_swap_chain);
+    }
 
-        D3D12_DESCRIPTOR_HEAP_DESC cbv_dh_desc;
-        cbv_dh_desc.NumDescriptors = 1;
-        cbv_dh_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        cbv_dh_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        cbv_dh_desc.NodeMask = 0;
+    void directx_12::init_rtv() {
+        auto rtv_heap_size = _device->GetDescriptorHandleIncrementSize(
+                D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+        D3D12_DESCRIPTOR_HEAP_DESC rtv_dh_desc;
+        rtv_dh_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+        rtv_dh_desc.NumDescriptors = SWAP_CHAIN_BUFFER_COUNT;
+        rtv_dh_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        rtv_dh_desc.NodeMask = 0;
+        _device->CreateDescriptorHeap(&rtv_dh_desc, IID_PPV_ARGS(&_rtv_heap));
+        auto rtv_dh_begin = _rtv_heap->GetCPUDescriptorHandleForHeapStart();
+        for (auto i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i) {
+            _rtv_handle[i] = CD3DX12_CPU_DESCRIPTOR_HANDLE(rtv_dh_begin,
+                                                           rtv_heap_size * i);
+            _swap_chain->GetBuffer(i, IID_PPV_ARGS(&_rtv_buffer[i]));
+            _device->CreateRenderTargetView(_rtv_buffer[i].Get(), nullptr,
+                                            _rtv_handle[i]);
+        }
+    }
 
-        //buffers. more implementation needed
-        ComPtr<ID3D12DescriptorHeap> cbv_dh;
-        _device->CreateDescriptorHeap(&cbv_dh_desc, IID_PPV_ARGS(&cbv_dh));
+    void directx_12::init_cmds() {
+        D3D12_COMMAND_QUEUE_DESC queue_desc = {D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                               0, D3D12_COMMAND_QUEUE_FLAG_NONE,
+                                               0};
+        _device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&_cmd_queue));
+        _device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                        IID_PPV_ARGS(&_cmd_alloc));
+        _device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                   _cmd_alloc.Get(), nullptr,
+                                   IID_PPV_ARGS(&_cmd_list));
+        _cmd_list->Close();
+        _device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&_fence));
+    }
 
-
-        //window resize;
-        RECT rect = {0, 0, info.width, info.height};
-        AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
-        SetWindowPos(info.hwnd, 0, 100, 100, info.width, info.height, 0);
+    void directx_12::init_base(const WindowInfo &info) {
+        CreateDXGIFactory(IID_PPV_ARGS(&_factory));
+        D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0,
+                          IID_PPV_ARGS(&_device));
+        _view_port = {0, 0, static_cast<float>(info.width),
+                      static_cast<float>(info.height), 0, 0};
+        _scissors_rect = CD3DX12_RECT{0, 0, info.width, info.height};
     }
 
     void directx_12::render_begin() {
@@ -163,5 +177,43 @@ namespace fuse {
         }
 
         _back_buffer = (_back_buffer + 1) % SWAP_CHAIN_BUFFER_COUNT;
+    }
+
+    void directx_12::init_shader() {
+#if defined(_DEBUG)
+        UINT compile_flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+        UINT compile_flags = 0;
+#endif
+
+        if(FAILED(D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", compile_flags, 0, &_vertex_shader, nullptr))){
+            FUSE_ERROR("failed to compile shader")
+        }
+        if(FAILED(D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", compile_flags, 0, &_pixel_shader, nullptr))){
+            FUSE_ERROR("failed to compile shader")
+        }
+
+        D3D12_INPUT_ELEMENT_DESC ie_desc[] = {
+                { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        };
+
+        D3D12_GRAPHICS_PIPELINE_STATE_DESC ps_desc = {};
+        ps_desc.InputLayout = {ie_desc, _countof(ie_desc)};
+        ps_desc.pRootSignature = _signature.Get();
+        ps_desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+        ps_desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+        ps_desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+        ps_desc.SampleMask = UINT_MAX;
+        ps_desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+        ps_desc.NumRenderTargets = 1;
+        ps_desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+        ps_desc.SampleDesc.Count = 1;
+        ps_desc.VS = {reinterpret_cast<UINT8*>(_vertex_shader->GetBufferPointer()), _vertex_shader->GetBufferSize()};
+        ps_desc.PS = {reinterpret_cast<UINT8*>(_pixel_shader->GetBufferPointer()), _pixel_shader->GetBufferSize()};
+
+        _device->CreateGraphicsPipelineState(&ps_desc, IID_PPV_ARGS(&_pipeline_state));
     }
 }

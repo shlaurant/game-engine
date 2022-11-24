@@ -57,7 +57,8 @@ namespace fuse {
         const static int CBV_REGISTER_COUNT = static_cast<uint8_t>(CBV_REGISTER::END);
         const static int SRV_REGISTER_COUNT =
                 static_cast<uint8_t>(SRV_REGISTER::END) - CBV_REGISTER_COUNT;
-        const static int REGISTER_COUNT = CBV_REGISTER_COUNT + SRV_REGISTER_COUNT;
+        const static int REGISTER_COUNT =
+                CBV_REGISTER_COUNT + SRV_REGISTER_COUNT;
 
         void init(const WindowInfo &);
 
@@ -86,6 +87,22 @@ namespace fuse {
         //root sig
         ComPtr <ID3D12RootSignature> _signature;
         D3D12_STATIC_SAMPLER_DESC _sampler_desc;
-        ComPtr<ID3D12DescriptorHeap> _regi_heap;
+        ComPtr <ID3D12DescriptorHeap> _root_desc_table;
+
+        //resource buffers
+        ComPtr <ID3D12Resource> _t0;
+        ComPtr <ID3D12DescriptorHeap> _t0_desc_heap;
+
+        //shader
+        ComPtr<ID3DBlob> _vertex_shader;
+        ComPtr<ID3DBlob> _pixel_shader;
+        ComPtr<ID3D12PipelineState> _pipeline_state;
+
+        void init_base(const WindowInfo &info);
+        void init_cmds();
+        void init_swap_chain(const WindowInfo &info);
+        void init_rtv();
+        void init_root_signature();
+        void init_shader();
     };
 }
