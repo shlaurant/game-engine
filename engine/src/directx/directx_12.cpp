@@ -3,11 +3,11 @@
 namespace fuse {
     void directx_12::init(const WindowInfo &info) {
         init_base(info);
+        init_cmds();
         init_swap_chain(info);
         init_rtv();
         init_root_signature();
         init_shader();
-        init_cmds();
 
 
         //constant buffer
@@ -92,7 +92,9 @@ namespace fuse {
         swap_desc.Windowed = info.windowed;
         swap_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         swap_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-        _factory->CreateSwapChain(_cmd_queue.Get(), &swap_desc, &_swap_chain);
+        if(FAILED(_factory->CreateSwapChain(_cmd_queue.Get(), &swap_desc, &_swap_chain))){
+            FUSE_ERROR("swap chain creation failed")
+        }
     }
 
     void directx_12::init_rtv() {
@@ -186,10 +188,10 @@ namespace fuse {
         UINT compile_flags = 0;
 #endif
 
-        if(FAILED(D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", compile_flags, 0, &_vertex_shader, nullptr))){
+        if(FAILED(D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "VS_Main", "vs_5_0", compile_flags, 0, &_vertex_shader, nullptr))){
             FUSE_ERROR("failed to compile shader")
         }
-        if(FAILED(D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", compile_flags, 0, &_pixel_shader, nullptr))){
+        if(FAILED(D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "PS_Main", "ps_5_0", compile_flags, 0, &_pixel_shader, nullptr))){
             FUSE_ERROR("failed to compile shader")
         }
 
