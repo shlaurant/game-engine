@@ -7,6 +7,7 @@ namespace fuse {
         init_cmds();
         init_swap_chain(info);
         init_rtv();
+        init_dsv(info);
         init_root_signature();
         init_shader();
 
@@ -112,6 +113,8 @@ namespace fuse {
                                               u_buffer_i);
 
         _cmd_list->Close();
+        execute_cmd_list();
+        wait_cmd_queue_sync();
     }
 
     void directx_12::render_begin() {
@@ -129,6 +132,7 @@ namespace fuse {
                                          DirectX::Colors::Aqua, 0, nullptr);
         _cmd_list->OMSetRenderTargets(1, &_rtv_handle[_back_buffer], FALSE,
                                       nullptr);
+        _cmd_list->ClearDepthStencilView(_dsv_handle, D3D12_CLEAR_FLAG_DEPTH, 1.f, 0, 0, nullptr);
     }
 
     void directx_12::render_end() {
@@ -230,6 +234,36 @@ namespace fuse {
         }
     }
 
+    void directx_12::init_dsv(const window_info &info) {
+        auto heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+        auto desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT,
+                                                 info.width, info.height);
+        desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+        auto clear_value = CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.f, 0);
+        TRY(_device->CreateCommittedResource(&heap_prop, D3D12_HEAP_FLAG_NONE,
+                                         &desc,
+                                         D3D12_RESOURCE_STATE_DEPTH_WRITE,
+                                         &clear_value,
+                                         IID_PPV_ARGS(&_dsv_buffer)))
+
+        D3D12_DESCRIPTOR_HEAP_DESC dh_desc = {};
+        dh_desc.NumDescriptors = 1;
+        dh_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+        dh_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        dh_desc.NodeMask = 0;
+
+        TRY(_device->CreateDescriptorHeap(&dh_desc, IID_PPV_ARGS(&_dsv_desc_heap)))
+        _dsv_handle = _dsv_desc_heap->GetCPUDescriptorHandleForHeapStart();
+        _device->CreateDepthStencilView(_dsv_buffer.Get(), nullptr, _dsv_handle);
+
+        _cmd_list->Reset(_cmd_alloc.Get(), nullptr);
+        auto b = CD3DX12_RESOURCE_BARRIER::Transition(_dsv_buffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+        _cmd_list->ResourceBarrier(1, &b);
+        _cmd_list->Close();
+        execute_cmd_list();
+        wait_cmd_queue_sync();
+    }
+
     void directx_12::init_cmds() {
         D3D12_COMMAND_QUEUE_DESC queue_desc = {D3D12_COMMAND_LIST_TYPE_DIRECT,
                                                0, D3D12_COMMAND_QUEUE_FLAG_NONE,
@@ -265,7 +299,7 @@ namespace fuse {
                 D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "VS_Main",
                                    "vs_5_0", compile_flags, 0, &_vertex_shader,
                                    &error))) {
-            auto p = (char *)error->GetBufferPointer();
+            auto p = (char *) error->GetBufferPointer();
             FUSE_ERROR(p)
         }
 
@@ -273,13 +307,13 @@ namespace fuse {
                 D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "PS_Main",
                                    "ps_5_0", compile_flags, 0, &_pixel_shader,
                                    nullptr))) {
-            auto p = (char *)error->GetBufferPointer();
+            auto p = (char *) error->GetBufferPointer();
             FUSE_ERROR(p)
         }
 
         D3D12_INPUT_ELEMENT_DESC ie_desc[] = {
                 {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-                {"COLOR", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+                {"COLOR",    0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
         };
 
         D3D12_GRAPHICS_PIPELINE_STATE_DESC ps_desc = {};

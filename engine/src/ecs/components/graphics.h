@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assets/asset.h"
+#include "directx/common.h"
 
 namespace fuse::ecs {
     struct sprite_component {
@@ -45,5 +46,12 @@ namespace fuse::ecs {
         asset_id tileset = INVALID_ID;
         float offset_x = 0.0f, offset_y = 0.0f;
         int row = 0, col = 0;
+    };
+
+    struct geometry_component {
+        FUSE_INLINE geometry_component(const geometry_component &) = default;
+        FUSE_INLINE geometry_component() = default;
+
+        geometry geo;
     };
 }

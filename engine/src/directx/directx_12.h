@@ -11,6 +11,8 @@
 #include "d3dx12.h"
 #include "SimpleMath.h"
 
+#include "common.h"
+
 using namespace Microsoft::WRL;
 
 namespace fuse {
@@ -19,21 +21,6 @@ namespace fuse {
         int32_t width;
         int32_t height;
         bool windowed;
-    };
-
-    struct vertex {
-        DirectX::SimpleMath::Vector3 position;
-        DirectX::SimpleMath::Vector2 uv;
-        DirectX::SimpleMath::Vector3 normal;
-        DirectX::SimpleMath::Vector3 tangent;
-    };
-
-    struct geometry {
-        std::vector<vertex> vertices;
-        std::vector<uint16_t> indices;
-
-        size_t vertex_offset = 0;
-        size_t index_offset = 0;
     };
 
     struct light_color {
@@ -93,12 +80,15 @@ namespace fuse {
         ComPtr <ID3D12Fence> _fence;
         uint32_t _fence_value = 0;
 
-        //swap chain & rtv
+        //swap chain & rtv & dsv
         ComPtr <IDXGISwapChain> _swap_chain;
+        uint32_t _back_buffer = 0;
         ComPtr <ID3D12Resource> _rtv_buffer[SWAP_CHAIN_BUFFER_COUNT];
         ComPtr <ID3D12DescriptorHeap> _rtv_heap;
         D3D12_CPU_DESCRIPTOR_HANDLE _rtv_handle[SWAP_CHAIN_BUFFER_COUNT];
-        uint32_t _back_buffer = 0;
+        ComPtr<ID3D12Resource> _dsv_buffer;
+        ComPtr<ID3D12DescriptorHeap> _dsv_desc_heap;
+        D3D12_CPU_DESCRIPTOR_HANDLE _dsv_handle;
 
         //root sig
         ComPtr <ID3D12RootSignature> _signature;
@@ -122,6 +112,7 @@ namespace fuse {
         void init_cmds();
         void init_swap_chain(const window_info &info);
         void init_rtv();
+        void init_dsv(const window_info &);
         void init_root_signature();
         void init_shader();
 
@@ -134,3 +125,6 @@ namespace fuse {
         create_default_buffer(void *, UINT64, ComPtr <ID3D12Resource>);
     };
 }
+
+#define TRY(x) {auto hr = x; if(FAILED(hr)) {auto line = __LINE__; \
+auto message = "line " + std::to_string(line); FUSE_ERROR(message.c_str())}}
