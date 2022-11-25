@@ -4,6 +4,6 @@
 
 namespace fuse {
     struct shader : public asset {
-        std::string filename;
+        std::wstring filename;
     };
 }

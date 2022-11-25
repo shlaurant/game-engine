@@ -18,4 +18,8 @@ namespace fuse{
 
         texture instance;
     };
+
+    struct texture_dx {
+        std::wstring filename;
+    };
 }

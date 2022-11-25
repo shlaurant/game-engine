@@ -14,11 +14,26 @@
 using namespace Microsoft::WRL;
 
 namespace fuse {
-    struct WindowInfo {
+    struct window_info {
         HWND hwnd;
         int32_t width;
         int32_t height;
         bool windowed;
+    };
+
+    struct vertex {
+        DirectX::SimpleMath::Vector3 position;
+        DirectX::SimpleMath::Vector2 uv;
+        DirectX::SimpleMath::Vector3 normal;
+        DirectX::SimpleMath::Vector3 tangent;
+    };
+
+    struct geometry {
+        std::vector<vertex> vertices;
+        std::vector<uint16_t> indices;
+
+        size_t vertex_offset = 0;
+        size_t index_offset = 0;
     };
 
     struct light_color {
@@ -60,7 +75,8 @@ namespace fuse {
         const static int REGISTER_COUNT =
                 CBV_REGISTER_COUNT + SRV_REGISTER_COUNT;
 
-        void init(const WindowInfo &);
+        void init(const window_info &);
+        void init_geometries(std::vector<geometry> &);
 
         void render_begin();
         void render_end();
@@ -94,15 +110,27 @@ namespace fuse {
         ComPtr <ID3D12DescriptorHeap> _t0_desc_heap;
 
         //shader
-        ComPtr<ID3DBlob> _vertex_shader;
-        ComPtr<ID3DBlob> _pixel_shader;
-        ComPtr<ID3D12PipelineState> _pipeline_state;
+        ComPtr <ID3DBlob> _vertex_shader;
+        ComPtr <ID3DBlob> _pixel_shader;
+        ComPtr <ID3D12PipelineState> _pipeline_state;
 
-        void init_base(const WindowInfo &info);
+        //vertex & index buffer
+        ComPtr <ID3D12Resource> _vertex_buffer;
+        ComPtr <ID3D12Resource> _index_buffer;
+
+        void init_base(const window_info &info);
         void init_cmds();
-        void init_swap_chain(const WindowInfo &info);
+        void init_swap_chain(const window_info &info);
         void init_rtv();
         void init_root_signature();
         void init_shader();
+
+        void execute_cmd_list();
+        void wait_cmd_queue_sync();
+
+        ComPtr <ID3D12Resource>
+
+        //Reset cmd list beforehand, and close after calling this
+        create_default_buffer(void *, UINT64, ComPtr <ID3D12Resource>);
     };
 }

@@ -1,14 +1,14 @@
 #include "directx_12.h"
+#include "dxtest.h"
 
 namespace fuse {
-    void directx_12::init(const WindowInfo &info) {
+    void directx_12::init(const window_info &info) {
         init_base(info);
         init_cmds();
         init_swap_chain(info);
         init_rtv();
         init_root_signature();
         init_shader();
-
 
         //constant buffer
         auto buffer_heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
@@ -37,6 +37,119 @@ namespace fuse {
         RECT rect = {0, 0, info.width, info.height};
         AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
         SetWindowPos(info.hwnd, 0, 100, 100, info.width, info.height, 0);
+    }
+
+    ComPtr<ID3D12Resource>
+    directx_12::create_default_buffer(void *data, UINT64 byte_size,
+                                      ComPtr<ID3D12Resource> upload_buffer) {
+        auto tmph_desc = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+        auto tmp_desc = CD3DX12_RESOURCE_DESC::Buffer(byte_size);
+        _device->CreateCommittedResource(&tmph_desc, D3D12_HEAP_FLAG_NONE,
+                                         &tmp_desc,
+                                         D3D12_RESOURCE_STATE_GENERIC_READ,
+                                         nullptr,
+                                         IID_PPV_ARGS(&upload_buffer));
+
+        ComPtr<ID3D12Resource> default_buffer;
+        auto dbh_desc = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+        auto db_desc = CD3DX12_RESOURCE_DESC::Buffer(byte_size);
+        _device->CreateCommittedResource(&dbh_desc, D3D12_HEAP_FLAG_NONE,
+                                         &db_desc, D3D12_RESOURCE_STATE_COMMON,
+                                         nullptr,
+                                         IID_PPV_ARGS(&default_buffer));
+
+        D3D12_SUBRESOURCE_DATA sub_data = {};
+        sub_data.pData = &data;
+        sub_data.RowPitch = byte_size;
+        sub_data.SlicePitch = sub_data.RowPitch;
+
+        auto b0 = CD3DX12_RESOURCE_BARRIER::Transition(default_buffer.Get(),
+                                                       D3D12_RESOURCE_STATE_COMMON,
+                                                       D3D12_RESOURCE_STATE_COPY_DEST);
+        _cmd_list->ResourceBarrier(1, &b0);
+        UpdateSubresources<1>(_cmd_list.Get(), default_buffer.Get(),
+                              upload_buffer.Get(),
+                              0, 0, 1, &sub_data);
+        auto b1 = CD3DX12_RESOURCE_BARRIER::Transition(default_buffer.Get(),
+                                                       D3D12_RESOURCE_STATE_COPY_DEST,
+                                                       D3D12_RESOURCE_STATE_GENERIC_READ);
+        _cmd_list->ResourceBarrier(1, &b1);
+
+        return default_buffer;
+    }
+
+    void directx_12::init_geometries(std::vector<geometry> &geometries) {
+        _cmd_list->Reset(_cmd_alloc.Get(), nullptr);
+
+        ComPtr<ID3D12Resource> u_buffer_v;
+        std::vector<vertex> vertices;
+        size_t index = 0;
+        for (auto &e: geometries) {
+            e.vertex_offset = index;
+            std::copy(e.vertices.begin(), e.vertices.end(),
+                      std::back_inserter(vertices));
+            index += e.vertices.size();
+        }
+        auto vert_arr = new vertex[vertices.size()];
+        std::copy(vertices.begin(), vertices.end(), vert_arr);
+        _vertex_buffer = create_default_buffer(vert_arr, sizeof(vertex) *
+                                                         vertices.size(),
+                                               u_buffer_v);
+
+        ComPtr<ID3D12Resource> u_buffer_i;
+        std::vector<uint16_t> indices;
+        size_t index_i = 0;
+        for (auto &e: geometries) {
+            e.index_offset = index_i;
+            std::copy(e.indices.begin(), e.indices.end(),
+                      std::back_inserter(indices));
+            index_i += e.indices.size();
+        }
+        auto index_arr = new uint16_t[indices.size()];
+        std::copy(indices.begin(), indices.end(), index_arr);
+        _index_buffer = create_default_buffer(index_arr,
+                                              sizeof(uint16_t) * indices.size(),
+                                              u_buffer_i);
+
+        _cmd_list->Close();
+    }
+
+    void directx_12::render_begin() {
+        _cmd_alloc->Reset();
+        _cmd_list->Reset(_cmd_alloc.Get(), nullptr);
+        _cmd_list->SetGraphicsRootSignature(_signature.Get());
+
+        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+                _rtv_buffer[_back_buffer].Get(), D3D12_RESOURCE_STATE_PRESENT,
+                D3D12_RESOURCE_STATE_RENDER_TARGET);
+        _cmd_list->ResourceBarrier(1, &barrier);
+        _cmd_list->RSSetViewports(1, &_view_port);
+        _cmd_list->RSSetScissorRects(1, &_scissors_rect);
+        _cmd_list->ClearRenderTargetView(_rtv_handle[_back_buffer],
+                                         DirectX::Colors::Aqua, 0, nullptr);
+        _cmd_list->OMSetRenderTargets(1, &_rtv_handle[_back_buffer], FALSE,
+                                      nullptr);
+    }
+
+    void directx_12::render_end() {
+        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+                _rtv_buffer[_back_buffer].Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PRESENT);
+        _cmd_list->ResourceBarrier(1, &barrier);
+        _cmd_list->Close();
+
+        execute_cmd_list();
+        _swap_chain->Present(0, 0);
+
+        wait_cmd_queue_sync();
+
+        _back_buffer = (_back_buffer + 1) % SWAP_CHAIN_BUFFER_COUNT;
+    }
+
+    void directx_12::execute_cmd_list() {
+        ID3D12CommandList *cmd_list_arr[] = {_cmd_list.Get()};
+        _cmd_queue->ExecuteCommandLists(_countof(cmd_list_arr), cmd_list_arr);
     }
 
     void directx_12::init_root_signature() {
@@ -74,7 +187,7 @@ namespace fuse {
                                       IID_PPV_ARGS(&_root_desc_table));
     }
 
-    void directx_12::init_swap_chain(const WindowInfo &info) {
+    void directx_12::init_swap_chain(const window_info &info) {
         _swap_chain.Reset();
         DXGI_SWAP_CHAIN_DESC swap_desc;
         swap_desc.BufferDesc.Width = static_cast<uint32_t>(info.width);
@@ -92,7 +205,8 @@ namespace fuse {
         swap_desc.Windowed = info.windowed;
         swap_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         swap_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-        if(FAILED(_factory->CreateSwapChain(_cmd_queue.Get(), &swap_desc, &_swap_chain))){
+        if (FAILED(_factory->CreateSwapChain(_cmd_queue.Get(), &swap_desc,
+                                             &_swap_chain))) {
             FUSE_ERROR("swap chain creation failed")
         }
     }
@@ -130,55 +244,13 @@ namespace fuse {
         _device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&_fence));
     }
 
-    void directx_12::init_base(const WindowInfo &info) {
+    void directx_12::init_base(const window_info &info) {
         CreateDXGIFactory(IID_PPV_ARGS(&_factory));
         D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0,
                           IID_PPV_ARGS(&_device));
         _view_port = {0, 0, static_cast<float>(info.width),
                       static_cast<float>(info.height), 0, 0};
         _scissors_rect = CD3DX12_RECT{0, 0, info.width, info.height};
-    }
-
-    void directx_12::render_begin() {
-        _cmd_alloc->Reset();
-        _cmd_list->Reset(_cmd_alloc.Get(), nullptr);
-        _cmd_list->SetGraphicsRootSignature(_signature.Get());
-
-        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-                _rtv_buffer[_back_buffer].Get(), D3D12_RESOURCE_STATE_PRESENT,
-                D3D12_RESOURCE_STATE_RENDER_TARGET);
-        _cmd_list->ResourceBarrier(1, &barrier);
-        _cmd_list->RSSetViewports(1, &_view_port);
-        _cmd_list->RSSetScissorRects(1, &_scissors_rect);
-        _cmd_list->ClearRenderTargetView(_rtv_handle[_back_buffer],
-                                         DirectX::Colors::Aqua, 0, nullptr);
-        _cmd_list->OMSetRenderTargets(1, &_rtv_handle[_back_buffer], FALSE,
-                                      nullptr);
-    }
-
-    void directx_12::render_end() {
-        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-                _rtv_buffer[_back_buffer].Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PRESENT);
-        _cmd_list->ResourceBarrier(1, &barrier);
-        _cmd_list->Close();
-
-        ID3D12CommandList *cmd_list_arr[] = {_cmd_list.Get()};
-        _cmd_queue->ExecuteCommandLists(_countof(cmd_list_arr), cmd_list_arr);
-        _swap_chain->Present(0, 0);
-
-        ++_fence_value;
-        _cmd_queue->Signal(_fence.Get(), _fence_value);
-        if (_fence->GetCompletedValue() < _fence_value) {
-            auto fence_event = CreateEventEx(nullptr, false, false,
-                                             EVENT_ALL_ACCESS);
-            _fence->SetEventOnCompletion(_fence_value, fence_event);
-            WaitForSingleObject(fence_event, INFINITE);
-            CloseHandle(fence_event);
-        }
-
-        _back_buffer = (_back_buffer + 1) % SWAP_CHAIN_BUFFER_COUNT;
     }
 
     void directx_12::init_shader() {
@@ -188,18 +260,26 @@ namespace fuse {
         UINT compile_flags = 0;
 #endif
 
-        if(FAILED(D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "VS_Main", "vs_5_0", compile_flags, 0, &_vertex_shader, nullptr))){
-            FUSE_ERROR("failed to compile shader")
+        ComPtr<ID3DBlob> error;
+        if (FAILED(
+                D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "VS_Main",
+                                   "vs_5_0", compile_flags, 0, &_vertex_shader,
+                                   &error))) {
+            auto p = (char *)error->GetBufferPointer();
+            FUSE_ERROR(p)
         }
-        if(FAILED(D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "PS_Main", "ps_5_0", compile_flags, 0, &_pixel_shader, nullptr))){
-            FUSE_ERROR("failed to compile shader")
+
+        if (FAILED(
+                D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "PS_Main",
+                                   "ps_5_0", compile_flags, 0, &_pixel_shader,
+                                   nullptr))) {
+            auto p = (char *)error->GetBufferPointer();
+            FUSE_ERROR(p)
         }
 
         D3D12_INPUT_ELEMENT_DESC ie_desc[] = {
-                { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-                { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-                { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-                { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+                {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+                {"COLOR", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
         };
 
         D3D12_GRAPHICS_PIPELINE_STATE_DESC ps_desc = {};
@@ -213,9 +293,26 @@ namespace fuse {
         ps_desc.NumRenderTargets = 1;
         ps_desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
         ps_desc.SampleDesc.Count = 1;
-        ps_desc.VS = {reinterpret_cast<UINT8*>(_vertex_shader->GetBufferPointer()), _vertex_shader->GetBufferSize()};
-        ps_desc.PS = {reinterpret_cast<UINT8*>(_pixel_shader->GetBufferPointer()), _pixel_shader->GetBufferSize()};
+        ps_desc.VS = {
+                reinterpret_cast<UINT8 *>(_vertex_shader->GetBufferPointer()),
+                _vertex_shader->GetBufferSize()};
+        ps_desc.PS = {
+                reinterpret_cast<UINT8 *>(_pixel_shader->GetBufferPointer()),
+                _pixel_shader->GetBufferSize()};
 
-        _device->CreateGraphicsPipelineState(&ps_desc, IID_PPV_ARGS(&_pipeline_state));
+        _device->CreateGraphicsPipelineState(&ps_desc,
+                                             IID_PPV_ARGS(&_pipeline_state));
+    }
+
+    void directx_12::wait_cmd_queue_sync() {
+        ++_fence_value;
+        _cmd_queue->Signal(_fence.Get(), _fence_value);
+        if (_fence->GetCompletedValue() < _fence_value) {
+            auto fence_event = CreateEventEx(nullptr, false, false,
+                                             EVENT_ALL_ACCESS);
+            _fence->SetEventOnCompletion(_fence_value, fence_event);
+            WaitForSingleObject(fence_event, INFINITE);
+            CloseHandle(fence_event);
+        }
     }
 }
