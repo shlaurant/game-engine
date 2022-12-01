@@ -2,10 +2,14 @@
 
 #include "SimpleMath.h"
 
-namespace fuse {
+namespace fuse::directx {
     struct vertex {
         DirectX::SimpleMath::Vector3 position;
         DirectX::SimpleMath::Vector4 color;
+    };
+
+    struct transform {
+
     };
 
     struct geometry {

@@ -15,7 +15,7 @@
 
 using namespace Microsoft::WRL;
 
-namespace fuse {
+namespace fuse::directx {
     struct wvp {
         DirectX::SimpleMath::Matrix gwvp = DirectX::SimpleMath::Matrix::Identity;
     };

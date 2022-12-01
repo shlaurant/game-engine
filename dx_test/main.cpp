@@ -42,9 +42,9 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 
     ShowWindow(hwnd, nCmdShow);
 
-    fuse::directx_12 dx12;
+    fuse::directx::directx_12 dx12;
     static const float d = 0.1f;
-    fuse::geometry t;
+    fuse::directx::geometry t;
     DirectX::SimpleMath::Vector4 white = { 1.f, 1.f, 1.f, 1.f };
     t.vertices = { {{-d, d,  -d}, white},
                    {{d,  d,  -d}, white},
@@ -60,7 +60,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                   6, 2, 3, 6, 3, 7,
                   1, 7, 3, 5, 7, 1,
                   2, 6, 0, 0, 6, 4 };
-    std::vector<fuse::geometry> test;
+    std::vector<fuse::directx::geometry> test;
     test.push_back(t);
 
     MSG msg = { 0 };
