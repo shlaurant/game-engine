@@ -1,6 +1,6 @@
-struct wvp :register(b0) {
+cbuffer wvp :register(b0) {
     float4x4 gwvp;
-}
+};
 
 struct VS_IN
 {

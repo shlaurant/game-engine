@@ -16,9 +16,9 @@
 using namespace Microsoft::WRL;
 
 namespace fuse {
-//    struct wvp {
-//        DirectX::SimpleMath::Matrix wvp = DirectX::SimpleMath::Matrix::Identity;
-//    };
+    struct wvp {
+        DirectX::SimpleMath::Matrix gwvp = DirectX::SimpleMath::Matrix::Identity;
+    };
 
     struct window_info {
         HWND hwnd;
@@ -101,8 +101,8 @@ namespace fuse {
         ComPtr <ID3D12DescriptorHeap> _root_desc_table;
 
         //resource buffers
-        ComPtr <ID3D12Resource> _t0;
-        ComPtr <ID3D12DescriptorHeap> _t0_desc_heap;
+        ComPtr <ID3D12Resource> _b0;
+        ComPtr <ID3D12DescriptorHeap> _b0_desc_heap;
 
         //shader
         ComPtr <ID3DBlob> _vertex_shader;
