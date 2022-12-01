@@ -20,28 +20,7 @@ namespace fuse::directx {
         init_rtv();
         init_dsv(info);
 
-        auto sz = (sizeof(wvp) + 255) & ~255;
-        auto heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-        auto res_desc = CD3DX12_RESOURCE_DESC::Buffer(sz);
-        _device->CreateCommittedResource(&heap_prop, D3D12_HEAP_FLAG_NONE,
-                                         &res_desc,
-                                         D3D12_RESOURCE_STATE_GENERIC_READ,
-                                         nullptr, IID_PPV_ARGS(&_b0));
-
-        wvp data;
-        BYTE *mapped_data;
-        _b0->Map(0, nullptr, reinterpret_cast<void **>(&mapped_data));
-        memcpy(mapped_data, &data, sz);
-        _b0->Unmap(0, nullptr);
-        mapped_data = nullptr;
-
-//        D3D12_DESCRIPTOR_HEAP_DESC cbv_heap_desc;
-//        cbv_heap_desc.NumDescriptors = 1;
-//        cbv_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-//        cbv_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-//        cbv_heap_desc.NodeMask = 0;
-//        _device->CreateDescriptorHeap(&cbv_heap_desc,
-//                                      IID_PPV_ARGS(&_b0_desc_heap));
+        init_vp();
 
         init_root_signature();
         init_shader();
@@ -139,11 +118,21 @@ namespace fuse::directx {
         delete[] index_arr;
     }
 
+    void directx_12::set_vp(DirectX::SimpleMath::Matrix vp) {
+        auto sz = (sizeof(DirectX::SimpleMath::Matrix) + 255) & ~255;
+        BYTE *mapped_data;
+        _vp_buffer->Map(0, nullptr, reinterpret_cast<void **>(&mapped_data));
+        memcpy(mapped_data, &vp, sz);
+        _vp_buffer->Unmap(0, nullptr);
+        mapped_data = nullptr;
+    }
+
     void directx_12::render_begin() {
         ThrowIfFailed(_cmd_alloc->Reset())
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), _pipeline_state.Get()))
         _cmd_list->SetGraphicsRootSignature(_signature.Get());
-        _cmd_list->SetGraphicsRootConstantBufferView(0, _b0->GetGPUVirtualAddress());
+        _cmd_list->SetGraphicsRootConstantBufferView(0,
+                                                     _vp_buffer->GetGPUVirtualAddress());
 
         auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
                 _rtv_buffer[_back_buffer].Get(), D3D12_RESOURCE_STATE_PRESENT,
@@ -280,6 +269,18 @@ namespace fuse::directx {
         _cmd_list->Close();
         execute_cmd_list();
         wait_cmd_queue_sync();
+    }
+
+    void directx_12::init_vp() {
+        auto sz = (sizeof(DirectX::SimpleMath::Matrix) + 255) & ~255;
+        auto heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+        auto res_desc = CD3DX12_RESOURCE_DESC::Buffer(sz);
+        _device->CreateCommittedResource(&heap_prop, D3D12_HEAP_FLAG_NONE,
+                                         &res_desc,
+                                         D3D12_RESOURCE_STATE_GENERIC_READ,
+                                         nullptr, IID_PPV_ARGS(&_vp_buffer));
+
+        set_vp(DirectX::SimpleMath::Matrix::Identity);
     }
 
     void directx_12::init_root_signature() {

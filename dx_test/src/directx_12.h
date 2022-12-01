@@ -69,6 +69,8 @@ namespace fuse::directx {
         void init(const window_info &);
         void init_geometries(std::vector<geometry> &);
 
+        void set_vp(DirectX::SimpleMath::Matrix);
+
         void render_begin();
         void render(const geometry &);
         void render_end();
@@ -101,8 +103,7 @@ namespace fuse::directx {
         ComPtr <ID3D12DescriptorHeap> _root_desc_table;
 
         //resource buffers
-        ComPtr <ID3D12Resource> _b0;
-        ComPtr <ID3D12DescriptorHeap> _b0_desc_heap;
+        ComPtr <ID3D12Resource> _vp_buffer;
 
         //shader
         ComPtr <ID3DBlob> _vertex_shader;
@@ -121,6 +122,7 @@ namespace fuse::directx {
         void init_rtv();
         void init_dsv(const window_info &);
 
+        void init_vp();
 
         void init_root_signature();
         void init_shader();

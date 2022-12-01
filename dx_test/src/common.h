@@ -8,8 +8,10 @@ namespace fuse::directx {
         DirectX::SimpleMath::Vector4 color;
     };
 
-    struct transform {
-
+    struct world_matrix {
+        DirectX::SimpleMath::Matrix scale;
+        DirectX::SimpleMath::Matrix rotation;
+        DirectX::SimpleMath::Matrix translation;
     };
 
     struct geometry {
