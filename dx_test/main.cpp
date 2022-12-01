@@ -1,5 +1,7 @@
 #include <Windows.h>
 #include <WinUser.h>
+#include "debug.h"
+#include "directx_12.h"
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -7,7 +9,7 @@ int
 WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                 int nCmdShow) {
 // Register the window class.
-    const char CLASS_NAME[] = "Sample Window Class";
+    const wchar_t CLASS_NAME[] = L"Sample Window Class";
 
     WNDCLASS wc = {};
 
@@ -19,7 +21,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 
 // Create the window.
 
-    HWND hwnd = CreateWindowExA(
+    HWND hwnd = CreateWindowEx(
             0,                              // Optional window styles.
             CLASS_NAME,                     // Window class
             nullptr,    // Window text
@@ -40,14 +42,47 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 
     ShowWindow(hwnd, nCmdShow);
 
-    MSG msg = {nullptr};
-    while (msg.message != WM_QUIT) {
-        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        } else {
+    fuse::directx_12 dx12;
+    static const float d = 0.1f;
+    fuse::geometry t;
+    DirectX::SimpleMath::Vector4 white = { 1.f, 1.f, 1.f, 1.f };
+    t.vertices = { {{-d, d,  -d}, white},
+                   {{d,  d,  -d}, white},
+                   {{-d, -d, -d}, white},
+                   {{d,  -d, -d}, white},
+                   {{-d, d,  d},  white},
+                   {{d,  d,  d},  white},
+                   {{-d, -d, d},  white},
+                   {{d,  -d, d},  white} };
+    t.indices = { 0, 1, 2, 1, 3, 2,
+                  4, 1, 0, 4, 5, 1,
+                  4, 6, 5, 5, 6, 7,
+                  6, 2, 3, 6, 3, 7,
+                  1, 7, 3, 5, 7, 1,
+                  2, 6, 0, 0, 6, 4 };
+    std::vector<fuse::geometry> test;
+    test.push_back(t);
 
+    MSG msg = { 0 };
+    try {
+        dx12.init({ hwnd, 1920, 1080, true });
+        dx12.init_geometries(test);
+        while (msg.message != WM_QUIT) {
+            if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+            else {
+                dx12.render_begin();
+                for (const auto& e : test) {
+                    dx12.render(e);
+                }
+                dx12.render_end();
+            }
         }
+    } catch (DxException& e) {
+        MessageBoxExW(nullptr, e.ToString().c_str(), nullptr, MB_OK, 0);
     }
 
     return 0;

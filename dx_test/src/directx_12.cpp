@@ -295,13 +295,12 @@ namespace fuse {
                                      blob_signature->GetBufferSize(),
                                      IID_PPV_ARGS(&_signature));
 
-        //descriptor table
-        /*D3D12_DESCRIPTOR_HEAP_DESC regi_dh_desc = {};
+        D3D12_DESCRIPTOR_HEAP_DESC regi_dh_desc = {};
         regi_dh_desc.NumDescriptors = REGISTER_COUNT - 1;
         regi_dh_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         regi_dh_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         _device->CreateDescriptorHeap(&regi_dh_desc,
-            IID_PPV_ARGS(&_root_desc_table));*/
+            IID_PPV_ARGS(&_root_desc_table));
     }
 
     void directx_12::init_shader() {
@@ -311,11 +310,11 @@ namespace fuse {
         UINT compile_flags = 0;
 #endif
         ComPtr<ID3DBlob> error;
-        ThrowIfFailed(D3DCompileFromFile(L"assets\\shaders.hlsl", nullptr, nullptr, "VS_Main",
+        ThrowIfFailed(D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "VS_Main",
                                          "vs_5_0", compile_flags, 0, &_vertex_shader,
                                          &error))
 
-        ThrowIfFailed(D3DCompileFromFile(L"assets\\shaders.hlsl", nullptr, nullptr, "PS_Main",
+        ThrowIfFailed(D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "PS_Main",
                                          "ps_5_0", compile_flags, 0, &_pixel_shader,
                                          &error))
 
