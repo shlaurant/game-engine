@@ -16,7 +16,7 @@
 namespace fuse::ecs {
     class scene {
     public:
-        FUSE_INLINE explicit scene(SDL_Renderer *rd, directx_12 *dx) : _renderer(rd), _directx(dx) {
+        FUSE_INLINE explicit scene(SDL_Renderer *rd) : _renderer(rd) {
             register_system<ecs::sprite_renderer_system>();
             register_system<ecs::text_renderer_system>();
             register_system<ecs::frame_animation_system>();
@@ -24,7 +24,6 @@ namespace fuse::ecs {
             register_system<ecs::rigidbody_system>();
             register_system<ecs::collision_system>();
             register_system<ecs::script_system>();
-            register_system<ecs::directx_system>();
         }
 
         FUSE_INLINE ~scene() {
@@ -107,7 +106,7 @@ namespace fuse::ecs {
         FUSE_INLINE void register_system() {
             FUSE_STATIC_ASSERT(std::is_base_of<ecs::system, T>::value);
             auto new_system = new T();
-            new_system->prepare(&_registry, _renderer, &_assets, _directx);
+            new_system->prepare(&_registry, _renderer, &_assets);
             _systems.push_back(new_system);
         }
 
@@ -149,6 +148,5 @@ namespace fuse::ecs {
         SDL_Renderer *_renderer = nullptr;
         ecs::registry _registry;
         asset_registry _assets;
-        directx_12 *_directx = nullptr;
     };
 }

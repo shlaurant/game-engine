@@ -5,18 +5,16 @@
 #include "ecs/components/common.h"
 #include "ecs/components/physics.h"
 #include "ecs/components/behaviour.h"
-#include "directx/directx_12.h"
 
 namespace fuse::ecs {
     class system {
     public:
         FUSE_INLINE virtual ~system() = default;
 
-        FUSE_INLINE void prepare(registry *rg, SDL_Renderer *rd, asset_registry *as, directx_12 *dx) {
+        FUSE_INLINE void prepare(registry *rg, SDL_Renderer *rd, asset_registry *as) {
             _registry = rg;
             _renderer = rd;
             _assets = as;
-            _directx = dx;
         }
 
         /// Get vector of entities having certain component T
@@ -38,6 +36,5 @@ namespace fuse::ecs {
         SDL_Renderer *_renderer = nullptr;
         registry *_registry = nullptr;
         asset_registry *_assets = nullptr;
-        directx_12 *_directx = nullptr;
     };
 }

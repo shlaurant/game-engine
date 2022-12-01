@@ -16,6 +16,10 @@
 using namespace Microsoft::WRL;
 
 namespace fuse {
+//    struct wvp {
+//        DirectX::SimpleMath::Matrix wvp = DirectX::SimpleMath::Matrix::Identity;
+//    };
+
     struct window_info {
         HWND hwnd;
         int32_t width;
@@ -66,6 +70,7 @@ namespace fuse {
         void init_geometries(std::vector<geometry> &);
 
         void render_begin();
+        void render(const geometry &);
         void render_end();
     private:
         ComPtr <IDXGIFactory> _factory;
@@ -86,8 +91,8 @@ namespace fuse {
         ComPtr <ID3D12Resource> _rtv_buffer[SWAP_CHAIN_BUFFER_COUNT];
         ComPtr <ID3D12DescriptorHeap> _rtv_heap;
         D3D12_CPU_DESCRIPTOR_HANDLE _rtv_handle[SWAP_CHAIN_BUFFER_COUNT];
-        ComPtr<ID3D12Resource> _dsv_buffer;
-        ComPtr<ID3D12DescriptorHeap> _dsv_desc_heap;
+        ComPtr <ID3D12Resource> _dsv_buffer;
+        ComPtr <ID3D12DescriptorHeap> _dsv_desc_heap;
         D3D12_CPU_DESCRIPTOR_HANDLE _dsv_handle;
 
         //root sig
@@ -107,24 +112,24 @@ namespace fuse {
         //vertex & index buffer
         ComPtr <ID3D12Resource> _vertex_buffer;
         ComPtr <ID3D12Resource> _index_buffer;
+        D3D12_VERTEX_BUFFER_VIEW _vertex_buffer_view;
+        D3D12_INDEX_BUFFER_VIEW _index_buffer_view;
 
         void init_base(const window_info &info);
         void init_cmds();
         void init_swap_chain(const window_info &info);
         void init_rtv();
         void init_dsv(const window_info &);
+
+
         void init_root_signature();
         void init_shader();
 
         void execute_cmd_list();
         void wait_cmd_queue_sync();
 
-        ComPtr <ID3D12Resource>
-
         //Reset cmd list beforehand, and close after calling this
-        create_default_buffer(void *, UINT64, ComPtr <ID3D12Resource>);
+        ComPtr <ID3D12Resource>
+        create_default_buffer(const void *, UINT64, ComPtr <ID3D12Resource> &);
     };
 }
-
-#define TRY(x) {auto hr = x; if(FAILED(hr)) {auto line = __LINE__; \
-auto message = "line " + std::to_string(line); FUSE_ERROR(message.c_str())}}

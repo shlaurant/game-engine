@@ -4,14 +4,12 @@
 #include "application.h"
 #include "inputs.h"
 #include "events/system.h"
-#include "directx/directx_12.h"
 
 namespace fuse {
     static app_config config;
     static bool is_running = true;
     static ecs::scene *scene = nullptr;
     static float deltatime, last_tick;
-    static directx_12 directx;
 
     FUSE_INLINE bool on_quit(const quite_event &) {
         return is_running = false;
@@ -74,14 +72,13 @@ namespace fuse {
         SDL_VERSION(&wm_info.version)
         SDL_GetWindowWMInfo(window, &wm_info);
         auto hwnd = wm_info.info.win.window;
-        directx.init({hwnd, cfg.width, cfg.height, true});
 
         inputs::initialize(window);
         auto disp = inputs::get_dispatcher();
         disp->add_callback<quite_event>(on_quit);
         disp->add_callback<keydown_event>(on_key);
 
-        scene = new ecs::scene(renderer, &directx);
+        scene = new ecs::scene(renderer);
         scene->deserialize("assets/scene.yaml");
 
 //        scene->start();
