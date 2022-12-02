@@ -1,5 +1,5 @@
 cbuffer wvp :register(b0) {
-    float4x4 gwvp;
+    row_major float4x4 gwvp;
 };
 
 struct VS_IN
@@ -19,7 +19,7 @@ VS_OUT VS_Main(VS_IN input)
     VS_OUT output;
 
     output.pos = mul(float4(input.pos, 1.0f), gwvp);
-    output.color = float4(1.0f, 1.0f, 1.0f, 1.0f);
+    output.color = input.color;
 
     return output;
 }

@@ -307,13 +307,6 @@ namespace fuse::directx {
         _device->CreateRootSignature(0, blob_signature->GetBufferPointer(),
                                      blob_signature->GetBufferSize(),
                                      IID_PPV_ARGS(&_signature));
-
-        D3D12_DESCRIPTOR_HEAP_DESC regi_dh_desc = {};
-        regi_dh_desc.NumDescriptors = REGISTER_COUNT - 1;
-        regi_dh_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        regi_dh_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        _device->CreateDescriptorHeap(&regi_dh_desc,
-                                      IID_PPV_ARGS(&_root_desc_table));
     }
 
     void directx_12::init_shader() {
