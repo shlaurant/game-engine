@@ -10,3 +10,5 @@
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
+
+#include "d3dx12.h"

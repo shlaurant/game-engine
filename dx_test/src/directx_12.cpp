@@ -1,5 +1,6 @@
 #include "directx_12.h"
 #include "debug.h"
+#include "dx_util.h"
 
 using namespace Microsoft::WRL;
 using namespace DirectX::SimpleMath;
@@ -276,14 +277,7 @@ namespace fuse::directx {
     }
 
     void directx_12::init_vp() {
-        auto sz = (sizeof(DirectX::SimpleMath::Matrix) + 255) & ~255;
-        auto heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-        auto res_desc = CD3DX12_RESOURCE_DESC::Buffer(sz);
-        _device->CreateCommittedResource(&heap_prop, D3D12_HEAP_FLAG_NONE,
-                                         &res_desc,
-                                         D3D12_RESOURCE_STATE_GENERIC_READ,
-                                         nullptr, IID_PPV_ARGS(&_vp_buffer));
-
+        _vp_buffer = create_upload_buffer<DirectX::SimpleMath::Matrix>(1, _device);
         set_vp(DirectX::SimpleMath::Matrix::Identity);
     }
 
