@@ -48,11 +48,6 @@ namespace fuse::directx {
         };
 
         const static int SWAP_CHAIN_BUFFER_COUNT = 2;
-        const static int CBV_REGISTER_COUNT = static_cast<uint8_t>(CBV_REGISTER::END);
-        const static int SRV_REGISTER_COUNT =
-                static_cast<uint8_t>(SRV_REGISTER::END) - CBV_REGISTER_COUNT;
-        const static int REGISTER_COUNT =
-                CBV_REGISTER_COUNT + SRV_REGISTER_COUNT;
         const static int OBJ_CNT = 10;
 
         void init(const window_info &);
