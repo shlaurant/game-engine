@@ -121,12 +121,8 @@ namespace fuse::directx {
     }
 
     void directx_12::set_vp(DirectX::SimpleMath::Matrix vp) {
-        auto sz = (sizeof(DirectX::SimpleMath::Matrix) + 255) & ~255;
-        BYTE *mapped_data;
-        _vp_buffer->Map(0, nullptr, reinterpret_cast<void **>(&mapped_data));
-        memcpy(mapped_data, &vp, sz);
-        _vp_buffer->Unmap(0, nullptr);
-        mapped_data = nullptr;
+        DirectX::SimpleMath::Matrix t[] = {vp};
+        update_upload_buffer(_vp_buffer, t, _countof(t));
     }
 
     void directx_12::render_begin() {
