@@ -8,10 +8,6 @@
 using namespace Microsoft::WRL;
 
 namespace fuse::directx {
-    struct wvp {
-        DirectX::SimpleMath::Matrix gwvp = DirectX::SimpleMath::Matrix::Identity;
-    };
-
     struct window_info {
         HWND hwnd;
         int32_t width;
