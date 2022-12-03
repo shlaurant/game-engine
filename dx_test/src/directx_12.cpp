@@ -121,18 +121,14 @@ namespace fuse::directx {
     }
 
     void directx_12::set_vp(const DirectX::SimpleMath::Matrix &vp) {
-        Matrix t[] = {vp};
-        update_const_buffer(_vp_buffer, t, _countof(t));
+        update_const_buffer<Matrix>(_vp_buffer, &vp, 0);
     }
 
     void
     directx_12::set_ojb_w(const std::vector<DirectX::SimpleMath::Matrix> &ws) {
-        auto tmp = new Matrix[ws.size()];
         for (size_t i = 0; i < ws.size(); ++i) {
-            tmp[i] = ws[i];
+            update_const_buffer(_w_buffer, &ws[i], i);
         }
-        update_const_buffer(_w_buffer, tmp, 10);
-        delete[] tmp;
     }
 
     void directx_12::render_begin() {
