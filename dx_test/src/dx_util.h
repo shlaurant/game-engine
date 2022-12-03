@@ -2,8 +2,8 @@
 
 namespace fuse::directx {
     template<typename T>
-    Microsoft::WRL::ComPtr<ID3D12Resource> create_upload_buffer(int elem_cnt,
-                                                                Microsoft::WRL::ComPtr<ID3D12Device> device) {
+    Microsoft::WRL::ComPtr<ID3D12Resource> create_const_buffer(int elem_cnt,
+                                                               Microsoft::WRL::ComPtr<ID3D12Device> device) {
         auto sz = size_of_256<T>() * elem_cnt;
         Microsoft::WRL::ComPtr<ID3D12Resource> ret;
         auto heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
@@ -17,8 +17,8 @@ namespace fuse::directx {
 
     template<typename T>
     void
-    update_upload_buffer(Microsoft::WRL::ComPtr<ID3D12Resource> buffer, T *data,
-                         int elem_cnt) {
+    update_const_buffer(Microsoft::WRL::ComPtr<ID3D12Resource> buffer, T *data,
+                        int elem_cnt) {
         auto sz = size_of_256<T>() * elem_cnt;
         BYTE *mapped_data;
         buffer->Map(0, nullptr, reinterpret_cast<void **>(&mapped_data));

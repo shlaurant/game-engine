@@ -74,7 +74,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 
     DirectX::SimpleMath::Vector3 tmp = {1.f, 0.f, 0.f};
     auto t1 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
-    transform box_transform = {{0.0f, 0.f, 3.f}};
+    transform box_transform = {{1.0f, 0.f, 3.f}};
     std::vector<DirectX::SimpleMath::Matrix> ws;
     ws.push_back(DirectX::SimpleMath::Matrix::CreateTranslation(box_transform.position));
 

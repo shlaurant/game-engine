@@ -122,7 +122,7 @@ namespace fuse::directx {
 
     void directx_12::set_vp(const DirectX::SimpleMath::Matrix &vp) {
         Matrix t[] = {vp};
-        update_upload_buffer(_vp_buffer, t, _countof(t));
+        update_const_buffer(_vp_buffer, t, _countof(t));
     }
 
     void
@@ -131,7 +131,7 @@ namespace fuse::directx {
         for (size_t i = 0; i < ws.size(); ++i) {
             tmp[i] = ws[i];
         }
-        update_upload_buffer(_w_buffer, tmp, 10);
+        update_const_buffer(_w_buffer, tmp, 10);
         delete[] tmp;
     }
 
@@ -286,13 +286,13 @@ namespace fuse::directx {
     }
 
     void directx_12::init_vp() {
-        _vp_buffer = create_upload_buffer<Matrix>(1,
-                                                  _device);
+        _vp_buffer = create_const_buffer<Matrix>(1,
+                                                 _device);
         set_vp(Matrix::Identity);
     }
 
     void directx_12::init_resources() {
-        _w_buffer = create_upload_buffer<Matrix>(OBJ_CNT, _device);
+        _w_buffer = create_const_buffer<Matrix>(OBJ_CNT, _device);
 
         D3D12_DESCRIPTOR_HEAP_DESC h_desc = {};
         h_desc.NodeMask = 0;
