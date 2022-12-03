@@ -1,6 +1,10 @@
-cbuffer wvp :register(b0) {
-    row_major float4x4 gwvp;
+cbuffer camera_vp :register(b0) {
+    row_major float4x4 vp;
 };
+
+cbuffer object_w :register(b1) {
+    row_major float4x4 w;
+}
 
 struct VS_IN
 {
@@ -18,7 +22,7 @@ VS_OUT VS_Main(VS_IN input)
 {
     VS_OUT output;
 
-    output.pos = mul(float4(input.pos, 1.0f), gwvp);
+    output.pos = mul(float4(input.pos, 1.0f), vp);
     output.color = input.color;
 
     return output;

@@ -96,6 +96,8 @@ namespace fuse::directx {
 
         //resource buffers
         ComPtr <ID3D12Resource> _vp_buffer;
+        ComPtr <ID3D12Resource> _w_buffer;
+        ComPtr <ID3D12DescriptorHeap> _w_desc_heap;
 
         //shader
         ComPtr <ID3DBlob> _vertex_shader;
@@ -115,6 +117,7 @@ namespace fuse::directx {
         void init_dsv(const window_info &);
 
         void init_vp();
+        void init_resources();
 
         void init_root_signature();
         void init_shader();
