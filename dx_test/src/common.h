@@ -16,5 +16,6 @@ namespace fuse::directx {
 
         size_t vertex_offset = 0;
         size_t index_offset = 0;
+        size_t w_offset = 0;
     };
 }

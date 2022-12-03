@@ -74,6 +74,9 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 
     DirectX::SimpleMath::Vector3 tmp = {1.f, 0.f, 0.f};
     auto t1 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
+    transform box_transform = {{0.0f, 0.f, 3.f}};
+    std::vector<DirectX::SimpleMath::Matrix> ws;
+    ws.push_back(DirectX::SimpleMath::Matrix::CreateTranslation(box_transform.position));
 
     MSG msg = {};
     try {
@@ -89,6 +92,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                 input.Update();
                 handle_input(input, camera);
                 dx12.set_vp(camera.view() * camera.projection());
+                dx12.set_ojb_w(ws);
                 dx12.render_begin();
                 for (const auto &e: test) {
                     dx12.render(e);

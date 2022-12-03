@@ -22,7 +22,8 @@ VS_OUT VS_Main(VS_IN input)
 {
     VS_OUT output;
 
-    output.pos = mul(float4(input.pos, 1.0f), vp);
+    float4x4 wvp = mul(w, vp);
+    output.pos = mul(float4(input.pos, 1.0f), wvp);
     output.color = input.color;
 
     return output;

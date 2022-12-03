@@ -57,11 +57,13 @@ namespace fuse::directx {
                 static_cast<uint8_t>(SRV_REGISTER::END) - CBV_REGISTER_COUNT;
         const static int REGISTER_COUNT =
                 CBV_REGISTER_COUNT + SRV_REGISTER_COUNT;
+        const static int OBJ_CNT = 10;
 
         void init(const window_info &);
         void init_geometries(std::vector<geometry> &);
 
-        void set_vp(DirectX::SimpleMath::Matrix);
+        void set_vp(const DirectX::SimpleMath::Matrix &);
+        void set_ojb_w(const std::vector<DirectX::SimpleMath::Matrix> &);
 
         void render_begin();
         void render(const geometry &);

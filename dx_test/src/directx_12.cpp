@@ -120,9 +120,19 @@ namespace fuse::directx {
         delete[] index_arr;
     }
 
-    void directx_12::set_vp(DirectX::SimpleMath::Matrix vp) {
-        DirectX::SimpleMath::Matrix t[] = {vp};
+    void directx_12::set_vp(const DirectX::SimpleMath::Matrix &vp) {
+        Matrix t[] = {vp};
         update_upload_buffer(_vp_buffer, t, _countof(t));
+    }
+
+    void
+    directx_12::set_ojb_w(const std::vector<DirectX::SimpleMath::Matrix> &ws) {
+        auto tmp = new Matrix[ws.size()];
+        for (size_t i = 0; i < ws.size(); ++i) {
+            tmp[i] = ws[i];
+        }
+        update_upload_buffer(_w_buffer, tmp, 10);
+        delete[] tmp;
     }
 
     void directx_12::render_begin() {
@@ -169,7 +179,10 @@ namespace fuse::directx {
         _cmd_list->IASetIndexBuffer(&_index_buffer_view);
         _cmd_list->IASetPrimitiveTopology(
                 D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        _cmd_list->SetGraphicsRootDescriptorTable(1, _w_desc_heap->GetGPUDescriptorHandleForHeapStart());
+        auto handle = _w_desc_heap->GetGPUDescriptorHandleForHeapStart();
+        handle.ptr += _device->GetDescriptorHandleIncrementSize(
+                D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * geo.w_offset;
+        _cmd_list->SetGraphicsRootDescriptorTable(1, handle);
 
         _cmd_list->DrawIndexedInstanced(geo.indices.size(), 1, geo.index_offset,
                                         geo.vertex_offset, 0);
@@ -273,27 +286,28 @@ namespace fuse::directx {
     }
 
     void directx_12::init_vp() {
-        _vp_buffer = create_upload_buffer<DirectX::SimpleMath::Matrix>(1, _device);
-        set_vp(DirectX::SimpleMath::Matrix::Identity);
+        _vp_buffer = create_upload_buffer<Matrix>(1,
+                                                  _device);
+        set_vp(Matrix::Identity);
     }
 
     void directx_12::init_resources() {
-        static const int num = 10;
-        auto sz = ((sizeof(Matrix) + 255) & ~255) * num;
-        D3D12_RESOURCE_DESC r_desc = CD3DX12_RESOURCE_DESC::Buffer(sz);
-        D3D12_HEAP_PROPERTIES h_prop = CD3DX12_HEAP_PROPERTIES(
-                D3D12_HEAP_TYPE_UPLOAD);
-        _device->CreateCommittedResource(&h_prop, D3D12_HEAP_FLAG_NONE, &r_desc,
-                                         D3D12_RESOURCE_STATE_GENERIC_READ,
-                                         nullptr, IID_PPV_ARGS(&_w_buffer));
-
+        _w_buffer = create_upload_buffer<Matrix>(OBJ_CNT, _device);
 
         D3D12_DESCRIPTOR_HEAP_DESC h_desc = {};
         h_desc.NodeMask = 0;
-        h_desc.NumDescriptors = 1;
+        h_desc.NumDescriptors = OBJ_CNT;
         h_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         h_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         _device->CreateDescriptorHeap(&h_desc, IID_PPV_ARGS(&_w_desc_heap));
+
+        auto w_addr = _w_buffer->GetGPUVirtualAddress();
+
+        D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc;
+        cbv_desc.SizeInBytes = size_of_256<Matrix>();
+        cbv_desc.BufferLocation = w_addr;
+
+        _device->CreateConstantBufferView(&cbv_desc, _w_desc_heap->GetCPUDescriptorHandleForHeapStart());
     }
 
     void directx_12::init_root_signature() {
