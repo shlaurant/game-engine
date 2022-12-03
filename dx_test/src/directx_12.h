@@ -60,6 +60,7 @@ namespace fuse::directx {
 
         void set_vp(const DirectX::SimpleMath::Matrix &);
         void set_ojb_w(const std::vector<DirectX::SimpleMath::Matrix> &);
+        void update_geometries(std::vector<geometry> &);
 
         void render_begin();
         void render(const geometry &);

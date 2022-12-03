@@ -66,17 +66,16 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                  0, 2, 6, 0, 6, 4,
                  2, 3, 6, 3, 7, 6,
                  4, 6, 5, 5, 6, 7};
+
+    DirectX::SimpleMath::Vector3 tmp = {1.f, 0.f, 3.f};
+    auto t1 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
+    t.world_matrix = t1;
+
     std::vector<fuse::directx::geometry> test;
     test.push_back(t);
 
     Input input;
     input.Init(hwnd);
-
-    DirectX::SimpleMath::Vector3 tmp = {1.f, 0.f, 0.f};
-    auto t1 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
-    transform box_transform = {{1.0f, 0.f, 3.f}};
-    std::vector<DirectX::SimpleMath::Matrix> ws;
-    ws.push_back(DirectX::SimpleMath::Matrix::CreateTranslation(box_transform.position));
 
     MSG msg = {};
     try {
@@ -92,7 +91,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                 input.Update();
                 handle_input(input, camera);
                 dx12.set_vp(camera.view() * camera.projection());
-                dx12.set_ojb_w(ws);
+                dx12.update_geometries(test);
                 dx12.render_begin();
                 for (const auto &e: test) {
                     dx12.render(e);

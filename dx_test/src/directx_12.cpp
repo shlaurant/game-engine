@@ -92,6 +92,13 @@ namespace fuse::directx {
         }
     }
 
+    void directx_12::update_geometries(std::vector<geometry> &v) {
+        for (size_t i = 0; i < v.size(); ++i) {
+            update_const_buffer(_w_buffer, &(v[i].world_matrix), i);
+            v[i].w_offset = i;
+        }
+    }
+
     void directx_12::render_begin() {
         ThrowIfFailed(_cmd_alloc->Reset())
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), _pipeline_state.Get()))
@@ -264,7 +271,8 @@ namespace fuse::directx {
         cbv_desc.SizeInBytes = size_of_256<Matrix>();
         cbv_desc.BufferLocation = w_addr;
 
-        _device->CreateConstantBufferView(&cbv_desc, _w_desc_heap->GetCPUDescriptorHandleForHeapStart());
+        _device->CreateConstantBufferView(&cbv_desc,
+                                          _w_desc_heap->GetCPUDescriptorHandleForHeapStart());
     }
 
     void directx_12::init_root_signature() {
