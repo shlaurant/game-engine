@@ -126,9 +126,5 @@ namespace fuse::directx {
 
         void execute_cmd_list();
         void wait_cmd_queue_sync();
-
-        //Reset cmd list beforehand, and close after calling this
-        ComPtr <ID3D12Resource>
-        create_default_buffer(const void *, UINT64, ComPtr <ID3D12Resource> &);
     };
 }

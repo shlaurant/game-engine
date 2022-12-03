@@ -34,45 +34,6 @@ namespace fuse::directx {
         SetWindowPos(info.hwnd, 0, 100, 100, info.width, info.height, 0);
     }
 
-    ComPtr<ID3D12Resource>
-    directx_12::create_default_buffer(const void *data, UINT64 byte_size,
-                                      ComPtr<ID3D12Resource> &upload_buffer) {
-        auto tmph_desc = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-        auto tmp_desc = CD3DX12_RESOURCE_DESC::Buffer(byte_size);
-        _device->CreateCommittedResource(&tmph_desc, D3D12_HEAP_FLAG_NONE,
-                                         &tmp_desc,
-                                         D3D12_RESOURCE_STATE_GENERIC_READ,
-                                         nullptr,
-                                         IID_PPV_ARGS(&upload_buffer));
-
-        ComPtr<ID3D12Resource> default_buffer;
-        auto dbh_desc = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-        auto db_desc = CD3DX12_RESOURCE_DESC::Buffer(byte_size);
-        _device->CreateCommittedResource(&dbh_desc, D3D12_HEAP_FLAG_NONE,
-                                         &db_desc, D3D12_RESOURCE_STATE_COMMON,
-                                         nullptr,
-                                         IID_PPV_ARGS(&default_buffer));
-
-        D3D12_SUBRESOURCE_DATA sub_data = {};
-        sub_data.pData = data;
-        sub_data.RowPitch = byte_size;
-        sub_data.SlicePitch = sub_data.RowPitch;
-
-        auto b0 = CD3DX12_RESOURCE_BARRIER::Transition(default_buffer.Get(),
-                                                       D3D12_RESOURCE_STATE_COMMON,
-                                                       D3D12_RESOURCE_STATE_COPY_DEST);
-        _cmd_list->ResourceBarrier(1, &b0);
-        UpdateSubresources<1>(_cmd_list.Get(), default_buffer.Get(),
-                              upload_buffer.Get(),
-                              0, 0, 1, &sub_data);
-        auto b1 = CD3DX12_RESOURCE_BARRIER::Transition(default_buffer.Get(),
-                                                       D3D12_RESOURCE_STATE_COPY_DEST,
-                                                       D3D12_RESOURCE_STATE_GENERIC_READ);
-        _cmd_list->ResourceBarrier(1, &b1);
-
-        return default_buffer;
-    }
-
     void directx_12::init_geometries(std::vector<geometry> &geometries) {
         _cmd_list->Reset(_cmd_alloc.Get(), nullptr);
 
@@ -90,7 +51,7 @@ namespace fuse::directx {
         std::copy(vertices.begin(), vertices.end(), vert_arr);
 
         _vertex_buffer = create_default_buffer(vert_arr, vert_byte_size,
-                                               u_buffer_v);
+                                               u_buffer_v, _device, _cmd_list);
         _vertex_buffer_view.BufferLocation = _vertex_buffer->GetGPUVirtualAddress();
         _vertex_buffer_view.StrideInBytes = sizeof(vertex);
         _vertex_buffer_view.SizeInBytes = vert_byte_size;
@@ -108,7 +69,7 @@ namespace fuse::directx {
         std::copy(indices.begin(), indices.end(), index_arr);
         _index_buffer = create_default_buffer(index_arr,
                                               sizeof(uint16_t) * indices.size(),
-                                              u_buffer_i);
+                                              u_buffer_i, _device, _cmd_list);
         _index_buffer_view.BufferLocation = _index_buffer->GetGPUVirtualAddress();
         _index_buffer_view.Format = DXGI_FORMAT_R16_UINT;
         _index_buffer_view.SizeInBytes = sizeof(uint16_t) * indices.size();

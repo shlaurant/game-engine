@@ -9,7 +9,8 @@ namespace fuse::directx {
 
     template<typename T>
     void
-    update_const_buffer(Microsoft::WRL::ComPtr<ID3D12Resource> buffer, const T *data,
+    update_const_buffer(Microsoft::WRL::ComPtr<ID3D12Resource> buffer,
+                        const T *data,
                         int index) {
         update_upload_buffer<T>(buffer, data, index, size_of_256<T>());
     }
@@ -30,4 +31,10 @@ namespace fuse::directx {
 
     template<typename T>
     UINT size_of_256() { return (sizeof(T) + 255) & ~255; }
+
+    Microsoft::WRL::ComPtr<ID3D12Resource>
+    create_default_buffer(const void *data, UINT64 byte_size,
+                          Microsoft::WRL::ComPtr<ID3D12Resource> &upload_buffer,
+                          Microsoft::WRL::ComPtr<ID3D12Device> device,
+                          Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd_list);
 }
