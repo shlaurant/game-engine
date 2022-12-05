@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Input.h"
+#include "src/common.h"
 
 struct transform {
     DirectX::SimpleMath::Vector3 position = DirectX::SimpleMath::Vector3::Zero;
@@ -34,4 +35,14 @@ void print_vector4(const DirectX::SimpleMath::Vector4 &);
 
 void print_transform(const transform &);
 
-DirectX::SimpleMath::Vector4 mult(const DirectX::SimpleMath::Vector4 &, const DirectX::SimpleMath::Matrix &);
+DirectX::SimpleMath::Vector4
+mult(const DirectX::SimpleMath::Vector4 &, const DirectX::SimpleMath::Matrix &);
+
+fuse::directx::geometry create_cube();
+
+fuse::directx::geometry create_tetra();
+
+DirectX::SimpleMath::Vector4 white();
+DirectX::SimpleMath::Vector4 red();
+DirectX::SimpleMath::Vector4 green();
+DirectX::SimpleMath::Vector4 blue();

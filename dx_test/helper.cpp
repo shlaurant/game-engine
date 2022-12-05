@@ -72,7 +72,8 @@ void handle_input(Input &input, camera &camera) {
         OutputDebugStringA("vp:\n");
         print_matrix(camera.view() * camera.projection());
         OutputDebugStringA("test mult:\n");
-        print_vector4(mult({-1.f, 1.f, -1.f, 1.f}, camera.view() * camera.projection()));
+        print_vector4(mult({-1.f, 1.f, -1.f, 1.f},
+                           camera.view() * camera.projection()));
     }
 }
 
@@ -120,7 +121,7 @@ void print_transform(const transform &t) {
     print_vector3(t.position);
 }
 
-DirectX::SimpleMath::Vector4 sub_vec(const Matrix &m, int col){
+DirectX::SimpleMath::Vector4 sub_vec(const Matrix &m, int col) {
     Vector4 ret;
     ret.x = m.m[0][col];
     ret.y = m.m[1][col];
@@ -138,4 +139,52 @@ DirectX::SimpleMath::Vector4 mult(const Vector4 &v, const Matrix &m) {
     ret.w = v.Dot(sub_vec(m, 3));
 
     return ret;
+}
+
+fuse::directx::geometry create_cube() {
+    static const float d = 0.5f;
+    fuse::directx::geometry ret;
+    ret.vertices = {{{-d, d,  -d}, white()},
+                    {{d,  d,  -d}, red()},
+                    {{-d, -d, -d}, green()},
+                    {{d,  -d, -d}, blue()},
+                    {{-d, d,  d},  white()},
+                    {{d,  d,  d},  red()},
+                    {{-d, -d, d},  green()},
+                    {{d,  -d, d},  blue()}};
+    ret.indices = {0, 1, 2, 1, 3, 2,
+                   1, 7, 3, 1, 5, 7,
+                   0, 4, 1, 4, 5, 1,
+                   0, 2, 6, 0, 6, 4,
+                   2, 3, 6, 3, 7, 6,
+                   4, 6, 5, 5, 6, 7};
+
+    return ret;
+}
+
+fuse::directx::geometry create_tetra() {
+    static const float d = 0.5f;
+    fuse::directx::geometry ret;
+    ret.vertices = {{{0.f, d * 2, 0.f}, red()},
+                    {{0.f, 0.f,   d},   green()},
+                    {{d,   0.f,   -d},  blue()},
+                    {{-d,  0.f,   -d},  white()}};
+    ret.indices = {0, 2, 3,
+                   0, 1, 2,
+                   0, 3, 1,
+                   2, 1, 3};
+    return ret;
+}
+
+DirectX::SimpleMath::Vector4 white() {
+    return {1.f, 1.f, 1.f, 1.f};
+}
+DirectX::SimpleMath::Vector4 red() {
+    return {1.f, 0.f, 0.f, 1.f};
+}
+DirectX::SimpleMath::Vector4 green() {
+    return {0.f, 1.f, 0.f, 1.f};
+}
+DirectX::SimpleMath::Vector4 blue() {
+    return {0.f, 0.f, 1.f, 1.f};
 }

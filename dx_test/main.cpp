@@ -47,32 +47,21 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 
     fuse::directx::directx_12 dx12;
     static const float d = 0.5f;
-    fuse::directx::geometry t;
-    DirectX::SimpleMath::Vector4 white = {1.f, 1.f, 1.f, 1.f};
-    DirectX::SimpleMath::Vector4 red = {1.f, 0.f, 0.f, 1.f};
-    DirectX::SimpleMath::Vector4 green = {0.f, 1.f, 0.f, 1.f};
-    DirectX::SimpleMath::Vector4 blue = {0.f, 0.f, 1.f, 1.f};
-    t.vertices = {{{-d, d,  -d}, white},
-                  {{d,  d,  -d}, red},
-                  {{-d, -d, -d}, green},
-                  {{d,  -d, -d}, blue},
-                  {{-d, d,  d},  white},
-                  {{d,  d,  d},  red},
-                  {{-d, -d, d},  green},
-                  {{d,  -d, d},  blue}};
-    t.indices = {0, 1, 2, 1, 3, 2,
-                 1, 7, 3, 1, 5, 7,
-                 0, 4, 1, 4, 5, 1,
-                 0, 2, 6, 0, 6, 4,
-                 2, 3, 6, 3, 7, 6,
-                 4, 6, 5, 5, 6, 7};
+    auto tetra = create_tetra();
+
+    std::vector<fuse::directx::geometry> test;
 
     DirectX::SimpleMath::Vector3 tmp = {1.f, 0.f, 3.f};
     auto t1 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
-    t.world_matrix = t1;
+    tetra.world_matrix = t1;
+    test.push_back(tetra);
 
-    std::vector<fuse::directx::geometry> test;
-    test.push_back(t);
+    auto cube = create_cube();
+    DirectX::SimpleMath::Vector3 tmp2 = {-1.f, 0.f, 3.f};
+    auto t2 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp2);
+    cube.world_matrix = t2;
+
+    test.push_back(cube);
 
     Input input;
     input.Init(hwnd);
