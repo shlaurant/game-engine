@@ -264,15 +264,17 @@ namespace fuse::directx {
         h_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         h_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         _device->CreateDescriptorHeap(&h_desc, IID_PPV_ARGS(&_w_desc_heap));
-
         auto w_addr = _w_buffer->GetGPUVirtualAddress();
 
-        D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc;
-        cbv_desc.SizeInBytes = size_of_256<Matrix>();
-        cbv_desc.BufferLocation = w_addr;
-
-        _device->CreateConstantBufferView(&cbv_desc,
-                                          _w_desc_heap->GetCPUDescriptorHandleForHeapStart());
+        for (auto i = 0; i < OBJ_CNT; ++i) {
+            D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc;
+            cbv_desc.SizeInBytes = size_of_256<Matrix>();
+            cbv_desc.BufferLocation = w_addr + size_of_256<Matrix>() * i;
+            auto handle = _w_desc_heap->GetCPUDescriptorHandleForHeapStart();
+            handle.ptr += _device->GetDescriptorHandleIncrementSize(
+                    D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * i;
+            _device->CreateConstantBufferView(&cbv_desc, handle);
+        }
     }
 
     void directx_12::init_root_signature() {
