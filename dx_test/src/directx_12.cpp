@@ -1,6 +1,7 @@
 #include "directx_12.h"
 #include "debug.h"
 #include "dx_util.h"
+#include "ReadData.h"
 
 using namespace Microsoft::WRL;
 using namespace DirectX::SimpleMath;
@@ -306,17 +307,14 @@ namespace fuse::directx {
 #else
         UINT compile_flags = 0;
 #endif
-        ComPtr<ID3DBlob> error;
-        ThrowIfFailed(
-                D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "VS_Main",
-                                   "vs_5_0", compile_flags, 0, &_vertex_shader,
-                                   &error))
+        std::ifstream fin("C:/Projects/game_engine/dx_test/vs.cso", std::ios::binary);
+        auto b = fin.is_open();
+        fin.seekg(0, std::ios_base::beg);
+        TCHAR buf[100];
+        GetModuleFileName(nullptr, buf, 100);
 
-        ThrowIfFailed(
-                D3DCompileFromFile(L"shaders.hlsl", nullptr, nullptr, "PS_Main",
-                                   "ps_5_0", compile_flags, 0, &_pixel_shader,
-                                   &error))
-
+        auto vs_data = DX::ReadData(L"vs.cso");
+        auto ps_data = DX::ReadData(L"ps.cso");
 
         D3D12_INPUT_ELEMENT_DESC ie_desc[] = {
                 {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
@@ -335,12 +333,8 @@ namespace fuse::directx {
         ps_desc.NumRenderTargets = 1;
         ps_desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
         ps_desc.SampleDesc.Count = 1;
-        ps_desc.VS = {
-                reinterpret_cast<UINT8 *>(_vertex_shader->GetBufferPointer()),
-                _vertex_shader->GetBufferSize()};
-        ps_desc.PS = {
-                reinterpret_cast<UINT8 *>(_pixel_shader->GetBufferPointer()),
-                _pixel_shader->GetBufferSize()};
+        ps_desc.VS = {vs_data.data(), vs_data.size()};
+        ps_desc.PS = {ps_data.data(), ps_data.size()};
 
         _device->CreateGraphicsPipelineState(&ps_desc,
                                              IID_PPV_ARGS(&_pipeline_state));

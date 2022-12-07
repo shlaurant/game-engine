@@ -94,8 +94,6 @@ namespace fuse::directx {
         ComPtr <ID3D12DescriptorHeap> _w_desc_heap;
 
         //shader
-        ComPtr <ID3DBlob> _vertex_shader;
-        ComPtr <ID3DBlob> _pixel_shader;
         ComPtr <ID3D12PipelineState> _pipeline_state;
 
         //vertex & index buffer
