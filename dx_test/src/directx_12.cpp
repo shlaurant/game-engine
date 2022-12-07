@@ -28,6 +28,47 @@ namespace fuse::directx {
         init_root_signature();
         init_shader();
 
+        _cmd_list->Reset(_cmd_alloc.Get(), _pipeline_state.Get());
+        auto texture_file = L"kyaru.png";
+        DirectX::ScratchImage image;
+        DirectX::LoadFromWICFile(texture_file, DirectX::WIC_FLAGS_NONE,
+                                 nullptr, image);
+        ComPtr<ID3D12Resource> t;
+        ThrowIfFailed(
+                DirectX::CreateTexture(_device.Get(), image.GetMetadata(), &t));
+
+        std::vector<D3D12_SUBRESOURCE_DATA> sub_reses;
+        ThrowIfFailed(DirectX::PrepareUpload(_device.Get(), image.GetImages(),
+                                             image.GetImageCount(),
+                                             image.GetMetadata(), sub_reses));
+
+        auto ub = create_upload_buffer(1,
+                                       GetRequiredIntermediateSize(t.Get(), 0,
+                                                                   static_cast<uint32_t>(sub_reses.size())),
+                                       _device);
+        UpdateSubresources(_cmd_list.Get(), t.Get(), ub.Get(),
+                           0, 0, static_cast<uint32_t>(sub_reses.size()),
+                           sub_reses.data());
+        execute_cmd_list();
+        wait_cmd_queue_sync();
+
+        ComPtr<ID3D12DescriptorHeap> desc_heap;
+        D3D12_DESCRIPTOR_HEAP_DESC heap_desc;
+        heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        heap_desc.NumDescriptors = 1;
+        heap_desc.NodeMask = 0;
+
+        _device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(&desc_heap));
+
+        D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+        srv_desc.Format = image.GetMetadata().format;
+        srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srv_desc.Texture2D.MipLevels = 1;
+
+        _device->CreateShaderResourceView(t.Get(), &srv_desc,
+                                          desc_heap->GetCPUDescriptorHandleForHeapStart());
 
         //window resize;
         RECT rect = {0, 0, info.width, info.height};
@@ -307,7 +348,8 @@ namespace fuse::directx {
 #else
         UINT compile_flags = 0;
 #endif
-        std::ifstream fin("C:/Projects/game_engine/dx_test/vs.cso", std::ios::binary);
+        std::ifstream fin("C:/Projects/game_engine/dx_test/vs.cso",
+                          std::ios::binary);
         auto b = fin.is_open();
         fin.seekg(0, std::ios_base::beg);
         TCHAR buf[100];

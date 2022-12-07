@@ -2,7 +2,9 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 
+#include "d3dx12.h"
 #include <windows.h>
 #include <wrl.h>
 #include <d3dcompiler.h>
@@ -10,5 +12,5 @@
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
+#include <../../windows/includes/DirectXTex.h>
 
-#include "d3dx12.h"

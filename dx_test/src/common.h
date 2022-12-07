@@ -18,4 +18,9 @@ namespace fuse::directx {
         size_t index_offset = 0;
         size_t w_offset = 0;
     };
+
+    struct texture {
+        std::wstring filename;
+
+    };
 }
