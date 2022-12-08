@@ -4,6 +4,7 @@
 #include "SimpleMath.h"
 
 #include "common.h"
+#include "resource.h"
 
 using namespace Microsoft::WRL;
 
@@ -88,10 +89,9 @@ namespace fuse::directx {
         D3D12_STATIC_SAMPLER_DESC _sampler_desc;
         ComPtr <ID3D12DescriptorHeap> _root_desc_table;
 
-        //resource buffers
+        //resource
         ComPtr <ID3D12Resource> _vp_buffer;
-        ComPtr <ID3D12Resource> _w_buffer;
-        ComPtr <ID3D12DescriptorHeap> _w_desc_heap;
+        resource resource;
 
         //shader
         ComPtr <ID3D12PipelineState> _pipeline_state;

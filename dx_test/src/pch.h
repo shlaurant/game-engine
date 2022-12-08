@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <iterator>
 
 #include "d3dx12.h"
 #include <windows.h>
