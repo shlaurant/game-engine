@@ -129,10 +129,9 @@ namespace fuse::directx {
     }
 
     void directx_12::bind_texture(int obj, int texture) {
-        auto handle = _w_desc_heap->GetCPUDescriptorHandleForHeapStart();
+        auto handle = _res_desc_heap->GetCPUDescriptorHandleForHeapStart();
         auto handle_sz = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        auto group_sz = handle_sz * TABLE_SIZE;
-        handle.ptr += obj * group_sz;
+        handle.ptr += obj * group_size();
         handle.ptr += handle_sz;
         auto texture_res = _texture_buffers[obj].second;
         auto desc = _texture_buffers[texture].first;
@@ -145,7 +144,7 @@ namespace fuse::directx {
         _cmd_list->SetGraphicsRootSignature(_signature.Get());
         _cmd_list->SetGraphicsRootConstantBufferView(0,
                                                      _vp_buffer->GetGPUVirtualAddress());
-        ID3D12DescriptorHeap *heaps[] = {_w_desc_heap.Get()};
+        ID3D12DescriptorHeap *heaps[] = {_res_desc_heap.Get()};
         _cmd_list->SetDescriptorHeaps(1, heaps);
 
         auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -183,7 +182,7 @@ namespace fuse::directx {
         _cmd_list->IASetIndexBuffer(&_index_buffer_view);
         _cmd_list->IASetPrimitiveTopology(
                 D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        auto handle = _w_desc_heap->GetGPUDescriptorHandleForHeapStart();
+        auto handle = _res_desc_heap->GetGPUDescriptorHandleForHeapStart();
         handle.ptr += _device->GetDescriptorHandleIncrementSize(
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * geo.w_offset;
         _cmd_list->SetGraphicsRootDescriptorTable(1, handle);
@@ -300,19 +299,18 @@ namespace fuse::directx {
 
         D3D12_DESCRIPTOR_HEAP_DESC h_desc = {};
         h_desc.NodeMask = 0;
-        h_desc.NumDescriptors = OBJ_CNT;
+        h_desc.NumDescriptors = OBJ_CNT * TABLE_SIZE;
         h_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         h_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        _device->CreateDescriptorHeap(&h_desc, IID_PPV_ARGS(&_w_desc_heap));
+        _device->CreateDescriptorHeap(&h_desc, IID_PPV_ARGS(&_res_desc_heap));
         auto w_addr = _w_buffer->GetGPUVirtualAddress();
 
         for (auto i = 0; i < OBJ_CNT; ++i) {
             D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc;
             cbv_desc.SizeInBytes = size_of_256<Matrix>();
             cbv_desc.BufferLocation = w_addr + size_of_256<Matrix>() * i;
-            auto handle = _w_desc_heap->GetCPUDescriptorHandleForHeapStart();
-            handle.ptr += _device->GetDescriptorHandleIncrementSize(
-                    D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * i;
+            auto handle = _res_desc_heap->GetCPUDescriptorHandleForHeapStart();
+            handle.ptr += group_size() * i;
             _device->CreateConstantBufferView(&cbv_desc, handle);
         }
     }
@@ -395,5 +393,10 @@ namespace fuse::directx {
             WaitForSingleObject(fence_event, INFINITE);
             CloseHandle(fence_event);
         }
+    }
+
+    UINT directx_12::group_size() {
+        return _device->GetDescriptorHandleIncrementSize(
+                D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * TABLE_SIZE;
     }
 }

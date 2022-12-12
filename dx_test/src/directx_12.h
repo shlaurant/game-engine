@@ -67,7 +67,7 @@ namespace fuse::directx {
         std::vector<std::pair<D3D12_SHADER_RESOURCE_VIEW_DESC,
                 ComPtr < ID3D12Resource>>>
         _texture_buffers;
-        ComPtr <ID3D12DescriptorHeap> _w_desc_heap;
+        ComPtr <ID3D12DescriptorHeap> _res_desc_heap;
 
         //shader
         ComPtr <ID3D12PipelineState> _pipeline_state;
@@ -92,5 +92,7 @@ namespace fuse::directx {
 
         void execute_cmd_list();
         void wait_cmd_queue_sync();
+
+        UINT group_size();
     };
 }
