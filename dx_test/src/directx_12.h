@@ -61,8 +61,12 @@ namespace fuse::directx {
         ComPtr <ID3D12DescriptorHeap> _root_desc_table;
 
         //resource
+        static const int TABLE_SIZE = 2;
         ComPtr <ID3D12Resource> _vp_buffer;
         ComPtr <ID3D12Resource> _w_buffer;
+        std::vector<std::pair<D3D12_SHADER_RESOURCE_VIEW_DESC,
+                ComPtr < ID3D12Resource>>>
+        _texture_buffers;
         ComPtr <ID3D12DescriptorHeap> _w_desc_heap;
 
         //shader

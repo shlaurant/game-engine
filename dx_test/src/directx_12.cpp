@@ -92,6 +92,53 @@ namespace fuse::directx {
         }
     }
 
+    int directx_12::load_texture(const std::wstring &path) {
+        _cmd_list->Reset(_cmd_alloc.Get(), _pipeline_state.Get());
+        DirectX::ScratchImage image;
+        DirectX::LoadFromWICFile(path.c_str(), DirectX::WIC_FLAGS_NONE, nullptr,
+                                 image);
+        ComPtr<ID3D12Resource> buf;
+        ThrowIfFailed(
+                DirectX::CreateTexture(_device.Get(), image.GetMetadata(),
+                                       &buf));
+
+        std::vector<D3D12_SUBRESOURCE_DATA> sub_reses;
+        ThrowIfFailed(DirectX::PrepareUpload(_device.Get(), image.GetImages(),
+                                             image.GetImageCount(),
+                                             image.GetMetadata(), sub_reses));
+
+        auto ub = create_upload_buffer(1,
+                                       GetRequiredIntermediateSize(buf.Get(), 0,
+                                                                   static_cast<uint32_t>(sub_reses.size())),
+                                       _device);
+        UpdateSubresources(_cmd_list.Get(), buf.Get(), ub.Get(),
+                           0, 0, static_cast<uint32_t>(sub_reses.size()),
+                           sub_reses.data());
+
+        execute_cmd_list();
+        wait_cmd_queue_sync();
+
+        D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
+        desc.Format = image.GetMetadata().format;
+        desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        desc.Texture2D.MipLevels = 1;
+
+        _texture_buffers.emplace_back(std::make_pair(desc, buf));
+        return _texture_buffers.size() - 1;
+    }
+
+    void directx_12::bind_texture(int obj, int texture) {
+        auto handle = _w_desc_heap->GetCPUDescriptorHandleForHeapStart();
+        auto handle_sz = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        auto group_sz = handle_sz * TABLE_SIZE;
+        handle.ptr += obj * group_sz;
+        handle.ptr += handle_sz;
+        auto texture_res = _texture_buffers[obj].second;
+        auto desc = _texture_buffers[texture].first;
+        _device->CreateShaderResourceView(texture_res.Get(), &desc, handle);
+    }
+
     void directx_12::render_begin() {
         ThrowIfFailed(_cmd_alloc->Reset())
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), _pipeline_state.Get()))
