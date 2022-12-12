@@ -51,16 +51,17 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 
     std::vector<fuse::directx::geometry> test;
 
-    DirectX::SimpleMath::Vector3 tmp = {1.f, 0.f, 3.f};
-    auto t1 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
-    tetra.world_matrix = t1;
-    test.push_back(tetra);
+//    DirectX::SimpleMath::Vector3 tmp = {1.f, 0.f, 3.f};
+//    auto t1 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
+//    tetra.world_matrix = t1;
+//    test.push_back(tetra);
+//
+//    auto cube = create_cube();
+//    DirectX::SimpleMath::Vector3 tmp2 = {-1.f, 0.f, 3.f};
+//    auto t2 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp2);
+//    cube.world_matrix = t2;
 
-    auto cube = create_cube();
-    DirectX::SimpleMath::Vector3 tmp2 = {-1.f, 0.f, 3.f};
-    auto t2 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp2);
-    cube.world_matrix = t2;
-
+    auto cube = create_cube_uv();
     test.push_back(cube);
 
     Input input;
@@ -69,6 +70,9 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
     MSG msg = {};
     try {
         dx12.init({hwnd, 1920, 1080, true});
+        dx12.load_texture(L"kyaru.png");
+        dx12.bind_texture(0, 0);
+
         camera camera;
         camera.transform.position.z = -2.f;
         dx12.init_geometries(test);

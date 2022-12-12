@@ -176,6 +176,85 @@ fuse::directx::geometry create_tetra() {
     return ret;
 }
 
+fuse::directx::geometry create_cube_uv() {
+    fuse::directx::geometry ret;
+
+    float w2 = 0.5f;
+    float h2 = 0.5f;
+    float d2 = 0.5f;
+
+    std::vector<fuse::directx::vertex> vec(24);
+
+    vec[0] = {Vector3(-w2, -h2, -d2), {}, Vector2(0.0f, 1.0f)};
+    vec[1] = {Vector3(-w2, +h2, -d2), {}, Vector2(0.0f, 0.0f)};
+    vec[2] = {Vector3(+w2, +h2, -d2), {}, Vector2(1.0f, 0.0f)};
+    vec[3] = {Vector3(+w2, -h2, -d2), {}, Vector2(1.0f, 1.0f)};
+    vec[4] = {Vector3(-w2, -h2, +d2), {}, Vector2(1.0f, 1.0f)};
+    vec[5] = {Vector3(+w2, -h2, +d2), {}, Vector2(0.0f, 1.0f)};
+    vec[6] = {Vector3(+w2, +h2, +d2), {}, Vector2(0.0f, 0.0f)};
+    vec[7] = {Vector3(-w2, +h2, +d2), {}, Vector2(1.0f, 0.0f)};
+    vec[8] = {Vector3(-w2, +h2, -d2), {}, Vector2(0.0f, 1.0f)};
+    vec[9] = {Vector3(-w2, +h2, +d2), {}, Vector2(0.0f, 0.0f)};
+    vec[10] = {Vector3(+w2, +h2, +d2), {}, Vector2(1.0f, 0.0f)};
+    vec[11] = {Vector3(+w2, +h2, -d2), {}, Vector2(1.0f, 1.0f)};
+    vec[12] = {Vector3(-w2, -h2, -d2), {}, Vector2(1.0f, 1.0f)};
+    vec[13] = {Vector3(+w2, -h2, -d2), {}, Vector2(0.0f, 1.0f)};
+    vec[14] = {Vector3(+w2, -h2, +d2), {}, Vector2(0.0f, 0.0f)};
+    vec[15] = {Vector3(-w2, -h2, +d2), {}, Vector2(1.0f, 0.0f)};
+    vec[16] = {Vector3(-w2, -h2, +d2), {}, Vector2(0.0f, 1.0f)};
+    vec[17] = {Vector3(-w2, +h2, +d2), {}, Vector2(0.0f, 0.0f)};
+    vec[18] = {Vector3(-w2, +h2, -d2), {}, Vector2(1.0f, 0.0f)};
+    vec[19] = {Vector3(-w2, -h2, -d2), {}, Vector2(1.0f, 1.0f)};
+    vec[20] = {Vector3(+w2, -h2, -d2), {}, Vector2(0.0f, 1.0f)};
+    vec[21] = {Vector3(+w2, +h2, -d2), {}, Vector2(0.0f, 0.0f)};
+    vec[22] = {Vector3(+w2, +h2, +d2), {}, Vector2(1.0f, 0.0f)};
+    vec[23] = {Vector3(+w2, -h2, +d2), {}, Vector2(1.0f, 1.0f)};
+
+    std::vector<uint16_t> idx(36);
+
+    idx[0] = 0;
+    idx[1] = 1;
+    idx[2] = 2;
+    idx[3] = 0;
+    idx[4] = 2;
+    idx[5] = 3;
+    idx[6] = 4;
+    idx[7] = 5;
+    idx[8] = 6;
+    idx[9] = 4;
+    idx[10] = 6;
+    idx[11] = 7;
+    idx[12] = 8;
+    idx[13] = 9;
+    idx[14] = 10;
+    idx[15] = 8;
+    idx[16] = 10;
+    idx[17] = 11;
+    idx[18] = 12;
+    idx[19] = 13;
+    idx[20] = 14;
+    idx[21] = 12;
+    idx[22] = 14;
+    idx[23] = 15;
+    idx[24] = 16;
+    idx[25] = 17;
+    idx[26] = 18;
+    idx[27] = 16;
+    idx[28] = 18;
+    idx[29] = 19;
+    idx[30] = 20;
+    idx[31] = 21;
+    idx[32] = 22;
+    idx[33] = 20;
+    idx[34] = 22;
+    idx[35] = 23;
+
+    ret.vertices = vec;
+    ret.indices = idx;
+
+    return ret;
+}
+
 DirectX::SimpleMath::Vector4 white() {
     return {1.f, 1.f, 1.f, 1.f};
 }
