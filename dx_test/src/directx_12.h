@@ -16,46 +16,17 @@ namespace fuse::directx {
         bool windowed;
     };
 
-    struct light_color {
-        DirectX::SimpleMath::Vector4 diffuse;
-        DirectX::SimpleMath::Vector4 ambient;
-        DirectX::SimpleMath::Vector4 specular;
-    };
-
-    struct light_info {
-        light_color color;
-        DirectX::SimpleMath::Vector4 position;
-        DirectX::SimpleMath::Vector4 direction;
-        int32_t type;
-        float range;
-        float angle;
-        int32_t padding;
-    };
-
-    struct light_param {
-        uint32_t count;
-        DirectX::SimpleMath::Vector3 padding;
-        light_info infos[50];
-    };
-
     class directx_12 {
     public:
-        enum class CBV_REGISTER : uint8_t {
-            b0, b1, b2, b3, b4, END
-        };
-
-        enum class SRV_REGISTER : uint8_t {
-            t0 = static_cast<uint8_t>(CBV_REGISTER::END), t1, t2, t3, t4, END
-        };
-
         const static int SWAP_CHAIN_BUFFER_COUNT = 2;
         const static int OBJ_CNT = 10;
 
         void init(const window_info &);
         void init_geometries(std::vector<geometry> &);
+        int load_texture(const std::wstring &path);
+        void bind_texture(int obj, int texture);
 
         void set_vp(const DirectX::SimpleMath::Matrix &);
-        void set_ojb_w(const std::vector<DirectX::SimpleMath::Matrix> &);
         void update_geometries(std::vector<geometry> &);
 
         void render_begin();
@@ -91,7 +62,8 @@ namespace fuse::directx {
 
         //resource
         ComPtr <ID3D12Resource> _vp_buffer;
-        resource resource;
+        ComPtr <ID3D12Resource> _w_buffer;
+        ComPtr <ID3D12DescriptorHeap> _w_desc_heap;
 
         //shader
         ComPtr <ID3D12PipelineState> _pipeline_state;
