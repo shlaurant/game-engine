@@ -185,30 +185,30 @@ fuse::directx::geometry create_cube_uv() {
 
     std::vector<fuse::directx::vertex> vec(24);
 
-    vec[0] = {Vector3(-w2, -h2, -d2), {}, Vector2(0.0f, 1.0f)};
-    vec[1] = {Vector3(-w2, +h2, -d2), {}, Vector2(0.0f, 0.0f)};
-    vec[2] = {Vector3(+w2, +h2, -d2), {}, Vector2(1.0f, 0.0f)};
-    vec[3] = {Vector3(+w2, -h2, -d2), {}, Vector2(1.0f, 1.0f)};
-    vec[4] = {Vector3(-w2, -h2, +d2), {}, Vector2(1.0f, 1.0f)};
-    vec[5] = {Vector3(+w2, -h2, +d2), {}, Vector2(0.0f, 1.0f)};
-    vec[6] = {Vector3(+w2, +h2, +d2), {}, Vector2(0.0f, 0.0f)};
-    vec[7] = {Vector3(-w2, +h2, +d2), {}, Vector2(1.0f, 0.0f)};
-    vec[8] = {Vector3(-w2, +h2, -d2), {}, Vector2(0.0f, 1.0f)};
-    vec[9] = {Vector3(-w2, +h2, +d2), {}, Vector2(0.0f, 0.0f)};
-    vec[10] = {Vector3(+w2, +h2, +d2), {}, Vector2(1.0f, 0.0f)};
-    vec[11] = {Vector3(+w2, +h2, -d2), {}, Vector2(1.0f, 1.0f)};
-    vec[12] = {Vector3(-w2, -h2, -d2), {}, Vector2(1.0f, 1.0f)};
-    vec[13] = {Vector3(+w2, -h2, -d2), {}, Vector2(0.0f, 1.0f)};
-    vec[14] = {Vector3(+w2, -h2, +d2), {}, Vector2(0.0f, 0.0f)};
-    vec[15] = {Vector3(-w2, -h2, +d2), {}, Vector2(1.0f, 0.0f)};
-    vec[16] = {Vector3(-w2, -h2, +d2), {}, Vector2(0.0f, 1.0f)};
-    vec[17] = {Vector3(-w2, +h2, +d2), {}, Vector2(0.0f, 0.0f)};
-    vec[18] = {Vector3(-w2, +h2, -d2), {}, Vector2(1.0f, 0.0f)};
-    vec[19] = {Vector3(-w2, -h2, -d2), {}, Vector2(1.0f, 1.0f)};
-    vec[20] = {Vector3(+w2, -h2, -d2), {}, Vector2(0.0f, 1.0f)};
-    vec[21] = {Vector3(+w2, +h2, -d2), {}, Vector2(0.0f, 0.0f)};
-    vec[22] = {Vector3(+w2, +h2, +d2), {}, Vector2(1.0f, 0.0f)};
-    vec[23] = {Vector3(+w2, -h2, +d2), {}, Vector2(1.0f, 1.0f)};
+    vec[0] = {Vector3(-w2, -h2, -d2), Vector2(0.0f, 1.0f)};
+    vec[1] = {Vector3(-w2, +h2, -d2), Vector2(0.0f, 0.0f)};
+    vec[2] = {Vector3(+w2, +h2, -d2), Vector2(1.0f, 0.0f)};
+    vec[3] = {Vector3(+w2, -h2, -d2), Vector2(1.0f, 1.0f)};
+    vec[4] = {Vector3(-w2, -h2, +d2), Vector2(1.0f, 1.0f)};
+    vec[5] = {Vector3(+w2, -h2, +d2), Vector2(0.0f, 1.0f)};
+    vec[6] = {Vector3(+w2, +h2, +d2), Vector2(0.0f, 0.0f)};
+    vec[7] = {Vector3(-w2, +h2, +d2), Vector2(1.0f, 0.0f)};
+    vec[8] = {Vector3(-w2, +h2, -d2), Vector2(0.0f, 1.0f)};
+    vec[9] = {Vector3(-w2, +h2, +d2), Vector2(0.0f, 0.0f)};
+    vec[10] = {Vector3(+w2, +h2, +d2), Vector2(1.0f, 0.0f)};
+    vec[11] = {Vector3(+w2, +h2, -d2), Vector2(1.0f, 1.0f)};
+    vec[12] = {Vector3(-w2, -h2, -d2), Vector2(1.0f, 1.0f)};
+    vec[13] = {Vector3(+w2, -h2, -d2), Vector2(0.0f, 1.0f)};
+    vec[14] = {Vector3(+w2, -h2, +d2), Vector2(0.0f, 0.0f)};
+    vec[15] = {Vector3(-w2, -h2, +d2), Vector2(1.0f, 0.0f)};
+    vec[16] = {Vector3(-w2, -h2, +d2), Vector2(0.0f, 1.0f)};
+    vec[17] = {Vector3(-w2, +h2, +d2), Vector2(0.0f, 0.0f)};
+    vec[18] = {Vector3(-w2, +h2, -d2), Vector2(1.0f, 0.0f)};
+    vec[19] = {Vector3(-w2, -h2, -d2), Vector2(1.0f, 1.0f)};
+    vec[20] = {Vector3(+w2, -h2, -d2), Vector2(0.0f, 1.0f)};
+    vec[21] = {Vector3(+w2, +h2, -d2), Vector2(0.0f, 0.0f)};
+    vec[22] = {Vector3(+w2, +h2, +d2), Vector2(1.0f, 0.0f)};
+    vec[23] = {Vector3(+w2, -h2, +d2), Vector2(1.0f, 1.0f)};
 
     std::vector<uint16_t> idx(36);
 

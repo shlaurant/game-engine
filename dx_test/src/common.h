@@ -5,7 +5,7 @@
 namespace fuse::directx {
     struct vertex {
         DirectX::SimpleMath::Vector3 position;
-        DirectX::SimpleMath::Vector4 color;
+//        DirectX::SimpleMath::Vector4 color;
         DirectX::SimpleMath::Vector2 uv;
     };
 

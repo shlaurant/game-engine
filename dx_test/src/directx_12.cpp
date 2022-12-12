@@ -93,7 +93,7 @@ namespace fuse::directx {
     }
 
     int directx_12::load_texture(const std::wstring &path) {
-        _cmd_list->Reset(_cmd_alloc.Get(), _pipeline_state.Get());
+        _cmd_list->Reset(_cmd_alloc.Get(), nullptr);
         DirectX::ScratchImage image;
         DirectX::LoadFromWICFile(path.c_str(), DirectX::WIC_FLAGS_NONE, nullptr,
                                  image);
@@ -115,6 +115,7 @@ namespace fuse::directx {
                            0, 0, static_cast<uint32_t>(sub_reses.size()),
                            sub_reses.data());
 
+        _cmd_list->Close();
         execute_cmd_list();
         wait_cmd_queue_sync();
 
@@ -183,8 +184,7 @@ namespace fuse::directx {
         _cmd_list->IASetPrimitiveTopology(
                 D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         auto handle = _res_desc_heap->GetGPUDescriptorHandleForHeapStart();
-        handle.ptr += _device->GetDescriptorHandleIncrementSize(
-                D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * geo.w_offset;
+        handle.ptr += group_size() * geo.w_offset;
         _cmd_list->SetGraphicsRootDescriptorTable(1, handle);
 
         _cmd_list->DrawIndexedInstanced(geo.indices.size(), 1, geo.index_offset,
@@ -319,6 +319,7 @@ namespace fuse::directx {
         _sampler_desc = CD3DX12_STATIC_SAMPLER_DESC(0);
         CD3DX12_DESCRIPTOR_RANGE ranges[] = {
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1),
+                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0)
         };
         CD3DX12_ROOT_PARAMETER param[2];
         param[0].InitAsConstantBufferView(
@@ -356,7 +357,7 @@ namespace fuse::directx {
 
         D3D12_INPUT_ELEMENT_DESC ie_desc[] = {
                 {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-                {"COLOR",    0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+                {"TEXCOORD",    0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
         };
 
         D3D12_GRAPHICS_PIPELINE_STATE_DESC ps_desc = {};
