@@ -1,3 +1,5 @@
+#define LIGHT_COUNT 50
+
 struct material {
     float4 diffuse_albedo;
     float3 fresnel_r0;
@@ -69,4 +71,17 @@ float3 spot_light(light l, material mat, float3 pos, float3 normal, float3 to_ey
     light_color *= pow(max(dot(-light_v, l.direction), 0.0f), l.spot_pow);
 
     return blinn_phong(light_color, light_v, normal, to_eye, mat);
+}
+
+float4 calc_light(light lights[LIGHT_COUNT], material mat, float3 pos, float3 normal, float3 to_eye){
+    float3 ret;
+
+    for(int i = 0; i < LIGHT_COUNT; ++i){
+        light l = lights[i];
+        if(l.type == 0) ret += directional_light(l, mat, normal, to_eye);
+        if(l.type == 1) ret += point_light(l, mat, pos, normal, to_eye);
+        if(l.type == 2) ret += spot_light(l, mat, pos, normal, to_eye);
+    }
+
+    return float4(ret, 0.0f);
 }
