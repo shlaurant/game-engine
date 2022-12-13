@@ -87,7 +87,8 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 
         fuse::directx::light_info li;
         {
-            li.active_count = 1;
+            li.active_count = 2;
+
             li.lights[0].type = 0;
             li.lights[0].color = DirectX::SimpleMath::Vector3(1.f, 0.f, 0.f);
             li.lights[0].fo_start;
@@ -95,6 +96,14 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             li.lights[0].fo_end;
             li.lights[0].position;
             li.lights[0].spot_pow;
+
+            li.lights[1].type = 3;
+            li.lights[1].color = DirectX::SimpleMath::Vector3(.1f, .1f, .1f);
+            li.lights[1].fo_start;
+            li.lights[1].direction;
+            li.lights[1].fo_end;
+            li.lights[1].position;
+            li.lights[1].spot_pow;
         }
 
         std::vector<fuse::directx::object_constant> consts(2);

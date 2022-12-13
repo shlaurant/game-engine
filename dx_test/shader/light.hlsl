@@ -81,6 +81,7 @@ float4 calc_light(light lights[LIGHT_COUNT], int active_cnt, material mat, float
         if(l.type == 0) ret += directional_light(l, mat, normal, to_eye);
         if(l.type == 1) ret += point_light(l, mat, pos, normal, to_eye);
         if(l.type == 2) ret += spot_light(l, mat, pos, normal, to_eye);
+        if(l.type == 3) ret += l.color;
     }
 
     return float4(ret, 0.0f);
