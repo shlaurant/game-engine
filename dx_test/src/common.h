@@ -20,8 +20,24 @@ namespace fuse::directx {
         size_t w_offset = 0;
     };
 
-    struct texture {
-        std::wstring filename;
+    struct light {
+        enum type {
+            DIRECTIONAL, POINT, SPOT
+        };
 
+        int light_type;
+        DirectX::SimpleMath::Vector3 color;
+        float fo_start;
+        DirectX::SimpleMath::Vector3 direction;
+        float fo_end;
+        DirectX::SimpleMath::Vector3 position;
+        float spot_pow;
+        DirectX::SimpleMath::Vector3 pad0;
+    };
+
+    struct material {
+        DirectX::SimpleMath::Vector4 diffuse_albedo;
+        DirectX::SimpleMath::Vector3 fresnel_r0;
+        float roughness;
     };
 }

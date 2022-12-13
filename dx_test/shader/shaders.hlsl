@@ -1,3 +1,5 @@
+#include "light.hlsl"
+
 cbuffer camera_vp :register(b0) {
     row_major float4x4 vp;
 };
