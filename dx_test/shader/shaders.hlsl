@@ -3,19 +3,19 @@
 cbuffer camera :register(b0) {
     row_major float4x4 vp;
     float3 camera_pos;
+    float camera_pad0;
 };
 
 cbuffer light_info : register(b1) {
     light lights[LIGHT_COUNT];
+    int active_light_counts;
+    float3 light_info_pad0;
 }
 
-cbuffer object_w :register(b2) {
+cbuffer object_const :register(b2) {
     row_major float4x4 w;
+    material mat;
 };
-
-cbuffer object_m :register(b3) {
-   material mat;
-}
 
 Texture2D tex : register(t0);
 
@@ -53,8 +53,9 @@ float4 PS_Main(VS_OUT input) : SV_Target
     float4 color = tex.Sample(sam, input.uv);
 
     float3 to_eye = normalize(camera_pos - input.pos.xyz);
-    float4 light_color = calc_light(lights, mat, input.pos.xyz, input.normal, to_eye);
-
+    float4 light_color = calc_light(lights, active_light_counts, mat, input.pos.xyz, input.normal, to_eye);
+    light_color = float4(light_color.rgb, mat.diffuse_albedo.w);
     color *= light_color;
+
     return color;
 }

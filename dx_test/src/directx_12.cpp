@@ -22,7 +22,8 @@ namespace fuse::directx {
         init_rtv();
         init_dsv(info);
 
-        init_vp();
+        init_camera_buf();
+        init_light_buf();
         init_resources();
 
         init_root_signature();
@@ -81,8 +82,23 @@ namespace fuse::directx {
         delete[] index_arr;
     }
 
+    void directx_12::update_camera(const camera &cam) {
+        update_const_buffer<camera>(_vp_buffer, &cam, 0);
+    }
+
     void directx_12::set_vp(const DirectX::SimpleMath::Matrix &vp) {
         update_const_buffer<Matrix>(_vp_buffer, &vp, 0);
+    }
+
+    void directx_12::update_lights(const light_info &info) {
+        update_const_buffer<light_info>(_light_buffer, &info, 0);
+    }
+
+    void
+    directx_12::update_obj_constants(const std::vector<object_constant> &vec) {
+        for (auto i = 0; i < vec.size(); ++i) {
+            update_const_buffer(_w_buffer, &(vec[i]), i);
+        }
     }
 
     void directx_12::update_geometries(std::vector<geometry> &v) {
@@ -131,7 +147,8 @@ namespace fuse::directx {
 
     void directx_12::bind_texture(int obj, int texture) {
         auto handle = _res_desc_heap->GetCPUDescriptorHandleForHeapStart();
-        auto handle_sz = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        auto handle_sz = _device->GetDescriptorHandleIncrementSize(
+                D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         handle.ptr += obj * group_size();
         handle.ptr += handle_sz;
         auto texture_res = _texture_buffers[obj].second;
@@ -145,6 +162,8 @@ namespace fuse::directx {
         _cmd_list->SetGraphicsRootSignature(_signature.Get());
         _cmd_list->SetGraphicsRootConstantBufferView(0,
                                                      _vp_buffer->GetGPUVirtualAddress());
+        _cmd_list->SetGraphicsRootConstantBufferView(1,
+                                                     _light_buffer->GetGPUVirtualAddress());
         ID3D12DescriptorHeap *heaps[] = {_res_desc_heap.Get()};
         _cmd_list->SetDescriptorHeaps(1, heaps);
 
@@ -175,6 +194,20 @@ namespace fuse::directx {
         _back_buffer = (_back_buffer + 1) % SWAP_CHAIN_BUFFER_COUNT;
 
         wait_cmd_queue_sync();
+    }
+
+    void directx_12::render(const render_info &info) {
+        D3D12_VERTEX_BUFFER_VIEW tv[] = {_vertex_buffer_view};
+        _cmd_list->IASetVertexBuffers(0, 1, tv);
+        _cmd_list->IASetIndexBuffer(&_index_buffer_view);
+        _cmd_list->IASetPrimitiveTopology(
+                D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        auto handle = _res_desc_heap->GetGPUDescriptorHandleForHeapStart();
+        handle.ptr += group_size() * info.object_index;
+        _cmd_list->SetGraphicsRootDescriptorTable(2, handle);
+
+        _cmd_list->DrawIndexedInstanced(info.index_count, 1, info.index_offset,
+                                        info.vertex_offset, 0);
     }
 
     void directx_12::render(const geometry &geo) {
@@ -288,14 +321,16 @@ namespace fuse::directx {
         wait_cmd_queue_sync();
     }
 
-    void directx_12::init_vp() {
-        _vp_buffer = create_const_buffer<Matrix>(1,
-                                                 _device);
-        set_vp(Matrix::Identity);
+    void directx_12::init_camera_buf() {
+        _vp_buffer = create_const_buffer<camera>(1, _device);
+    }
+
+    void directx_12::init_light_buf() {
+        _light_buffer = create_const_buffer<light_info>(1, _device);
     }
 
     void directx_12::init_resources() {
-        _w_buffer = create_const_buffer<Matrix>(OBJ_CNT, _device);
+        _w_buffer = create_const_buffer<object_constant>(OBJ_CNT, _device);
 
         D3D12_DESCRIPTOR_HEAP_DESC h_desc = {};
         h_desc.NodeMask = 0;
@@ -307,8 +342,9 @@ namespace fuse::directx {
 
         for (auto i = 0; i < OBJ_CNT; ++i) {
             D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc;
-            cbv_desc.SizeInBytes = size_of_256<Matrix>();
-            cbv_desc.BufferLocation = w_addr + size_of_256<Matrix>() * i;
+            cbv_desc.SizeInBytes = size_of_256<object_constant>();
+            cbv_desc.BufferLocation =
+                    w_addr + size_of_256<object_constant>() * i;
             auto handle = _res_desc_heap->GetCPUDescriptorHandleForHeapStart();
             handle.ptr += group_size() * i;
             _device->CreateConstantBufferView(&cbv_desc, handle);
@@ -318,13 +354,13 @@ namespace fuse::directx {
     void directx_12::init_root_signature() {
         _sampler_desc = CD3DX12_STATIC_SAMPLER_DESC(0);
         CD3DX12_DESCRIPTOR_RANGE ranges[] = {
-                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1),
+                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 2),
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0)
         };
-        CD3DX12_ROOT_PARAMETER param[2];
-        param[0].InitAsConstantBufferView(
-                static_cast<uint32_t>(0));
-        param[1].InitAsDescriptorTable(_countof(ranges), ranges);
+        CD3DX12_ROOT_PARAMETER param[3];
+        param[0].InitAsConstantBufferView(static_cast<uint32_t>(0));//camera
+        param[1].InitAsConstantBufferView(static_cast<uint32_t>(1));//lights
+        param[2].InitAsDescriptorTable(_countof(ranges), ranges);//object const
 
         auto rs_desc = CD3DX12_ROOT_SIGNATURE_DESC(_countof(param), param, 1,
                                                    &_sampler_desc);
@@ -352,12 +388,13 @@ namespace fuse::directx {
         TCHAR buf[100];
         GetModuleFileName(nullptr, buf, 100);
 
-        auto vs_data = DX::ReadData(L"vs.cso");
-        auto ps_data = DX::ReadData(L"ps.cso");
+        auto vs_data = DX::ReadData(L"shader\\vs.cso");
+        auto ps_data = DX::ReadData(L"shader\\ps.cso");
 
         D3D12_INPUT_ELEMENT_DESC ie_desc[] = {
                 {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-                {"TEXCOORD",    0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+                {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+                {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
         };
 
         D3D12_GRAPHICS_PIPELINE_STATE_DESC ps_desc = {};

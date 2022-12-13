@@ -6,6 +6,8 @@
 #include "helper.h"
 #include "Input.h"
 
+using namespace DirectX::SimpleMath;
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int
@@ -82,7 +84,43 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 
         camera camera;
         camera.transform.position.z = -2.f;
+
+        fuse::directx::light_info li;
+        {
+            li.active_count = 1;
+            li.lights[0].type = 0;
+            li.lights[0].color = DirectX::SimpleMath::Vector3(1.f, 0.f, 0.f);
+            li.lights[0].fo_start;
+            li.lights[0].direction = DirectX::SimpleMath::Vector3::Down;
+            li.lights[0].fo_end;
+            li.lights[0].position;
+            li.lights[0].spot_pow;
+        }
+
+        std::vector<fuse::directx::object_constant> consts(2);
+        consts[0].world_matrix = t0;
+        consts[0].material.diffuse_albedo = Vector4(0.5f, 0.5f, 0.5f, 1.f);
+        consts[0].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+        consts[0].material.roughness = 0.5f;
+
+        consts[1].world_matrix = t1;
+        consts[1].material.diffuse_albedo = Vector4(0.5f, 0.5f, 0.5f, 1.f);;
+        consts[1].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+        consts[1].material.roughness = 0.5f;
+
         dx12.init_geometries(test);
+
+        std::vector<fuse::directx::render_info> infos(2);
+        infos[0].object_index = 0;
+        infos[0].index_count = test[0].indices.size();
+        infos[0].index_offset = test[0].index_offset;
+        infos[0].vertex_offset = test[0].vertex_offset;
+
+        infos[1].object_index = 1;
+        infos[1].index_count = test[1].indices.size();
+        infos[1].index_offset = test[1].index_offset;
+        infos[1].vertex_offset = test[1].vertex_offset;
+
         while (msg.message != WM_QUIT) {
             if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
                 TranslateMessage(&msg);
@@ -90,10 +128,19 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             } else {
                 input.Update();
                 handle_input(input, camera);
-                dx12.set_vp(camera.view() * camera.projection());
-                dx12.update_geometries(test);
+                fuse::directx::camera c;
+                c.vp = camera.view() * camera.projection();
+                c.position = camera.transform.position;
+//                dx12.set_vp(camera.view() * camera.projection());
+                dx12.update_camera(c);
+                dx12.update_lights(li);
+//                dx12.update_geometries(test);
+                dx12.update_obj_constants(consts);
                 dx12.render_begin();
-                for (const auto &e: test) {
+//                for (const auto &e: test) {
+//                    dx12.render(e);
+//                }
+                for (const auto &e: infos) {
                     dx12.render(e);
                 }
                 dx12.render_end();

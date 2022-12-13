@@ -27,9 +27,13 @@ namespace fuse::directx {
         void bind_texture(int obj, int texture);
 
         void set_vp(const DirectX::SimpleMath::Matrix &);
+        void update_camera(const camera &);
+        void update_lights(const light_info &);
+        void update_obj_constants(const std::vector<object_constant> &);
         void update_geometries(std::vector<geometry> &);
 
         void render_begin();
+        void render(const render_info &);
         void render(const geometry &);
         void render_end();
     private:
@@ -62,7 +66,9 @@ namespace fuse::directx {
 
         //resource
         static const int TABLE_SIZE = 2;
+        static const int LIGHT_COUNT = 50;
         ComPtr <ID3D12Resource> _vp_buffer;
+        ComPtr <ID3D12Resource> _light_buffer;
         ComPtr <ID3D12Resource> _w_buffer;
         std::vector<std::pair<D3D12_SHADER_RESOURCE_VIEW_DESC,
                 ComPtr < ID3D12Resource>>>
@@ -84,7 +90,8 @@ namespace fuse::directx {
         void init_rtv();
         void init_dsv(const window_info &);
 
-        void init_vp();
+        void init_camera_buf();
+        void init_light_buf();
         void init_resources();
 
         void init_root_signature();

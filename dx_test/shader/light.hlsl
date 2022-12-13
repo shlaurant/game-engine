@@ -73,10 +73,10 @@ float3 spot_light(light l, material mat, float3 pos, float3 normal, float3 to_ey
     return blinn_phong(light_color, light_v, normal, to_eye, mat);
 }
 
-float4 calc_light(light lights[LIGHT_COUNT], material mat, float3 pos, float3 normal, float3 to_eye){
+float4 calc_light(light lights[LIGHT_COUNT], int active_cnt, material mat, float3 pos, float3 normal, float3 to_eye){
     float3 ret;
 
-    for(int i = 0; i < LIGHT_COUNT; ++i){
+    for(int i = 0; i < active_cnt; ++i){
         light l = lights[i];
         if(l.type == 0) ret += directional_light(l, mat, normal, to_eye);
         if(l.type == 1) ret += point_light(l, mat, pos, normal, to_eye);

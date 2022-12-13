@@ -7,6 +7,7 @@ namespace fuse::directx {
         DirectX::SimpleMath::Vector3 position;
 //        DirectX::SimpleMath::Vector4 color;
         DirectX::SimpleMath::Vector2 uv;
+        DirectX::SimpleMath::Vector3 normal;
     };
 
     struct geometry {
@@ -20,12 +21,36 @@ namespace fuse::directx {
         size_t w_offset = 0;
     };
 
-    struct light {
-        enum type {
-            DIRECTIONAL, POINT, SPOT
-        };
+    struct material {
+        DirectX::SimpleMath::Vector4 diffuse_albedo;
+        DirectX::SimpleMath::Vector3 fresnel_r0;
+        float roughness;
+    };
 
-        int light_type;
+    struct object_constant {
+        DirectX::SimpleMath::Matrix world_matrix;
+        material material;
+    };
+
+    struct render_info {
+        int object_index;
+        int index_count;
+        int index_offset;
+        int vertex_offset;
+    };
+
+    struct camera {
+        DirectX::SimpleMath::Matrix vp;
+        DirectX::SimpleMath::Vector3 position;
+        float pad0;
+    };
+
+    enum light_type {
+        DIRECTIONAL = 0, POINT, SPOT, AMBIENT, NONE
+    };
+
+    struct light {
+        int type = (int) light_type::NONE;
         DirectX::SimpleMath::Vector3 color;
         float fo_start;
         DirectX::SimpleMath::Vector3 direction;
@@ -35,9 +60,9 @@ namespace fuse::directx {
         DirectX::SimpleMath::Vector3 pad0;
     };
 
-    struct material {
-        DirectX::SimpleMath::Vector4 diffuse_albedo;
-        DirectX::SimpleMath::Vector3 fresnel_r0;
-        float roughness;
+    struct light_info {
+        light lights[50];//should be same with LIGHT_COUNT in shader code
+        int active_count;
+        DirectX::SimpleMath::Vector3 pad0;
     };
 }
