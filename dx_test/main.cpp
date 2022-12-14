@@ -90,9 +90,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             li.active_count = 2;
 
             li.lights[0].type = 0;
-            li.lights[0].color = DirectX::SimpleMath::Vector3(1.f, 0.f, 0.f);
+            li.lights[0].color = DirectX::SimpleMath::Vector3(1.f, 1.f, 1.f);
             li.lights[0].fo_start;
-            li.lights[0].direction = DirectX::SimpleMath::Vector3::Down;
+            li.lights[0].direction = Vector3(0.f, -1.f, 1.f);
+            li.lights[0].direction.Normalize();
             li.lights[0].fo_end;
             li.lights[0].position;
             li.lights[0].spot_pow;
@@ -113,9 +114,9 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         consts[0].material.roughness = 0.5f;
 
         consts[1].world_matrix = t1;
-        consts[1].material.diffuse_albedo = Vector4(0.5f, 0.5f, 0.5f, 1.f);;
-        consts[1].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
-        consts[1].material.roughness = 0.5f;
+        consts[1].material.diffuse_albedo = Vector4(0.1f, 0.1f, 0.1f, 1.f);;
+        consts[1].material.fresnel_r0 = Vector3(0.95f, 0.93f, 0.88f);
+        consts[1].material.roughness = 0.1f;
 
         dx12.init_geometries(test);
 

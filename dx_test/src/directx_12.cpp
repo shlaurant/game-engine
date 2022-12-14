@@ -86,10 +86,6 @@ namespace fuse::directx {
         update_const_buffer<camera>(_vp_buffer, &cam, 0);
     }
 
-    void directx_12::set_vp(const DirectX::SimpleMath::Matrix &vp) {
-        update_const_buffer<Matrix>(_vp_buffer, &vp, 0);
-    }
-
     void directx_12::update_lights(const light_info &info) {
         update_const_buffer<light_info>(_light_buffer, &info, 0);
     }
@@ -97,14 +93,7 @@ namespace fuse::directx {
     void
     directx_12::update_obj_constants(const std::vector<object_constant> &vec) {
         for (auto i = 0; i < vec.size(); ++i) {
-            update_const_buffer(_w_buffer, &(vec[i]), i);
-        }
-    }
-
-    void directx_12::update_geometries(std::vector<geometry> &v) {
-        for (size_t i = 0; i < v.size(); ++i) {
-            update_const_buffer(_w_buffer, &(v[i].world_matrix), i);
-            v[i].w_offset = i;
+            update_const_buffer(_obj_const_buffer, &(vec[i]), i);
         }
     }
 
@@ -330,7 +319,7 @@ namespace fuse::directx {
     }
 
     void directx_12::init_resources() {
-        _w_buffer = create_const_buffer<object_constant>(OBJ_CNT, _device);
+        _obj_const_buffer = create_const_buffer<object_constant>(OBJ_CNT, _device);
 
         D3D12_DESCRIPTOR_HEAP_DESC h_desc = {};
         h_desc.NodeMask = 0;
@@ -338,7 +327,7 @@ namespace fuse::directx {
         h_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         h_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         _device->CreateDescriptorHeap(&h_desc, IID_PPV_ARGS(&_res_desc_heap));
-        auto w_addr = _w_buffer->GetGPUVirtualAddress();
+        auto w_addr = _obj_const_buffer->GetGPUVirtualAddress();
 
         for (auto i = 0; i < OBJ_CNT; ++i) {
             D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc;
@@ -381,12 +370,6 @@ namespace fuse::directx {
 #else
         UINT compile_flags = 0;
 #endif
-        std::ifstream fin("C:/Projects/game_engine/dx_test/vs.cso",
-                          std::ios::binary);
-        auto b = fin.is_open();
-        fin.seekg(0, std::ios_base::beg);
-        TCHAR buf[100];
-        GetModuleFileName(nullptr, buf, 100);
 
         auto vs_data = DX::ReadData(L"shader\\vs.cso");
         auto ps_data = DX::ReadData(L"shader\\ps.cso");
