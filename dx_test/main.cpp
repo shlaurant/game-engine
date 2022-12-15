@@ -60,7 +60,6 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         fuse::directx::directx_12 dx12;
         auto geo = create_geometries();
         auto consts = create_obj_const();
-        auto infos = create_render_info(geo);
         auto li = create_light_info();
         camera camera;
         camera.transform.position.z = -2.f;
@@ -70,7 +69,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.load_texture(L"white.png");
         dx12.bind_texture(0, 0);
         dx12.bind_texture(1, 1);
+        dx12.bind_texture(2, 1);
+
         dx12.init_geometries(geo);
+        auto infos = create_render_info(geo);
 
         while (msg.message != WM_QUIT) {
             if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
@@ -126,16 +128,19 @@ std::vector<fuse::directx::geometry> create_geometries() {
     std::vector<fuse::directx::geometry> ret;
 
     auto cube0 = create_cube_uv();
-    ret.push_back(cube0);
+    ret.emplace_back(cube0);
 
     auto cube1 = create_cube_uv();
-    ret.push_back(cube1);
+    ret.emplace_back(cube1);
+
+    auto plane = create_plain(100, 100);
+    ret.emplace_back(plane);
 
     return std::move(ret);
 }
 
 std::vector<fuse::directx::object_constant> create_obj_const() {
-    std::vector<fuse::directx::object_constant> consts(2);
+    std::vector<fuse::directx::object_constant> consts(3);
 
     DirectX::SimpleMath::Vector3 tmp = {1.f, 0.f, 3.f};
     auto t0 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
@@ -151,20 +156,23 @@ std::vector<fuse::directx::object_constant> create_obj_const() {
     consts[1].material.fresnel_r0 = Vector3(0.95f, 0.93f, 0.88f);
     consts[1].material.roughness = 0.1f;
 
+    consts[2].world_matrix = Matrix::Identity;
+    consts[2].material.diffuse_albedo = Vector4(0.1f, 0.1f, 0.1f, 1.f);;
+    consts[2].material.fresnel_r0 = Vector3(0.95f, 0.93f, 0.88f);
+    consts[2].material.roughness = 0.1f;
+
     return std::move(consts);
 }
 
 std::vector<fuse::directx::render_info> create_render_info(const std::vector<fuse::directx::geometry> &geo) {
-    std::vector<fuse::directx::render_info> infos(2);
-    infos[0].object_index = 0;
-    infos[0].index_count = geo[0].indices.size();
-    infos[0].index_offset = geo[0].index_offset;
-    infos[0].vertex_offset = geo[0].vertex_offset;
+    std::vector<fuse::directx::render_info> infos(geo.size());
 
-    infos[1].object_index = 1;
-    infos[1].index_count = geo[1].indices.size();
-    infos[1].index_offset = geo[1].index_offset;
-    infos[1].vertex_offset = geo[1].vertex_offset;
+    for(auto i = 0; i < geo.size(); ++i){
+        infos[i].object_index = i;
+        infos[i].index_count = geo[i].indices.size();
+        infos[i].index_offset = geo[i].index_offset;
+        infos[i].vertex_offset = geo[i].vertex_offset;
+    }
 
     return std::move(infos);
 }
@@ -192,5 +200,5 @@ fuse::directx::light_info create_light_info() {
         li.lights[1].spot_pow;
     }
 
-    return std::move(li);
+    return li;
 }

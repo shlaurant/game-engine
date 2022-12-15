@@ -279,7 +279,7 @@ fuse::directx::geometry create_cube_uv() {
     return ret;
 }
 
-fuse::directx::geometry create_plain(int width, int height, float alt) {
+fuse::directx::geometry create_plain(int width, int height) {
     fuse::directx::geometry ret;
 
     auto cnt = (width + 1) * (height + 1);
@@ -287,14 +287,26 @@ fuse::directx::geometry create_plain(int width, int height, float alt) {
     for (auto i = 0; i < cnt; ++i) {
         int x = i % (width + 1);
         int y = i / (width + 1);
-        ret.vertices[i].position = Vector3(x, y, alt);
-        ret.vertices[i].normal = Vector3::Up;
+        ret.vertices[i].position = Vector3(x, y, 0.f);
+        ret.vertices[i].normal = Vector3::Backward;
         auto ux = x % 2 == 0 ? 0.f : 1.f;
         auto uy = y % 2 == 0 ? 0.f : 1.f;
         ret.vertices[i].uv = Vector2(ux, uy);
     }
 
-    return ret;
+    for (auto i = 0; i < height; ++i) {
+        for (auto j = 0; j < width; ++j) {
+            auto index = (width + 1) * i + j;
+            ret.indices.push_back(index);
+            ret.indices.push_back(index + width + 1);
+            ret.indices.push_back(index + 1);
+            ret.indices.push_back(index + width + 1);
+            ret.indices.push_back(index + width + 2);
+            ret.indices.push_back(index + 1);
+        }
+    }
+
+    return std::move(ret);
 }
 
 DirectX::SimpleMath::Vector4 white() {
