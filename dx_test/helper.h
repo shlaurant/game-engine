@@ -44,6 +44,8 @@ fuse::directx::geometry create_tetra();
 
 fuse::directx::geometry create_cube_uv();
 
+fuse::directx::geometry create_plain(int width, int height);
+
 DirectX::SimpleMath::Vector4 white();
 DirectX::SimpleMath::Vector4 red();
 DirectX::SimpleMath::Vector4 green();

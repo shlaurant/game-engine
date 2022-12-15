@@ -34,6 +34,7 @@ namespace fuse::directx {
         void render(const render_info &);
         void render(const geometry &);
         void render_end();
+
     private:
         ComPtr <IDXGIFactory> _factory;
         ComPtr <ID3D12Device> _device;

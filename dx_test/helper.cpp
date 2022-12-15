@@ -144,35 +144,35 @@ DirectX::SimpleMath::Vector4 mult(const Vector4 &v, const Matrix &m) {
 fuse::directx::geometry create_cube() {
     static const float d = 0.5f;
     fuse::directx::geometry ret;
-    ret.vertices = {{{-d, d,  -d}, white()},
-                    {{d,  d,  -d}, red()},
-                    {{-d, -d, -d}, green()},
-                    {{d,  -d, -d}, blue()},
-                    {{-d, d,  d},  white()},
-                    {{d,  d,  d},  red()},
-                    {{-d, -d, d},  green()},
-                    {{d,  -d, d},  blue()}};
-    ret.indices = {0, 1, 2, 1, 3, 2,
-                   1, 7, 3, 1, 5, 7,
-                   0, 4, 1, 4, 5, 1,
-                   0, 2, 6, 0, 6, 4,
-                   2, 3, 6, 3, 7, 6,
-                   4, 6, 5, 5, 6, 7};
+//    ret.vertices = {{{-d, d,  -d}, white()},
+//                    {{d,  d,  -d}, red()},
+//                    {{-d, -d, -d}, green()},
+//                    {{d,  -d, -d}, blue()},
+//                    {{-d, d,  d},  white()},
+//                    {{d,  d,  d},  red()},
+//                    {{-d, -d, d},  green()},
+//                    {{d,  -d, d},  blue()}};
+//    ret.indices = {0, 1, 2, 1, 3, 2,
+//                   1, 7, 3, 1, 5, 7,
+//                   0, 4, 1, 4, 5, 1,
+//                   0, 2, 6, 0, 6, 4,
+//                   2, 3, 6, 3, 7, 6,
+//                   4, 6, 5, 5, 6, 7};
 
     return ret;
 }
 
 fuse::directx::geometry create_tetra() {
-    static const float d = 0.5f;
     fuse::directx::geometry ret;
-    ret.vertices = {{{0.f, d * 2, 0.f}, red()},
-                    {{0.f, 0.f,   d},   green()},
-                    {{d,   0.f,   -d},  blue()},
-                    {{-d,  0.f,   -d},  white()}};
-    ret.indices = {0, 2, 3,
-                   0, 1, 2,
-                   0, 3, 1,
-                   2, 1, 3};
+//    static const float d = 0.5f;
+//    ret.vertices = {{{0.f, d * 2, 0.f}, red()},
+//                    {{0.f, 0.f,   d},   green()},
+//                    {{d,   0.f,   -d},  blue()},
+//                    {{-d,  0.f,   -d},  white()}};
+//    ret.indices = {0, 2, 3,
+//                   0, 1, 2,
+//                   0, 3, 1,
+//                   2, 1, 3};
     return ret;
 }
 
@@ -185,30 +185,54 @@ fuse::directx::geometry create_cube_uv() {
 
     std::vector<fuse::directx::vertex> vec(24);
 
-    vec[0] = {Vector3(-w2, -h2, -d2), Vector2(0.0f, 1.0f), Vector3(0.f, 0.f, -1.f)};
-    vec[1] = {Vector3(-w2, +h2, -d2), Vector2(0.0f, 0.0f), Vector3(0.f, 0.f, -1.f)};
-    vec[2] = {Vector3(+w2, +h2, -d2), Vector2(1.0f, 0.0f), Vector3(0.f, 0.f, -1.f)};
-    vec[3] = {Vector3(+w2, -h2, -d2), Vector2(1.0f, 1.0f), Vector3(0.f, 0.f, -1.f)};
-    vec[4] = {Vector3(-w2, -h2, +d2), Vector2(1.0f, 1.0f), Vector3(0.f, 0.f, 1.f)};
-    vec[5] = {Vector3(+w2, -h2, +d2), Vector2(0.0f, 1.0f), Vector3(0.f, 0.f, 1.f)};
-    vec[6] = {Vector3(+w2, +h2, +d2), Vector2(0.0f, 0.0f), Vector3(0.f, 0.f, 1.f)};
-    vec[7] = {Vector3(-w2, +h2, +d2), Vector2(1.0f, 0.0f), Vector3(0.f, 0.f, 1.f)};
-    vec[8] = {Vector3(-w2, +h2, -d2), Vector2(0.0f, 1.0f), Vector3(0.f, 1.f, 0.f)};
-    vec[9] = {Vector3(-w2, +h2, +d2), Vector2(0.0f, 0.0f), Vector3(0.f, 1.f, 0.f)};
-    vec[10] = {Vector3(+w2, +h2, +d2), Vector2(1.0f, 0.0f), Vector3(0.f, 1.f, 0.f)};
-    vec[11] = {Vector3(+w2, +h2, -d2), Vector2(1.0f, 1.0f), Vector3(0.f, 1.f, 0.f)};
-    vec[12] = {Vector3(-w2, -h2, -d2), Vector2(1.0f, 1.0f), Vector3(0.f, -1.f, 0.f)};
-    vec[13] = {Vector3(+w2, -h2, -d2), Vector2(0.0f, 1.0f), Vector3(0.f, -1.f, 0.f)};
-    vec[14] = {Vector3(+w2, -h2, +d2), Vector2(0.0f, 0.0f), Vector3(0.f, -1.f, 0.f)};
-    vec[15] = {Vector3(-w2, -h2, +d2), Vector2(1.0f, 0.0f), Vector3(0.f, -1.f, 0.f)};
-    vec[16] = {Vector3(-w2, -h2, +d2), Vector2(0.0f, 1.0f), Vector3(-1.f, 0.f, 0.f)};
-    vec[17] = {Vector3(-w2, +h2, +d2), Vector2(0.0f, 0.0f), Vector3(-1.f, 0.f, 0.f)};
-    vec[18] = {Vector3(-w2, +h2, -d2), Vector2(1.0f, 0.0f), Vector3(-1.f, 0.f, 0.f)};
-    vec[19] = {Vector3(-w2, -h2, -d2), Vector2(1.0f, 1.0f), Vector3(-1.f, 0.f, 0.f)};
-    vec[20] = {Vector3(+w2, -h2, -d2), Vector2(0.0f, 1.0f), Vector3(1.f, 0.f, 0.f)};
-    vec[21] = {Vector3(+w2, +h2, -d2), Vector2(0.0f, 0.0f), Vector3(1.f, 0.f, 0.f)};
-    vec[22] = {Vector3(+w2, +h2, +d2), Vector2(1.0f, 0.0f), Vector3(1.f, 0.f, 0.f)};
-    vec[23] = {Vector3(+w2, -h2, +d2), Vector2(1.0f, 1.0f), Vector3(1.f, 0.f, 0.f)};
+    vec[0] = {Vector3(-w2, -h2, -d2), Vector2(0.0f, 1.0f),
+              Vector3(0.f, 0.f, -1.f)};
+    vec[1] = {Vector3(-w2, +h2, -d2), Vector2(0.0f, 0.0f),
+              Vector3(0.f, 0.f, -1.f)};
+    vec[2] = {Vector3(+w2, +h2, -d2), Vector2(1.0f, 0.0f),
+              Vector3(0.f, 0.f, -1.f)};
+    vec[3] = {Vector3(+w2, -h2, -d2), Vector2(1.0f, 1.0f),
+              Vector3(0.f, 0.f, -1.f)};
+    vec[4] = {Vector3(-w2, -h2, +d2), Vector2(1.0f, 1.0f),
+              Vector3(0.f, 0.f, 1.f)};
+    vec[5] = {Vector3(+w2, -h2, +d2), Vector2(0.0f, 1.0f),
+              Vector3(0.f, 0.f, 1.f)};
+    vec[6] = {Vector3(+w2, +h2, +d2), Vector2(0.0f, 0.0f),
+              Vector3(0.f, 0.f, 1.f)};
+    vec[7] = {Vector3(-w2, +h2, +d2), Vector2(1.0f, 0.0f),
+              Vector3(0.f, 0.f, 1.f)};
+    vec[8] = {Vector3(-w2, +h2, -d2), Vector2(0.0f, 1.0f),
+              Vector3(0.f, 1.f, 0.f)};
+    vec[9] = {Vector3(-w2, +h2, +d2), Vector2(0.0f, 0.0f),
+              Vector3(0.f, 1.f, 0.f)};
+    vec[10] = {Vector3(+w2, +h2, +d2), Vector2(1.0f, 0.0f),
+               Vector3(0.f, 1.f, 0.f)};
+    vec[11] = {Vector3(+w2, +h2, -d2), Vector2(1.0f, 1.0f),
+               Vector3(0.f, 1.f, 0.f)};
+    vec[12] = {Vector3(-w2, -h2, -d2), Vector2(1.0f, 1.0f),
+               Vector3(0.f, -1.f, 0.f)};
+    vec[13] = {Vector3(+w2, -h2, -d2), Vector2(0.0f, 1.0f),
+               Vector3(0.f, -1.f, 0.f)};
+    vec[14] = {Vector3(+w2, -h2, +d2), Vector2(0.0f, 0.0f),
+               Vector3(0.f, -1.f, 0.f)};
+    vec[15] = {Vector3(-w2, -h2, +d2), Vector2(1.0f, 0.0f),
+               Vector3(0.f, -1.f, 0.f)};
+    vec[16] = {Vector3(-w2, -h2, +d2), Vector2(0.0f, 1.0f),
+               Vector3(-1.f, 0.f, 0.f)};
+    vec[17] = {Vector3(-w2, +h2, +d2), Vector2(0.0f, 0.0f),
+               Vector3(-1.f, 0.f, 0.f)};
+    vec[18] = {Vector3(-w2, +h2, -d2), Vector2(1.0f, 0.0f),
+               Vector3(-1.f, 0.f, 0.f)};
+    vec[19] = {Vector3(-w2, -h2, -d2), Vector2(1.0f, 1.0f),
+               Vector3(-1.f, 0.f, 0.f)};
+    vec[20] = {Vector3(+w2, -h2, -d2), Vector2(0.0f, 1.0f),
+               Vector3(1.f, 0.f, 0.f)};
+    vec[21] = {Vector3(+w2, +h2, -d2), Vector2(0.0f, 0.0f),
+               Vector3(1.f, 0.f, 0.f)};
+    vec[22] = {Vector3(+w2, +h2, +d2), Vector2(1.0f, 0.0f),
+               Vector3(1.f, 0.f, 0.f)};
+    vec[23] = {Vector3(+w2, -h2, +d2), Vector2(1.0f, 1.0f),
+               Vector3(1.f, 0.f, 0.f)};
 
     std::vector<uint16_t> idx(36);
 
@@ -251,6 +275,24 @@ fuse::directx::geometry create_cube_uv() {
 
     ret.vertices = vec;
     ret.indices = idx;
+
+    return ret;
+}
+
+fuse::directx::geometry create_plain(int width, int height, float alt) {
+    fuse::directx::geometry ret;
+
+    auto cnt = (width + 1) * (height + 1);
+    ret.vertices.resize(cnt);
+    for (auto i = 0; i < cnt; ++i) {
+        int x = i % (width + 1);
+        int y = i / (width + 1);
+        ret.vertices[i].position = Vector3(x, y, alt);
+        ret.vertices[i].normal = Vector3::Up;
+        auto ux = x % 2 == 0 ? 0.f : 1.f;
+        auto uy = y % 2 == 0 ? 0.f : 1.f;
+        ret.vertices[i].uv = Vector2(ux, uy);
+    }
 
     return ret;
 }
