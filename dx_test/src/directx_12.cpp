@@ -140,7 +140,7 @@ namespace fuse::directx {
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         handle.ptr += obj * group_size();
         handle.ptr += handle_sz;
-        auto texture_res = _texture_buffers[obj].second;
+        auto texture_res = _texture_buffers[texture].second;
         auto desc = _texture_buffers[texture].first;
         _device->CreateShaderResourceView(texture_res.Get(), &desc, handle);
     }
