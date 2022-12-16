@@ -68,8 +68,8 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         camera.transform.position.z = -2.f;
 
         dx12.init({hwnd, 1920, 1080, true});
-        dx12.load_texture(L"kyaru.png");
-        dx12.load_texture(L"white.png");
+        dx12.load_texture(L"resource\\kyaru.png");
+        dx12.load_texture(L"resource\\white.png");
         dx12.bind_texture(0, 0);
         dx12.bind_texture(1, 1);
         dx12.bind_texture(2, 1);
