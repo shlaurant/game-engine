@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <WinUser.h>
+#include <windowsx.h>
 
 #include "directx_12.h"
 #include "debug.h"
@@ -8,11 +9,14 @@
 
 using namespace DirectX::SimpleMath;
 
+Input input;
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 std::vector<fuse::directx::geometry> create_geometries();
 std::vector<fuse::directx::object_constant> create_obj_const();
-std::vector<fuse::directx::render_info> create_render_info(const std::vector<fuse::directx::geometry> &);
+std::vector<fuse::directx::render_info>
+create_render_info(const std::vector<fuse::directx::geometry> &);
 fuse::directx::light_info create_light_info();
 
 int
@@ -52,7 +56,6 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 
     ShowWindow(hwnd, nCmdShow);
 
-    Input input;
     input.Init(hwnd);
 
     MSG msg = {};
@@ -120,6 +123,11 @@ CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         }
             return 0;
 
+        case WM_MOUSEMOVE: {
+            input.set_mouse_pos(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            return 0;
+        }
+
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
@@ -164,10 +172,11 @@ std::vector<fuse::directx::object_constant> create_obj_const() {
     return std::move(consts);
 }
 
-std::vector<fuse::directx::render_info> create_render_info(const std::vector<fuse::directx::geometry> &geo) {
+std::vector<fuse::directx::render_info>
+create_render_info(const std::vector<fuse::directx::geometry> &geo) {
     std::vector<fuse::directx::render_info> infos(geo.size());
 
-    for(auto i = 0; i < geo.size(); ++i){
+    for (auto i = 0; i < geo.size(); ++i) {
         infos[i].object_index = i;
         infos[i].index_count = geo[i].indices.size();
         infos[i].index_offset = geo[i].index_offset;

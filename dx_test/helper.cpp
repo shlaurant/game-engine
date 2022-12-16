@@ -41,21 +41,12 @@ DirectX::SimpleMath::Vector3 camera::right_vector() const {
 }
 
 void handle_input(Input &input, camera &camera) {
-    if (input.GetButton(KEY_TYPE::RIGHT)) {
-        camera.transform.position.x += .1f;
-    }
+    int dx, dy;
+    dx = input.mouse_delta().first;
+    dy = input.mouse_delta().second;
+    camera.transform.rotation.y += (float)dx * camera.rot_c;
+    camera.transform.rotation.x += (float)dy * camera.rot_c;
 
-    if (input.GetButton(KEY_TYPE::UP)) {
-        camera.transform.position.y += .1f;
-    }
-
-    if (input.GetButton(KEY_TYPE::DOWN)) {
-        camera.transform.position.y -= .1f;
-    }
-
-    if (input.GetButton(KEY_TYPE::LEFT)) {
-        camera.transform.position.x -= .1f;
-    }
 
     if (input.GetButton(KEY_TYPE::W)) {
         camera.transform.position += camera.look_vector() * camera.speed_c;

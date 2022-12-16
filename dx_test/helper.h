@@ -16,7 +16,8 @@ struct transform {
 struct camera {
     inline static float ratio() { return 1920.f / 1080.f; }
 
-    const float speed_c = .1f;
+    const float speed_c = .2f;
+    const float rot_c = .01f;
 
     transform transform;
 
