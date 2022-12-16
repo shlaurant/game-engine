@@ -31,9 +31,13 @@ DirectX::SimpleMath::Matrix camera::projection() const {
 }
 
 DirectX::SimpleMath::Vector3 camera::look_vector() const {
-    return Vector3(
-            Vector4::Transform(Vector4::UnitZ, transform.rotation_matrix() *
-                                               transform.translation_matrix()));
+    return {Vector4::Transform(Vector4::UnitZ, transform.rotation_matrix() *
+                                               transform.translation_matrix())};
+}
+
+DirectX::SimpleMath::Vector3 camera::right_vector() const {
+    return {Vector4::Transform(Vector4::UnitX, transform.rotation_matrix() *
+                                               transform.translation_matrix())};
 }
 
 void handle_input(Input &input, camera &camera) {
@@ -62,11 +66,11 @@ void handle_input(Input &input, camera &camera) {
     }
 
     if (input.GetButton(KEY_TYPE::A)) {
-        camera.transform.rotation.y -= .1f;
+        camera.transform.position -= camera.right_vector() * camera.speed_c;
     }
 
     if (input.GetButton(KEY_TYPE::D)) {
-        camera.transform.rotation.y += .1f;
+        camera.transform.position += camera.right_vector() * camera.speed_c;
     }
 
     if (input.GetButtonDown(KEY_TYPE::Q)) {

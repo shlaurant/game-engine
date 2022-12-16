@@ -27,6 +27,7 @@ struct camera {
     DirectX::SimpleMath::Matrix view() const;
     DirectX::SimpleMath::Matrix projection() const;
     DirectX::SimpleMath::Vector3 look_vector() const;
+    DirectX::SimpleMath::Vector3 right_vector() const;
 };
 
 void handle_input(Input &, camera &);
