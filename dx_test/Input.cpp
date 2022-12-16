@@ -40,4 +40,23 @@ void Input::Update() {
                 state = KEY_STATE::NONE;
         }
     }
+
+    if (lx == -1) {
+        lx = cx;
+        ly = cy;
+    } else {
+        dx = cx - lx;
+        dy = cy - ly;
+        lx = cx;
+        ly = cy;
+    }
+}
+
+void Input::set_mouse_pos(int x, int y) {
+    cx = x;
+    cy = y;
+}
+
+std::pair<int, int> Input::mouse_delta() {
+    return std::make_pair(dx, dy);
 }
