@@ -16,6 +16,8 @@ struct transform {
 struct camera {
     inline static float ratio() { return 1920.f / 1080.f; }
 
+    const float speed_c = .1f;
+
     transform transform;
 
     float near_plane = 2.f;
@@ -24,6 +26,7 @@ struct camera {
 
     DirectX::SimpleMath::Matrix view() const;
     DirectX::SimpleMath::Matrix projection() const;
+    DirectX::SimpleMath::Vector3 look_vector() const;
 };
 
 void handle_input(Input &, camera &);

@@ -30,6 +30,12 @@ DirectX::SimpleMath::Matrix camera::projection() const {
                                              far_plane);
 }
 
+DirectX::SimpleMath::Vector3 camera::look_vector() const {
+    return Vector3(
+            Vector4::Transform(Vector4::UnitZ, transform.rotation_matrix() *
+                                               transform.translation_matrix()));
+}
+
 void handle_input(Input &input, camera &camera) {
     if (input.GetButton(KEY_TYPE::RIGHT)) {
         camera.transform.position.x += .1f;
@@ -48,11 +54,11 @@ void handle_input(Input &input, camera &camera) {
     }
 
     if (input.GetButton(KEY_TYPE::W)) {
-        camera.transform.position.z += .1f;
+        camera.transform.position += camera.look_vector() * camera.speed_c;
     }
 
     if (input.GetButton(KEY_TYPE::S)) {
-        camera.transform.position.z -= .1f;
+        camera.transform.position -= camera.look_vector() * camera.speed_c;
     }
 
     if (input.GetButton(KEY_TYPE::A)) {
