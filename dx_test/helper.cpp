@@ -288,7 +288,7 @@ fuse::directx::geometry create_plain(int width, int height) {
     for (auto i = 0; i < cnt; ++i) {
         int x = i % (width + 1);
         int y = i / (width + 1);
-        ret.vertices[i].position = Vector3(x, y, 0.f);
+        ret.vertices[i].position = Vector3(x*2, y*2, 0.f);
         ret.vertices[i].normal = Vector3::Backward;
         auto ux = x % 2 == 0 ? 0.f : 1.f;
         auto uy = y % 2 == 0 ? 0.f : 1.f;

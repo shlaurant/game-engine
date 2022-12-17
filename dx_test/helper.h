@@ -21,7 +21,7 @@ struct camera {
 
     transform transform;
 
-    float near_plane = 2.f;
+    float near_plane = 1.f;
     float far_plane = 100.f;
     float fov = DirectX::XM_PI / 2.f;
 

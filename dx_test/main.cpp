@@ -70,9 +70,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.init({hwnd, 1920, 1080, true});
         dx12.load_texture(L"resource\\kyaru.png");
         dx12.load_texture(L"resource\\white.png");
+        dx12.load_texture(L"resource\\ground_color.jpg");
         dx12.bind_texture(0, 0);
         dx12.bind_texture(1, 1);
-        dx12.bind_texture(2, 1);
+        dx12.bind_texture(2, 2);
 
         dx12.init_geometries(geo);
         auto infos = create_render_info(geo);
@@ -164,10 +165,14 @@ std::vector<fuse::directx::object_constant> create_obj_const() {
     consts[1].material.fresnel_r0 = Vector3(0.95f, 0.93f, 0.88f);
     consts[1].material.roughness = 0.1f;
 
-    consts[2].world_matrix = Matrix::Identity;
-    consts[2].material.diffuse_albedo = Vector4(0.1f, 0.1f, 0.1f, 1.f);;
-    consts[2].material.fresnel_r0 = Vector3(0.95f, 0.93f, 0.88f);
-    consts[2].material.roughness = 0.1f;
+    transform t2;
+    t2.position.x = -50;
+    t2.position.z = -50;
+    t2.rotation.x = DirectX::XM_PI / 2;
+    consts[2].world_matrix = t2.rotation_matrix() * t2.translation_matrix();
+    consts[2].material.diffuse_albedo = Vector4(0.8f, 0.8f, 0.8f, 1.f);;
+    consts[2].material.fresnel_r0 = Vector3(0.01f, 0.01f, 0.01f);
+    consts[2].material.roughness = 0.9f;
 
     return std::move(consts);
 }
@@ -201,7 +206,7 @@ fuse::directx::light_info create_light_info() {
         li.lights[0].spot_pow;
 
         li.lights[1].type = 3;
-        li.lights[1].color = DirectX::SimpleMath::Vector3(.1f, .1f, .1f);
+        li.lights[1].color = DirectX::SimpleMath::Vector3(.5f, .5f, .5f);
         li.lights[1].fo_start;
         li.lights[1].direction;
         li.lights[1].fo_end;
