@@ -36,7 +36,8 @@ namespace fuse::directx {
     }
 
     void directx_12::init_geometries(std::vector<geometry> &geometries) {
-        _cmd_list->Reset(_cmd_alloc.Get(), nullptr);
+        ThrowIfFailed(_cmd_alloc->Reset());
+        ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr));
 
         ComPtr<ID3D12Resource> u_buffer_v;
         std::vector<vertex> vertices;
@@ -98,7 +99,8 @@ namespace fuse::directx {
     }
 
     int directx_12::load_texture(const std::wstring &path) {
-        _cmd_list->Reset(_cmd_alloc.Get(), nullptr);
+        ThrowIfFailed(_cmd_alloc->Reset());
+        ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr));
         DirectX::ScratchImage image;
         DirectX::LoadFromWICFile(path.c_str(), DirectX::WIC_FLAGS_NONE, nullptr,
                                  image);
@@ -153,6 +155,8 @@ namespace fuse::directx {
                                                      _vp_buffer->GetGPUVirtualAddress());
         _cmd_list->SetGraphicsRootConstantBufferView(1,
                                                      _light_buffer->GetGPUVirtualAddress());
+        _cmd_list->RSSetViewports(1, &_view_port);
+        _cmd_list->RSSetScissorRects(1, &_scissors_rect);
         ID3D12DescriptorHeap *heaps[] = {_res_desc_heap.Get()};
         _cmd_list->SetDescriptorHeaps(1, heaps);
 
@@ -160,14 +164,18 @@ namespace fuse::directx {
                 _rtv_buffer[_back_buffer].Get(), D3D12_RESOURCE_STATE_PRESENT,
                 D3D12_RESOURCE_STATE_RENDER_TARGET);
         _cmd_list->ResourceBarrier(1, &barrier);
-        _cmd_list->RSSetViewports(1, &_view_port);
-        _cmd_list->RSSetScissorRects(1, &_scissors_rect);
         _cmd_list->ClearRenderTargetView(_rtv_handle[_back_buffer],
                                          DirectX::Colors::Aqua, 0, nullptr);
         _cmd_list->ClearDepthStencilView(_dsv_handle, D3D12_CLEAR_FLAG_DEPTH,
                                          1.f, 0, 0, nullptr);
         _cmd_list->OMSetRenderTargets(1, &_rtv_handle[_back_buffer], FALSE,
                                       &_dsv_handle);
+
+        D3D12_VERTEX_BUFFER_VIEW tv[] = {_vertex_buffer_view};
+        _cmd_list->IASetVertexBuffers(0, 1, tv);
+        _cmd_list->IASetIndexBuffer(&_index_buffer_view);
+        _cmd_list->IASetPrimitiveTopology(
+                D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     }
 
     void directx_12::render_end() {
@@ -186,11 +194,6 @@ namespace fuse::directx {
     }
 
     void directx_12::render(const render_info &info) {
-        D3D12_VERTEX_BUFFER_VIEW tv[] = {_vertex_buffer_view};
-        _cmd_list->IASetVertexBuffers(0, 1, tv);
-        _cmd_list->IASetIndexBuffer(&_index_buffer_view);
-        _cmd_list->IASetPrimitiveTopology(
-                D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         auto handle = _res_desc_heap->GetGPUDescriptorHandleForHeapStart();
         handle.ptr += group_size() * info.object_index;
         _cmd_list->SetGraphicsRootDescriptorTable(2, handle);
@@ -218,7 +221,7 @@ namespace fuse::directx {
         D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0,
                           IID_PPV_ARGS(&_device));
         _view_port = {0, 0, static_cast<float>(info.width),
-                      static_cast<float>(info.height), 0, 0};
+                      static_cast<float>(info.height), 0, 1};
         _scissors_rect = CD3DX12_RECT{0, 0, info.width, info.height};
     }
 
@@ -278,36 +281,31 @@ namespace fuse::directx {
     }
 
     void directx_12::init_dsv(const window_info &info) {
-        auto heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-        auto desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT,
-                                                 info.width, info.height);
-        desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-        auto clear_value = CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.f, 0);
-        _device->CreateCommittedResource(&heap_prop, D3D12_HEAP_FLAG_NONE,
-                                         &desc,
-                                         D3D12_RESOURCE_STATE_COMMON,
-                                         &clear_value,
-                                         IID_PPV_ARGS(&_dsv_buffer));
-
         D3D12_DESCRIPTOR_HEAP_DESC dh_desc = {};
         dh_desc.NumDescriptors = 1;
         dh_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
         dh_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
         dh_desc.NodeMask = 0;
 
-        _device->CreateDescriptorHeap(&dh_desc, IID_PPV_ARGS(&_dsv_desc_heap));
+        ThrowIfFailed(_device->CreateDescriptorHeap(&dh_desc, IID_PPV_ARGS(&_dsv_desc_heap)));
         _dsv_handle = _dsv_desc_heap->GetCPUDescriptorHandleForHeapStart();
+
+        auto r_desc = CD3DX12_RESOURCE_DESC::Tex2D(DSV_FORMAT,
+                                                 info.width, info.height);
+        r_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+        auto heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+        auto clear_value = CD3DX12_CLEAR_VALUE(DSV_FORMAT, 1.f, 0);
+
+        ThrowIfFailed(_device->CreateCommittedResource(&heap_prop, D3D12_HEAP_FLAG_NONE,
+                                         &r_desc,
+                                         D3D12_RESOURCE_STATE_DEPTH_WRITE,
+                                         &clear_value,
+                                        IID_PPV_ARGS(&_dsv_buffer)));
+
+
         _device->CreateDepthStencilView(_dsv_buffer.Get(), nullptr,
                                         _dsv_handle);
-
-        _cmd_list->Reset(_cmd_alloc.Get(), nullptr);
-        auto b = CD3DX12_RESOURCE_BARRIER::Transition(_dsv_buffer.Get(),
-                                                      D3D12_RESOURCE_STATE_COMMON,
-                                                      D3D12_RESOURCE_STATE_DEPTH_WRITE);
-        _cmd_list->ResourceBarrier(1, &b);
-        _cmd_list->Close();
-        execute_cmd_list();
-        wait_cmd_queue_sync();
     }
 
     void directx_12::init_camera_buf() {
@@ -386,12 +384,13 @@ namespace fuse::directx {
         ps_desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
         ps_desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
         ps_desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-        ps_desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+        ps_desc.DSVFormat = DSV_FORMAT;
         ps_desc.SampleMask = UINT_MAX;
         ps_desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         ps_desc.NumRenderTargets = 1;
         ps_desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
         ps_desc.SampleDesc.Count = 1;
+        ps_desc.SampleDesc.Quality = 0;
         ps_desc.VS = {vs_data.data(), vs_data.size()};
         ps_desc.PS = {ps_data.data(), ps_data.size()};
 

@@ -54,6 +54,8 @@ namespace fuse::directx {
         ComPtr <ID3D12Resource> _rtv_buffer[SWAP_CHAIN_BUFFER_COUNT];
         ComPtr <ID3D12DescriptorHeap> _rtv_heap;
         D3D12_CPU_DESCRIPTOR_HANDLE _rtv_handle[SWAP_CHAIN_BUFFER_COUNT];
+
+        const DXGI_FORMAT DSV_FORMAT = DXGI_FORMAT_D32_FLOAT;
         ComPtr <ID3D12Resource> _dsv_buffer;
         ComPtr <ID3D12DescriptorHeap> _dsv_desc_heap;
         D3D12_CPU_DESCRIPTOR_HANDLE _dsv_handle;

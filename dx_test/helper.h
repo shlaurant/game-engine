@@ -23,7 +23,7 @@ struct camera {
 
     float near_plane = 1.f;
     float far_plane = 100.f;
-    float fov = DirectX::XM_PI / 2.f;
+    float fov = DirectX::XM_PI / 4.f;
 
     DirectX::SimpleMath::Matrix view() const;
     DirectX::SimpleMath::Matrix projection() const;

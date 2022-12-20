@@ -44,8 +44,8 @@ void handle_input(Input &input, camera &camera) {
     int dx, dy;
     dx = input.mouse_delta().first;
     dy = input.mouse_delta().second;
-    camera.transform.rotation.y += (float)dx * camera.rot_c;
-    camera.transform.rotation.x += (float)dy * camera.rot_c;
+    camera.transform.rotation.y += (float) dx * camera.rot_c;
+    camera.transform.rotation.x += (float) dy * camera.rot_c;
 
 
     if (input.GetButton(KEY_TYPE::W)) {
@@ -72,9 +72,14 @@ void handle_input(Input &input, camera &camera) {
         print_matrix(camera.projection());
         OutputDebugStringA("vp:\n");
         print_matrix(camera.view() * camera.projection());
+        OutputDebugStringA("w:\n");
+        print_matrix(Matrix::CreateTranslation(Vector3(1.f, 0.f, 3.f)));
+        OutputDebugStringA("wvp:\n");
+        auto wvp = Matrix::CreateTranslation(Vector3(1.f, 0.f, 3.f)) *
+                   camera.view() * camera.projection();
+        print_matrix(wvp);
         OutputDebugStringA("test mult:\n");
-        print_vector4(mult({-1.f, 1.f, -1.f, 1.f},
-                           camera.view() * camera.projection()));
+        print_vector4(Vector4::Transform({0.f, 0.f, 0.f, 1.f}, wvp));
     }
 }
 
@@ -288,7 +293,7 @@ fuse::directx::geometry create_plain(int width, int height) {
     for (auto i = 0; i < cnt; ++i) {
         int x = i % (width + 1);
         int y = i / (width + 1);
-        ret.vertices[i].position = Vector3(x*2, y*2, 0.f);
+        ret.vertices[i].position = Vector3(x * 2, y * 2, 0.f);
         ret.vertices[i].normal = Vector3::Backward;
         auto ux = x % 2 == 0 ? 0.f : 1.f;
         auto uy = y % 2 == 0 ? 0.f : 1.f;
