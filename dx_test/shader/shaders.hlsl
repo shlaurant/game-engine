@@ -19,7 +19,15 @@ cbuffer object_const :register(b2) {
 
 Texture2D tex : register(t0);
 
-SamplerState sam : register(s0);
+SamplerState sam_pw : register(s0);
+SamplerState sam_pc : register(s1);
+SamplerState sam_pm : register(s2);
+SamplerState sam_lw : register(s3);
+SamplerState sam_lc : register(s4);
+SamplerState sam_lm : register(s5);
+SamplerState sam_aw : register(s6);
+SamplerState sam_ac : register(s7);
+SamplerState sam_am : register(s8);
 
 struct VS_IN
 {
@@ -50,7 +58,7 @@ VS_OUT VS_Main(VS_IN input)
 float4 PS_Main(VS_OUT input) : SV_Target
 {
     input.normal = normalize(input.normal);
-    float4 color = tex.Sample(sam, input.uv);
+    float4 color = tex.Sample(sam_aw, input.uv);
 
     float3 to_eye = normalize(camera_pos - input.pos.xyz);
     float4 light_color = calc_light(lights, active_light_counts, mat, input.pos.xyz, input.normal, to_eye);

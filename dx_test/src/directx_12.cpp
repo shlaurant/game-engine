@@ -339,7 +339,6 @@ namespace fuse::directx {
     }
 
     void directx_12::init_root_signature() {
-        _sampler_desc = CD3DX12_STATIC_SAMPLER_DESC(0);
         CD3DX12_DESCRIPTOR_RANGE ranges[] = {
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 2),
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0)
@@ -349,8 +348,10 @@ namespace fuse::directx {
         param[1].InitAsConstantBufferView(static_cast<uint32_t>(1));//lights
         param[2].InitAsDescriptorTable(_countof(ranges), ranges);//object const
 
-        auto rs_desc = CD3DX12_ROOT_SIGNATURE_DESC(_countof(param), param, 1,
-                                                   &_sampler_desc);
+        auto sampler_arr = sampler::samplers();
+
+        auto rs_desc = CD3DX12_ROOT_SIGNATURE_DESC(_countof(param), param, 9,
+                                                   sampler_arr.data());
         rs_desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
         ComPtr<ID3DBlob> blob_signature;

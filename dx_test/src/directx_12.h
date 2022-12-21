@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "resource.h"
+#include "sampler.h"
 
 using namespace Microsoft::WRL;
 
@@ -62,7 +63,6 @@ namespace fuse::directx {
 
         //root sig
         ComPtr <ID3D12RootSignature> _signature;
-        D3D12_STATIC_SAMPLER_DESC _sampler_desc;
         ComPtr <ID3D12DescriptorHeap> _root_desc_table;
 
         //resource
