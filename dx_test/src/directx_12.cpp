@@ -101,9 +101,19 @@ namespace fuse::directx {
     int directx_12::load_texture(const std::wstring &path) {
         ThrowIfFailed(_cmd_alloc->Reset());
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr));
+
         DirectX::ScratchImage image;
-        DirectX::LoadFromWICFile(path.c_str(), DirectX::WIC_FLAGS_NONE, nullptr,
-                                 image);
+        auto ext = std::filesystem::path(path).extension();
+
+        if (ext == L".dds" || ext == L".DDS")
+            LoadFromDDSFile(path.c_str(), DirectX::DDS_FLAGS_NONE, nullptr,
+                            image);
+        else if (ext == L".tga" || ext == L".TGA")
+            LoadFromTGAFile(path.c_str(), nullptr, image);
+        else
+            LoadFromWICFile(path.c_str(), DirectX::WIC_FLAGS_NONE, nullptr,
+                            image);
+
         ComPtr<ID3D12Resource> buf;
         ThrowIfFailed(
                 DirectX::CreateTexture(_device.Get(), image.GetMetadata(),
@@ -287,21 +297,24 @@ namespace fuse::directx {
         dh_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
         dh_desc.NodeMask = 0;
 
-        ThrowIfFailed(_device->CreateDescriptorHeap(&dh_desc, IID_PPV_ARGS(&_dsv_desc_heap)));
+        ThrowIfFailed(_device->CreateDescriptorHeap(&dh_desc, IID_PPV_ARGS(
+                &_dsv_desc_heap)));
         _dsv_handle = _dsv_desc_heap->GetCPUDescriptorHandleForHeapStart();
 
         auto r_desc = CD3DX12_RESOURCE_DESC::Tex2D(DSV_FORMAT,
-                                                 info.width, info.height);
+                                                   info.width, info.height);
         r_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
         auto heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
         auto clear_value = CD3DX12_CLEAR_VALUE(DSV_FORMAT, 1.f, 0);
 
-        ThrowIfFailed(_device->CreateCommittedResource(&heap_prop, D3D12_HEAP_FLAG_NONE,
-                                         &r_desc,
-                                         D3D12_RESOURCE_STATE_DEPTH_WRITE,
-                                         &clear_value,
-                                        IID_PPV_ARGS(&_dsv_buffer)));
+        ThrowIfFailed(_device->CreateCommittedResource(&heap_prop,
+                                                       D3D12_HEAP_FLAG_NONE,
+                                                       &r_desc,
+                                                       D3D12_RESOURCE_STATE_DEPTH_WRITE,
+                                                       &clear_value,
+                                                       IID_PPV_ARGS(
+                                                               &_dsv_buffer)));
 
 
         _device->CreateDepthStencilView(_dsv_buffer.Get(), nullptr,
@@ -317,7 +330,8 @@ namespace fuse::directx {
     }
 
     void directx_12::init_resources() {
-        _obj_const_buffer = create_const_buffer<object_constant>(OBJ_CNT, _device);
+        _obj_const_buffer = create_const_buffer<object_constant>(OBJ_CNT,
+                                                                 _device);
 
         D3D12_DESCRIPTOR_HEAP_DESC h_desc = {};
         h_desc.NodeMask = 0;
@@ -376,7 +390,7 @@ namespace fuse::directx {
         D3D12_INPUT_ELEMENT_DESC ie_desc[] = {
                 {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
                 {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-                {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+                {"NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
         };
 
         D3D12_GRAPHICS_PIPELINE_STATE_DESC ps_desc = {};

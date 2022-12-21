@@ -5,6 +5,7 @@
 #include <string>
 #include <iterator>
 #include <array>
+#include <filesystem>
 
 #include "d3dx12.h"
 #include <windows.h>
