@@ -5,7 +5,7 @@
 
 #include "common.h"
 #include "resource.h"
-#include "sampler.h"
+#include "constants.h.h"
 
 using namespace Microsoft::WRL;
 

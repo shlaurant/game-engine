@@ -1,4 +1,4 @@
-#include "sampler.h"
+#include "constants.h"
 
 namespace fuse::directx {
     const CD3DX12_STATIC_SAMPLER_DESC
