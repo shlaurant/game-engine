@@ -159,8 +159,7 @@ namespace fuse::directx {
 
     void directx_12::render_begin() {
         ThrowIfFailed(_cmd_alloc->Reset())
-        ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(),
-                                       _pso_list[static_cast<uint8_t>(layer::opaque)].Get()))
+        ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr))
         _cmd_list->SetGraphicsRootSignature(_signature.Get());
         _cmd_list->SetGraphicsRootConstantBufferView(0,
                                                      _vp_buffer->GetGPUVirtualAddress());
@@ -204,6 +203,28 @@ namespace fuse::directx {
         wait_cmd_queue_sync();
     }
 
+    void
+    directx_12::render(directx_12::layer l,
+                       const std::vector<render_info> &infos) {
+        switch (l) {
+            case layer::opaque:
+                _cmd_list->SetPipelineState(
+                        _pso_list[static_cast<uint8_t>(layer::opaque)].Get());
+                break;
+            case layer::transparent:
+                break;
+            case layer::fog:
+                break;
+            case layer::end:
+                //do nothing;
+                break;
+        }
+
+        for (const auto &e: infos) {
+            render(e);
+        }
+    }
+
     void directx_12::render(const render_info &info) {
         auto handle = _res_desc_heap->GetGPUDescriptorHandleForHeapStart();
         handle.ptr += group_size() * info.object_index;
@@ -211,20 +232,6 @@ namespace fuse::directx {
 
         _cmd_list->DrawIndexedInstanced(info.index_count, 1, info.index_offset,
                                         info.vertex_offset, 0);
-    }
-
-    void directx_12::render(const geometry &geo) {
-        D3D12_VERTEX_BUFFER_VIEW tv[] = {_vertex_buffer_view};
-        _cmd_list->IASetVertexBuffers(0, 1, tv);
-        _cmd_list->IASetIndexBuffer(&_index_buffer_view);
-        _cmd_list->IASetPrimitiveTopology(
-                D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        auto handle = _res_desc_heap->GetGPUDescriptorHandleForHeapStart();
-        handle.ptr += group_size() * geo.w_offset;
-        _cmd_list->SetGraphicsRootDescriptorTable(1, handle);
-
-        _cmd_list->DrawIndexedInstanced(geo.indices.size(), 1, geo.index_offset,
-                                        geo.vertex_offset, 0);
     }
 
     void directx_12::init_base(const window_info &info) {

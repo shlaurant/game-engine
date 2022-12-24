@@ -36,8 +36,7 @@ namespace fuse::directx {
         void update_obj_constants(const std::vector<object_constant> &);
 
         void render_begin();
-        void render(const render_info &);
-        void render(const geometry &);
+        void render(layer, const std::vector<render_info> &);
         void render_end();
 
     private:
@@ -103,6 +102,8 @@ namespace fuse::directx {
 
         void execute_cmd_list();
         void wait_cmd_queue_sync();
+
+        void render(const render_info &);
 
         UINT group_size();
     };

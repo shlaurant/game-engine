@@ -92,9 +92,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                 dx12.update_lights(li);
                 dx12.update_obj_constants(consts);
                 dx12.render_begin();
-                for (const auto &e: infos) {
-                    dx12.render(e);
-                }
+                dx12.render(fuse::directx::directx_12::layer::opaque, infos);
                 dx12.render_end();
             }
         }
