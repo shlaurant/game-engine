@@ -159,7 +159,8 @@ namespace fuse::directx {
 
     void directx_12::render_begin() {
         ThrowIfFailed(_cmd_alloc->Reset())
-        ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), _pipeline_state.Get()))
+        ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(),
+                                       _pso_list[static_cast<uint8_t>(layer::opaque)].Get()))
         _cmd_list->SetGraphicsRootSignature(_signature.Get());
         _cmd_list->SetGraphicsRootConstantBufferView(0,
                                                      _vp_buffer->GetGPUVirtualAddress());
@@ -384,6 +385,8 @@ namespace fuse::directx {
         UINT compile_flags = 0;
 #endif
 
+        _pso_list.resize(static_cast<uint8_t>(layer::end));
+
         auto vs_data = DX::ReadData(L"shader\\vs.cso");
         auto ps_data = DX::ReadData(L"shader\\ps.cso");
 
@@ -410,7 +413,8 @@ namespace fuse::directx {
         ps_desc.PS = {ps_data.data(), ps_data.size()};
 
         _device->CreateGraphicsPipelineState(&ps_desc,
-                                             IID_PPV_ARGS(&_pipeline_state));
+                                             IID_PPV_ARGS(
+                                                     &_pso_list[static_cast<uint8_t>(layer::opaque)]));
     }
 
     void directx_12::execute_cmd_list() {

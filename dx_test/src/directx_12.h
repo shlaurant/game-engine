@@ -5,7 +5,7 @@
 
 #include "common.h"
 #include "resource.h"
-#include "constants.h.h"
+#include "constants.h"
 
 using namespace Microsoft::WRL;
 
@@ -21,6 +21,10 @@ namespace fuse::directx {
     public:
         const static int SWAP_CHAIN_BUFFER_COUNT = 2;
         const static int OBJ_CNT = 10;
+
+        enum class layer : uint8_t {
+            opaque, transparent, fog, end
+        };
 
         void init(const window_info &);
         void init_geometries(std::vector<geometry> &);
@@ -76,7 +80,7 @@ namespace fuse::directx {
         ComPtr <ID3D12DescriptorHeap> _res_desc_heap;
 
         //shader
-        ComPtr <ID3D12PipelineState> _pipeline_state;
+        std::vector<ComPtr < ID3D12PipelineState>> _pso_list;
 
         //vertex & index buffer
         ComPtr <ID3D12Resource> _vertex_buffer;
