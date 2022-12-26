@@ -212,6 +212,8 @@ namespace fuse::directx {
                         _pso_list[static_cast<uint8_t>(layer::opaque)].Get());
                 break;
             case layer::transparent:
+                _cmd_list->SetPipelineState(
+                        _pso_list[static_cast<uint8_t>(layer::transparent)].Get());
                 break;
             case layer::fog:
                 break;
@@ -419,9 +421,29 @@ namespace fuse::directx {
         ps_desc.VS = {vs_data.data(), vs_data.size()};
         ps_desc.PS = {ps_data.data(), ps_data.size()};
 
-        _device->CreateGraphicsPipelineState(&ps_desc,
-                                             IID_PPV_ARGS(
-                                                     &_pso_list[static_cast<uint8_t>(layer::opaque)]));
+        ThrowIfFailed(_device->CreateGraphicsPipelineState
+                (&ps_desc, IID_PPV_ARGS(
+                        &_pso_list[static_cast<uint8_t>(layer::opaque)])));
+
+        auto trans_pso = ps_desc;
+
+        D3D12_RENDER_TARGET_BLEND_DESC transparent_blend_desc;
+        transparent_blend_desc.BlendEnable = true;
+        transparent_blend_desc.LogicOpEnable = false;
+        transparent_blend_desc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+        transparent_blend_desc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+        transparent_blend_desc.BlendOp = D3D12_BLEND_OP_ADD;
+        transparent_blend_desc.SrcBlendAlpha = D3D12_BLEND_ONE;
+        transparent_blend_desc.DestBlendAlpha = D3D12_BLEND_ZERO;
+        transparent_blend_desc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+        transparent_blend_desc.LogicOp = D3D12_LOGIC_OP_NOOP;
+        transparent_blend_desc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+        trans_pso.BlendState.RenderTarget[0] = transparent_blend_desc;
+
+        ThrowIfFailed(_device->CreateGraphicsPipelineState
+                (&trans_pso, IID_PPV_ARGS(
+                        &_pso_list[static_cast<uint8_t>(layer::transparent)])));
     }
 
     void directx_12::execute_cmd_list() {

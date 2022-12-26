@@ -62,8 +62,8 @@ float4 PS_Main(VS_OUT input) : SV_Target
 
     float3 to_eye = normalize(camera_pos - input.pos.xyz);
     float4 light_color = calc_light(lights, active_light_counts, mat, input.pos.xyz, input.normal, to_eye);
-    light_color = float4(light_color.rgb, mat.diffuse_albedo.w);
     color *= light_color;
+    color.w = mat.diffuse_albedo.w;
 
     return color;
 }

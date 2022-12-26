@@ -16,7 +16,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 std::vector<fuse::directx::geometry> create_geometries();
 std::vector<fuse::directx::object_constant> create_obj_const();
 std::vector<fuse::directx::render_info>
-create_render_info(const std::vector<fuse::directx::geometry> &);
+create_render_info(const std::vector<fuse::directx::geometry> &, int offset);
 fuse::directx::light_info create_light_info();
 
 int
@@ -76,7 +76,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.bind_texture(2, 2);
 
         dx12.init_geometries(geo);
-        auto infos = create_render_info(geo);
+        auto opaque_infos = create_render_info(
+                std::vector(--geo.end(), geo.end()), 2);
+        auto trans_infos = create_render_info(
+                std::vector(geo.begin(), --geo.end()), 0);
 
         while (msg.message != WM_QUIT) {
             if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
@@ -92,7 +95,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                 dx12.update_lights(li);
                 dx12.update_obj_constants(consts);
                 dx12.render_begin();
-                dx12.render(fuse::directx::directx_12::layer::opaque, infos);
+                dx12.render(fuse::directx::directx_12::layer::opaque,
+                            opaque_infos);
+                dx12.render(fuse::directx::directx_12::layer::transparent,
+                            trans_infos);
                 dx12.render_end();
             }
         }
@@ -152,14 +158,14 @@ std::vector<fuse::directx::object_constant> create_obj_const() {
     DirectX::SimpleMath::Vector3 tmp = {1.f, 0.f, 3.f};
     auto t0 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
     consts[0].world_matrix = t0;
-    consts[0].material.diffuse_albedo = Vector4(0.5f, 0.5f, 0.5f, 1.f);
+    consts[0].material.diffuse_albedo = Vector4(0.5f, 0.5f, 0.5f, 5.f);
     consts[0].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
     consts[0].material.roughness = 0.5f;
 
     DirectX::SimpleMath::Vector3 tmp2 = {-1.f, 0.f, 3.f};
     auto t1 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp2);
     consts[1].world_matrix = t1;
-    consts[1].material.diffuse_albedo = Vector4(0.1f, 0.1f, 0.1f, 1.f);;
+    consts[1].material.diffuse_albedo = Vector4(0.1f, 0.1f, 0.1f, .5f);;
     consts[1].material.fresnel_r0 = Vector3(0.95f, 0.93f, 0.88f);
     consts[1].material.roughness = 0.1f;
 
@@ -176,11 +182,11 @@ std::vector<fuse::directx::object_constant> create_obj_const() {
 }
 
 std::vector<fuse::directx::render_info>
-create_render_info(const std::vector<fuse::directx::geometry> &geo) {
+create_render_info(const std::vector<fuse::directx::geometry> &geo, int offset) {
     std::vector<fuse::directx::render_info> infos(geo.size());
 
     for (auto i = 0; i < geo.size(); ++i) {
-        infos[i].object_index = i;
+        infos[i].object_index = offset + i;
         infos[i].index_count = geo[i].indices.size();
         infos[i].index_offset = geo[i].index_offset;
         infos[i].vertex_offset = geo[i].vertex_offset;
