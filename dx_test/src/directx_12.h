@@ -23,7 +23,7 @@ namespace fuse::directx {
         const static int OBJ_CNT = 10;
 
         enum class layer : uint8_t {
-            opaque, transparent, end
+            opaque, transparent, mirror, reflection, end
         };
 
         void init(const window_info &);
@@ -37,6 +37,7 @@ namespace fuse::directx {
 
         void render_begin();
         void render(layer, const std::vector<render_info> &);
+        void render(const std::vector<render_info> &);
         void render_end();
 
     private:
@@ -59,7 +60,7 @@ namespace fuse::directx {
         ComPtr <ID3D12DescriptorHeap> _rtv_heap;
         D3D12_CPU_DESCRIPTOR_HANDLE _rtv_handle[SWAP_CHAIN_BUFFER_COUNT];
 
-        const DXGI_FORMAT DSV_FORMAT = DXGI_FORMAT_D32_FLOAT;
+        const DXGI_FORMAT DSV_FORMAT = DXGI_FORMAT_D24_UNORM_S8_UINT;
         ComPtr <ID3D12Resource> _dsv_buffer;
         ComPtr <ID3D12DescriptorHeap> _dsv_desc_heap;
         D3D12_CPU_DESCRIPTOR_HANDLE _dsv_handle;
@@ -70,6 +71,7 @@ namespace fuse::directx {
 
         //resource
         static const int TABLE_SIZE = 2;
+        ComPtr <ID3D12Resource> _global_buffer;//globals set automatically.
         ComPtr <ID3D12Resource> _vp_buffer;
         ComPtr <ID3D12Resource> _light_buffer;
         ComPtr <ID3D12Resource> _obj_const_buffer;
@@ -93,6 +95,7 @@ namespace fuse::directx {
         void init_rtv();
         void init_dsv(const window_info &);
 
+        void init_global_buf();
         void init_camera_buf();
         void init_light_buf();
         void init_resources();

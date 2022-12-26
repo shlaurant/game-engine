@@ -1,18 +1,24 @@
 #include "light.hlsl"
 
-cbuffer camera :register(b0) {
+cbuffer globals :register(b0) {
+    row_major float4x4 reflection_matrix[10];
+    int reflection_count;
+    float3 pad0;
+}
+
+cbuffer camera :register(b1) {
     row_major float4x4 vp;
     float3 camera_pos;
     float camera_pad0;
 };
 
-cbuffer light_info : register(b1) {
+cbuffer light_info : register(b2) {
     light lights[LIGHT_COUNT];
     int active_light_counts;
     float3 light_info_pad0;
 }
 
-cbuffer object_const :register(b2) {
+cbuffer object_const :register(b3) {
     row_major float4x4 w;
     material mat;
 };
@@ -47,10 +53,16 @@ VS_OUT VS_Main(VS_IN input)
 {
     VS_OUT output;
 
-    float4x4 wvp = mul(w, vp);
+#ifndef REFLECTION
+    float4x4 world = w;
+#else
+    float4x4 world = mul(w, reflection_matrix[0]);
+#endif
+
+    float4x4 wvp = mul(world, vp);
     output.pos = mul(float4(input.pos, 1.0f), wvp);
     output.uv = input.uv;
-    output.normal = mul(input.normal, (float3x3)w);
+    output.normal = mul(input.normal, (float3x3)world);
 
     return output;
 }
@@ -60,10 +72,12 @@ float4 PS_Main(VS_OUT input) : SV_Target
     input.normal = normalize(input.normal);
     float4 color = tex.Sample(sam_aw, input.uv);
 
+    clip(color.w * mat.diffuse_albedo.w - 0.1f);
+
     float3 to_eye = normalize(camera_pos - input.pos.xyz);
     float4 light_color = calc_light(lights, active_light_counts, mat, input.pos.xyz, input.normal, to_eye);
     color *= light_color;
-    color.w = mat.diffuse_albedo.w;
+    color.w *= mat.diffuse_albedo.w;
 
     return color;
 }

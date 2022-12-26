@@ -84,5 +84,5 @@ float4 calc_light(light lights[LIGHT_COUNT], int active_cnt, material mat, float
         if(l.type == 3) ret += l.color;
     }
 
-    return float4(ret, 0.0f);
+    return float4(ret, 1.0f);
 }

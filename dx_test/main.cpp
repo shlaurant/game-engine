@@ -71,15 +71,27 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.load_texture(L"resource\\kyaru.png");
         dx12.load_texture(L"resource\\white.png");
         dx12.load_texture(L"resource\\ground_color.jpg");
+        dx12.load_texture(L"resource\\WireFence.dds");
         dx12.bind_texture(0, 0);
-        dx12.bind_texture(1, 1);
+        dx12.bind_texture(1, 3);
         dx12.bind_texture(2, 2);
+        dx12.bind_texture(3, 1);
 
         dx12.init_geometries(geo);
-        auto opaque_infos = create_render_info(
-                std::vector(--geo.end(), geo.end()), 2);
-        auto trans_infos = create_render_info(
-                std::vector(geo.begin(), --geo.end()), 0);
+//        auto opaque_infos = create_render_info(
+//                std::vector(geo.begin() + 1, geo.begin() + 3), 1);
+//        auto trans_infos = create_render_info(
+//                std::vector(geo.begin(), geo.begin() + 1), 0);
+//        auto mirror_infos = create_render_info(
+//                std::vector(geo.begin() + 3, geo.begin() + 4), 3);
+        auto infos = create_render_info(geo, 0);
+        infos[1].is_transparent = true;
+        infos[3].is_mirror = true;
+        infos[3].is_transparent = true;
+        infos[3].mirror_plane = Plane(Vector3(-1.5f, 0.f, 5.f), Vector3::Backward);
+        infos[3].do_reflect = false;
+        infos.erase(infos.end() - 2);
+//        infos.erase(--infos.end());
 
         while (msg.message != WM_QUIT) {
             if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
@@ -95,10 +107,15 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                 dx12.update_lights(li);
                 dx12.update_obj_constants(consts);
                 dx12.render_begin();
-                dx12.render(fuse::directx::directx_12::layer::opaque,
-                            opaque_infos);
-                dx12.render(fuse::directx::directx_12::layer::transparent,
-                            trans_infos);
+//                dx12.render(fuse::directx::directx_12::layer::opaque,
+//                            opaque_infos);
+//                dx12.render(fuse::directx::directx_12::layer::transparent,
+//                            trans_infos);
+//                dx12.render(fuse::directx::directx_12::layer::mirror,
+//                            mirror_infos);
+//                dx12.render(fuse::directx::directx_12::layer::transparent,
+//                            mirror_infos);
+                dx12.render(infos);
                 dx12.render_end();
             }
         }
@@ -149,23 +166,26 @@ std::vector<fuse::directx::geometry> create_geometries() {
     auto plane = create_plain(100, 100);
     ret.emplace_back(plane);
 
+    auto mirror = create_plain(5, 5);
+    ret.emplace_back(mirror);
+
     return std::move(ret);
 }
 
 std::vector<fuse::directx::object_constant> create_obj_const() {
-    std::vector<fuse::directx::object_constant> consts(3);
+    std::vector<fuse::directx::object_constant> consts(4);
 
-    DirectX::SimpleMath::Vector3 tmp = {1.f, 0.f, 3.f};
+    DirectX::SimpleMath::Vector3 tmp = {1.f, 0.5f, 3.f};
     auto t0 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
     consts[0].world_matrix = t0;
     consts[0].material.diffuse_albedo = Vector4(0.5f, 0.5f, 0.5f, 5.f);
     consts[0].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
     consts[0].material.roughness = 0.5f;
 
-    DirectX::SimpleMath::Vector3 tmp2 = {-1.f, 0.f, 3.f};
+    DirectX::SimpleMath::Vector3 tmp2 = {-1.f, 0.5f, 3.f};
     auto t1 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp2);
     consts[1].world_matrix = t1;
-    consts[1].material.diffuse_albedo = Vector4(0.1f, 0.1f, 0.1f, .5f);;
+    consts[1].material.diffuse_albedo = Vector4(0.1f, 0.1f, 0.1f, 1.f);;
     consts[1].material.fresnel_r0 = Vector3(0.95f, 0.93f, 0.88f);
     consts[1].material.roughness = 0.1f;
 
@@ -178,11 +198,19 @@ std::vector<fuse::directx::object_constant> create_obj_const() {
     consts[2].material.fresnel_r0 = Vector3(0.01f, 0.01f, 0.01f);
     consts[2].material.roughness = 0.9f;
 
+    DirectX::SimpleMath::Vector3 mirror = {-1.5f, 0.f, 5.f};
+    consts[3].world_matrix = DirectX::SimpleMath::Matrix::CreateTranslation(
+            mirror);
+    consts[3].material.diffuse_albedo = Vector4(0.5f, 0.5f, 0.5f, 0.3f);;
+    consts[3].material.fresnel_r0 = Vector3(0.95f, 0.95f, 0.95f);
+    consts[3].material.roughness = 0.1f;
+
     return std::move(consts);
 }
 
 std::vector<fuse::directx::render_info>
-create_render_info(const std::vector<fuse::directx::geometry> &geo, int offset) {
+create_render_info(const std::vector<fuse::directx::geometry> &geo,
+                   int offset) {
     std::vector<fuse::directx::render_info> infos(geo.size());
 
     for (auto i = 0; i < geo.size(); ++i) {
@@ -190,6 +218,9 @@ create_render_info(const std::vector<fuse::directx::geometry> &geo, int offset) 
         infos[i].index_count = geo[i].indices.size();
         infos[i].index_offset = geo[i].index_offset;
         infos[i].vertex_offset = geo[i].vertex_offset;
+        infos[i].do_reflect = true;
+        infos[i].is_transparent = false;
+        infos[i].is_mirror = false;
     }
 
     return std::move(infos);

@@ -22,6 +22,7 @@ namespace fuse::directx {
         init_rtv();
         init_dsv(info);
 
+        init_global_buf();
         init_camera_buf();
         init_light_buf();
         init_resources();
@@ -162,8 +163,10 @@ namespace fuse::directx {
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr))
         _cmd_list->SetGraphicsRootSignature(_signature.Get());
         _cmd_list->SetGraphicsRootConstantBufferView(0,
-                                                     _vp_buffer->GetGPUVirtualAddress());
+                                                     _global_buffer->GetGPUVirtualAddress());
         _cmd_list->SetGraphicsRootConstantBufferView(1,
+                                                     _vp_buffer->GetGPUVirtualAddress());
+        _cmd_list->SetGraphicsRootConstantBufferView(2,
                                                      _light_buffer->GetGPUVirtualAddress());
         _cmd_list->RSSetViewports(1, &_view_port);
         _cmd_list->RSSetScissorRects(1, &_scissors_rect);
@@ -176,7 +179,8 @@ namespace fuse::directx {
         _cmd_list->ResourceBarrier(1, &barrier);
         _cmd_list->ClearRenderTargetView(_rtv_handle[_back_buffer],
                                          DirectX::Colors::Aqua, 0, nullptr);
-        _cmd_list->ClearDepthStencilView(_dsv_handle, D3D12_CLEAR_FLAG_DEPTH,
+        _cmd_list->ClearDepthStencilView(_dsv_handle, D3D12_CLEAR_FLAG_DEPTH |
+                                                      D3D12_CLEAR_FLAG_STENCIL,
                                          1.f, 0, 0, nullptr);
         _cmd_list->OMSetRenderTargets(1, &_rtv_handle[_back_buffer], FALSE,
                                       &_dsv_handle);
@@ -210,25 +214,98 @@ namespace fuse::directx {
             case layer::opaque:
                 _cmd_list->SetPipelineState(
                         _pso_list[static_cast<uint8_t>(layer::opaque)].Get());
+                for (const auto &e: infos) render(e);
                 break;
             case layer::transparent:
                 _cmd_list->SetPipelineState(
                         _pso_list[static_cast<uint8_t>(layer::transparent)].Get());
+                for (const auto &e: infos) render(e);
+                break;
+            case layer::mirror:
+                _cmd_list->OMSetStencilRef(1);
+                _cmd_list->SetPipelineState(
+                        _pso_list[static_cast<uint8_t>(layer::mirror)].Get());
+                for (const auto &e: infos) render(e);
+                _cmd_list->OMSetStencilRef(0);
+                break;
+            case layer::reflection:
+                _cmd_list->OMSetStencilRef(1);
+                _cmd_list->SetPipelineState(
+                        _pso_list[static_cast<uint8_t>(layer::reflection)].Get());
+                for (const auto &e: infos) render(e);
+                _cmd_list->OMSetStencilRef(0);
                 break;
             case layer::end:
                 //do nothing;
                 break;
         }
 
+    }
+
+    void directx_12::render(const std::vector<render_info> &infos) {
+        std::vector<size_t> mirrors;
+        std::vector<size_t> trans;
+        std::vector<size_t> reflects;
+
+        global g = {};
+        auto index = 0;
         for (const auto &e: infos) {
-            render(e);
+            if (e.is_mirror) {
+                g.reflection_matrix[index]
+                        = Matrix::CreateReflection(e.mirror_plane);
+                ++index;
+            }
+        }
+        g.reflection_count = index;
+        update_const_buffer(_global_buffer, &g, 0);
+
+        _cmd_list->SetPipelineState(
+                _pso_list[static_cast<uint8_t>(layer::opaque)].Get());
+        for (auto i = 0; i < infos.size(); ++i) {
+            if (infos[i].do_reflect) {
+                reflects.push_back(i);
+            }
+
+            if (infos[i].is_mirror) {
+                mirrors.push_back(i);
+                trans.push_back(i);
+            } else if (infos[i].is_transparent) {
+                trans.push_back(i);
+            } else {
+                render(infos[i]);
+            }
+        }
+
+        if (mirrors.size() > 0 && reflects.size() > 0) {
+            _cmd_list->OMSetStencilRef(1);
+            _cmd_list->SetPipelineState(
+                    _pso_list[static_cast<uint8_t>(layer::mirror)].Get());
+
+            for (auto i: mirrors) {
+                render(infos[i]);
+            }
+
+            _cmd_list->SetPipelineState(
+                    _pso_list[static_cast<uint8_t>(layer::reflection)].Get());
+
+            for (auto j: reflects) {
+                render(infos[j]);
+            }
+
+            _cmd_list->OMSetStencilRef(0);
+        }
+
+        if (trans.size() > 0) {
+            _cmd_list->SetPipelineState(
+                    _pso_list[static_cast<uint8_t>(layer::transparent)].Get());
+            for (auto i: trans) render(infos[i]);
         }
     }
 
     void directx_12::render(const render_info &info) {
         auto handle = _res_desc_heap->GetGPUDescriptorHandleForHeapStart();
         handle.ptr += group_size() * info.object_index;
-        _cmd_list->SetGraphicsRootDescriptorTable(2, handle);
+        _cmd_list->SetGraphicsRootDescriptorTable(3, handle);
 
         _cmd_list->DrawIndexedInstanced(info.index_count, 1, info.index_offset,
                                         info.vertex_offset, 0);
@@ -329,6 +406,10 @@ namespace fuse::directx {
                                         _dsv_handle);
     }
 
+    void directx_12::init_global_buf() {
+        _global_buffer = create_const_buffer<global>(1, _device);
+    }
+
     void directx_12::init_camera_buf() {
         _vp_buffer = create_const_buffer<camera>(1, _device);
     }
@@ -362,13 +443,14 @@ namespace fuse::directx {
 
     void directx_12::init_root_signature() {
         CD3DX12_DESCRIPTOR_RANGE ranges[] = {
-                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 2),
+                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 3),
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0)
         };
-        CD3DX12_ROOT_PARAMETER param[3];
-        param[0].InitAsConstantBufferView(static_cast<uint32_t>(0));//camera
-        param[1].InitAsConstantBufferView(static_cast<uint32_t>(1));//lights
-        param[2].InitAsDescriptorTable(_countof(ranges), ranges);//object const
+        CD3DX12_ROOT_PARAMETER param[4];
+        param[0].InitAsConstantBufferView(static_cast<uint32_t>(0));//global
+        param[1].InitAsConstantBufferView(static_cast<uint32_t>(1));//camera
+        param[2].InitAsConstantBufferView(static_cast<uint32_t>(2));//lights
+        param[3].InitAsDescriptorTable(_countof(ranges), ranges);//object const
 
         auto sampler_arr = sampler::samplers();
 
@@ -395,6 +477,7 @@ namespace fuse::directx {
         _pso_list.resize(static_cast<uint8_t>(layer::end));
 
         auto vs_data = DX::ReadData(L"shader\\vs.cso");
+        auto vs_ref_data = DX::ReadData(L"shader\\vs_ref.cso");
         auto ps_data = DX::ReadData(L"shader\\ps.cso");
 
         D3D12_INPUT_ELEMENT_DESC ie_desc[] = {
@@ -423,6 +506,7 @@ namespace fuse::directx {
                 (&ps_desc, IID_PPV_ARGS(
                         &_pso_list[static_cast<uint8_t>(layer::opaque)])));
 
+
         auto trans_pso = ps_desc;
 
         D3D12_RENDER_TARGET_BLEND_DESC transparent_blend_desc;
@@ -443,6 +527,60 @@ namespace fuse::directx {
         ThrowIfFailed(_device->CreateGraphicsPipelineState
                 (&trans_pso, IID_PPV_ARGS(
                         &_pso_list[static_cast<uint8_t>(layer::transparent)])));
+
+
+        auto mirror_pso = ps_desc;
+        mirror_pso.BlendState.RenderTarget[0].RenderTargetWriteMask = 0;
+        D3D12_DEPTH_STENCIL_DESC ds_desc = {};
+        ds_desc.DepthEnable = true;
+        ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+        ds_desc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+        ds_desc.StencilEnable = true;
+        ds_desc.StencilReadMask = 0xff;
+        ds_desc.StencilWriteMask = 0xff;
+
+        ds_desc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+        ds_desc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+        ds_desc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+        ds_desc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+        ds_desc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+        ds_desc.BackFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+        ds_desc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+        ds_desc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+        mirror_pso.DepthStencilState = ds_desc;
+        ThrowIfFailed(_device->CreateGraphicsPipelineState
+                (&mirror_pso, IID_PPV_ARGS(
+                        &_pso_list[static_cast<uint8_t>(layer::mirror)])));
+
+
+        auto ref_pso = ps_desc;
+        D3D12_DEPTH_STENCIL_DESC ref_dss = {};
+        ref_dss.DepthEnable = true;
+        ref_dss.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+        ref_dss.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+        ref_dss.StencilEnable = true;
+        ref_dss.StencilReadMask = 0xff;
+        ref_dss.StencilWriteMask = 0xff;
+
+        ref_dss.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
+        ref_dss.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+        ref_dss.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+        ref_dss.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+        ref_dss.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+        ref_dss.BackFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+        ref_dss.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+        ref_dss.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+        ref_pso.DepthStencilState = ref_dss;
+        ref_pso.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
+        ref_pso.RasterizerState.FrontCounterClockwise = true;
+        ref_pso.VS = {vs_ref_data.data(), vs_ref_data.size()};
+        ThrowIfFailed(_device->CreateGraphicsPipelineState
+                (&ref_pso, IID_PPV_ARGS(
+                        &_pso_list[static_cast<uint8_t>(layer::reflection)])));
     }
 
     void directx_12::execute_cmd_list() {

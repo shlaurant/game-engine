@@ -3,9 +3,19 @@
 #include "SimpleMath.h"
 
 namespace fuse::directx {
+    struct render_info {
+        int object_index;
+        int index_count;
+        int index_offset;
+        int vertex_offset;
+        bool is_transparent;
+        bool do_reflect;
+        bool is_mirror;
+        DirectX::SimpleMath::Vector4 mirror_plane;
+    };
+
     struct vertex {
         DirectX::SimpleMath::Vector3 position;
-//        DirectX::SimpleMath::Vector4 color;
         DirectX::SimpleMath::Vector2 uv;
         DirectX::SimpleMath::Vector3 normal;
     };
@@ -21,6 +31,12 @@ namespace fuse::directx {
         size_t w_offset = 0;
     };
 
+    struct global {
+        DirectX::SimpleMath::Matrix reflection_matrix[10];
+        int reflection_count;
+        DirectX::SimpleMath::Vector3 pad0;
+    };
+
     struct material {
         DirectX::SimpleMath::Vector4 diffuse_albedo;
         DirectX::SimpleMath::Vector3 fresnel_r0;
@@ -30,13 +46,6 @@ namespace fuse::directx {
     struct object_constant {
         DirectX::SimpleMath::Matrix world_matrix;
         material material;
-    };
-
-    struct render_info {
-        int object_index;
-        int index_count;
-        int index_offset;
-        int vertex_offset;
     };
 
     struct camera {
