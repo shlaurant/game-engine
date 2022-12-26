@@ -23,7 +23,7 @@ namespace fuse::directx {
         const static int OBJ_CNT = 10;
 
         enum class layer : uint8_t {
-            opaque, transparent, fog, end
+            opaque, transparent, end
         };
 
         void init(const window_info &);

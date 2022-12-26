@@ -215,8 +215,6 @@ namespace fuse::directx {
                 _cmd_list->SetPipelineState(
                         _pso_list[static_cast<uint8_t>(layer::transparent)].Get());
                 break;
-            case layer::fog:
-                break;
             case layer::end:
                 //do nothing;
                 break;
@@ -440,6 +438,7 @@ namespace fuse::directx {
         transparent_blend_desc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
         trans_pso.BlendState.RenderTarget[0] = transparent_blend_desc;
+        trans_pso.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 
         ThrowIfFailed(_device->CreateGraphicsPipelineState
                 (&trans_pso, IID_PPV_ARGS(
