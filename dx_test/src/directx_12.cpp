@@ -294,7 +294,7 @@ namespace fuse::directx {
 
         if (trans.size() > 0) {
             _cmd_list->SetPipelineState(
-                        _pso_list[static_cast<uint8_t>(layer::transparent)].Get());
+                    _pso_list[static_cast<uint8_t>(layer::transparent)].Get());
             for (auto i: trans) render(infos[i]);
         }
     }
@@ -367,7 +367,7 @@ namespace fuse::directx {
             _rtv_handle[i] = CD3DX12_CPU_DESCRIPTOR_HANDLE(rtv_dh_begin,
                                                            rtv_heap_size * i);
             _swap_chain->GetBuffer(i, IID_PPV_ARGS(&_rtv_buffer[i]));
-            _device->CreateRenderTargetView (_rtv_buffer[i].Get(), nullptr,
+            _device->CreateRenderTargetView(_rtv_buffer[i].Get(), nullptr,
                                             _rtv_handle[i]);
         }
     }
@@ -483,98 +483,42 @@ namespace fuse::directx {
                 {"NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
         };
 
-        D3D12_GRAPHICS_PIPELINE_STATE_DESC ps_desc = {};
-        ps_desc.InputLayout = {ie_desc, _countof(ie_desc)};
-        ps_desc.pRootSignature = _signature.Get();
-        ps_desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-        ps_desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-        ps_desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-        ps_desc.DSVFormat = DSV_FORMAT;
-        ps_desc.SampleMask = UINT_MAX;
-        ps_desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        ps_desc.NumRenderTargets = 1;
-        ps_desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-        ps_desc.SampleDesc.Count = 1;
-        ps_desc.SampleDesc.Quality = 0;
-        ps_desc.VS = {vs_data.data(), vs_data.size()};
-        ps_desc.PS = {ps_data.data(), ps_data.size()};
+        auto opaque_desc = pipeline_state::default_desc(ie_desc,
+                                                        _countof(ie_desc),
+                                                        _signature.Get(),
+                                                        vs_data,
+                                                        ps_data);
 
         ThrowIfFailed(_device->CreateGraphicsPipelineState
-                (&ps_desc, IID_PPV_ARGS(
+                (&opaque_desc, IID_PPV_ARGS(
                         &_pso_list[static_cast<uint8_t>(layer::opaque)])));
 
 
-        auto trans_pso = ps_desc;
-
-        D3D12_RENDER_TARGET_BLEND_DESC transparent_blend_desc;
-        transparent_blend_desc.BlendEnable = true;
-        transparent_blend_desc.LogicOpEnable = false;
-        transparent_blend_desc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-        transparent_blend_desc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-        transparent_blend_desc.BlendOp = D3D12_BLEND_OP_ADD;
-        transparent_blend_desc.SrcBlendAlpha = D3D12_BLEND_ONE;
-        transparent_blend_desc.DestBlendAlpha = D3D12_BLEND_ZERO;
-        transparent_blend_desc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-        transparent_blend_desc.LogicOp = D3D12_LOGIC_OP_NOOP;
-        transparent_blend_desc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-        trans_pso.BlendState.RenderTarget[0] = transparent_blend_desc;
-        trans_pso.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+        auto trans_pso = pipeline_state::transparent_desc(ie_desc,
+                                                          _countof(ie_desc),
+                                                          _signature.Get(),
+                                                          vs_data,
+                                                          ps_data);
 
         ThrowIfFailed(_device->CreateGraphicsPipelineState
                 (&trans_pso, IID_PPV_ARGS(
                         &_pso_list[static_cast<uint8_t>(layer::transparent)])));
 
 
-        auto mirror_pso = ps_desc;
-        mirror_pso.BlendState.RenderTarget[0].RenderTargetWriteMask = 0;
-        D3D12_DEPTH_STENCIL_DESC ds_desc = {};
-        ds_desc.DepthEnable = true;
-        ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-        ds_desc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-        ds_desc.StencilEnable = true;
-        ds_desc.StencilReadMask = 0xff;
-        ds_desc.StencilWriteMask = 0xff;
-
-        ds_desc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-        ds_desc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
-        ds_desc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-        ds_desc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-
-        ds_desc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-        ds_desc.BackFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
-        ds_desc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-        ds_desc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-
-        mirror_pso.DepthStencilState = ds_desc;
+        auto mirror_pso = pipeline_state::mirror_desc(ie_desc,
+                                                           _countof(ie_desc),
+                                                           _signature.Get(),
+                                                           vs_data,
+                                                           ps_data);
         ThrowIfFailed(_device->CreateGraphicsPipelineState
                 (&mirror_pso, IID_PPV_ARGS(
                         &_pso_list[static_cast<uint8_t>(layer::mirror)])));
 
-
-        auto ref_pso = ps_desc;
-        D3D12_DEPTH_STENCIL_DESC ref_dss = {};
-        ref_dss.DepthEnable = true;
-        ref_dss.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-        ref_dss.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-        ref_dss.StencilEnable = true;
-        ref_dss.StencilReadMask = 0xff;
-        ref_dss.StencilWriteMask = 0xff;
-
-        ref_dss.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
-        ref_dss.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-        ref_dss.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-        ref_dss.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-
-        ref_dss.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-        ref_dss.BackFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
-        ref_dss.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-        ref_dss.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-
-        ref_pso.DepthStencilState = ref_dss;
-        ref_pso.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
-        ref_pso.RasterizerState.FrontCounterClockwise = true;
-        ref_pso.VS = {vs_ref_data.data(), vs_ref_data.size()};
+        auto ref_pso = pipeline_state::reflection_desc(ie_desc,
+                                                        _countof(ie_desc),
+                                                        _signature.Get(),
+                                                        vs_ref_data,
+                                                        ps_data);
         ThrowIfFailed(_device->CreateGraphicsPipelineState
                 (&ref_pso, IID_PPV_ARGS(
                         &_pso_list[static_cast<uint8_t>(layer::reflection)])));
