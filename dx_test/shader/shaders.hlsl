@@ -53,10 +53,10 @@ VS_OUT VS_Main(VS_IN input)
 {
     VS_OUT output;
 
-#ifndef REFLECTION
-    float4x4 world = w;
-#else
+#ifdef REFLECTION
     float4x4 world = mul(w, reflection_matrix[0]);
+#else
+    float4x4 world = w;
 #endif
 
     float4x4 wvp = mul(world, vp);
