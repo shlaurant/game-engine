@@ -248,16 +248,6 @@ namespace fuse::directx {
         std::vector<size_t> reflects;
 
         global g = {};
-        auto index = 0;
-        for (const auto &e: infos) {
-            if (e.is_mirror) {
-                g.reflection_matrix[index]
-                        = Matrix::CreateReflection(e.mirror_plane);
-                ++index;
-            }
-        }
-        g.reflection_count = index;
-        update_const_buffer(_global_buffer, &g, 0);
 
         _cmd_list->SetPipelineState(
                 _pso_list[static_cast<uint8_t>(layer::opaque)].Get());
@@ -281,9 +271,16 @@ namespace fuse::directx {
             _cmd_list->SetPipelineState(
                     _pso_list[static_cast<uint8_t>(layer::mirror)].Get());
 
+            int k = 0;
             for (auto i: mirrors) {
                 render(infos[i]);
+                g.reflection_matrix[k]
+                        = Matrix::CreateReflection(infos[i].mirror_plane);
+                ++k;
             }
+            g.reflection_count = mirrors.size();
+            update_const_buffer(_global_buffer, &g, 0);
+
 
             _cmd_list->SetPipelineState(
                     _pso_list[static_cast<uint8_t>(layer::reflection)].Get());
@@ -297,7 +294,7 @@ namespace fuse::directx {
 
         if (trans.size() > 0) {
             _cmd_list->SetPipelineState(
-                    _pso_list[static_cast<uint8_t>(layer::transparent)].Get());
+                        _pso_list[static_cast<uint8_t>(layer::transparent)].Get());
             for (auto i: trans) render(infos[i]);
         }
     }
@@ -370,7 +367,7 @@ namespace fuse::directx {
             _rtv_handle[i] = CD3DX12_CPU_DESCRIPTOR_HANDLE(rtv_dh_begin,
                                                            rtv_heap_size * i);
             _swap_chain->GetBuffer(i, IID_PPV_ARGS(&_rtv_buffer[i]));
-            _device->CreateRenderTargetView(_rtv_buffer[i].Get(), nullptr,
+            _device->CreateRenderTargetView (_rtv_buffer[i].Get(), nullptr,
                                             _rtv_handle[i]);
         }
     }
@@ -415,7 +412,7 @@ namespace fuse::directx {
     }
 
     void directx_12::init_light_buf() {
-        _light_buffer = create_const_buffer<light_info>(1, _device);
+        _light_buffer = create_const_buffer<light_info>(2, _device);
     }
 
     void directx_12::init_resources() {

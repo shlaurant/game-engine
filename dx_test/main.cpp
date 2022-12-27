@@ -78,20 +78,12 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.bind_texture(3, 1);
 
         dx12.init_geometries(geo);
-//        auto opaque_infos = create_render_info(
-//                std::vector(geo.begin() + 1, geo.begin() + 3), 1);
-//        auto trans_infos = create_render_info(
-//                std::vector(geo.begin(), geo.begin() + 1), 0);
-//        auto mirror_infos = create_render_info(
-//                std::vector(geo.begin() + 3, geo.begin() + 4), 3);
         auto infos = create_render_info(geo, 0);
         infos[1].is_transparent = true;
         infos[3].is_mirror = true;
         infos[3].is_transparent = true;
         infos[3].mirror_plane = Plane(Vector3(-1.5f, 0.f, 5.f), Vector3::Backward);
         infos[3].do_reflect = false;
-        infos.erase(infos.end() - 2);
-//        infos.erase(--infos.end());
 
         while (msg.message != WM_QUIT) {
             if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
@@ -107,14 +99,6 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                 dx12.update_lights(li);
                 dx12.update_obj_constants(consts);
                 dx12.render_begin();
-//                dx12.render(fuse::directx::directx_12::layer::opaque,
-//                            opaque_infos);
-//                dx12.render(fuse::directx::directx_12::layer::transparent,
-//                            trans_infos);
-//                dx12.render(fuse::directx::directx_12::layer::mirror,
-//                            mirror_infos);
-//                dx12.render(fuse::directx::directx_12::layer::transparent,
-//                            mirror_infos);
                 dx12.render(infos);
                 dx12.render_end();
             }
