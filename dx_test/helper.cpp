@@ -147,9 +147,9 @@ DirectX::SimpleMath::Vector4 mult(const Vector4 &v, const Matrix &m) {
     return ret;
 }
 
-fuse::directx::geometry create_cube() {
+fuse::directx::geometry<fuse::directx::vertex> create_cube() {
     static const float d = 0.5f;
-    fuse::directx::geometry ret;
+    fuse::directx::geometry<fuse::directx::vertex> ret;
 //    ret.vertices = {{{-d, d,  -d}, white()},
 //                    {{d,  d,  -d}, red()},
 //                    {{-d, -d, -d}, green()},
@@ -168,8 +168,8 @@ fuse::directx::geometry create_cube() {
     return ret;
 }
 
-fuse::directx::geometry create_tetra() {
-    fuse::directx::geometry ret;
+fuse::directx::geometry<fuse::directx::vertex> create_tetra() {
+    fuse::directx::geometry<fuse::directx::vertex> ret;
 //    static const float d = 0.5f;
 //    ret.vertices = {{{0.f, d * 2, 0.f}, red()},
 //                    {{0.f, 0.f,   d},   green()},
@@ -182,8 +182,8 @@ fuse::directx::geometry create_tetra() {
     return ret;
 }
 
-fuse::directx::geometry create_cube_uv() {
-    fuse::directx::geometry ret;
+fuse::directx::geometry<fuse::directx::vertex> create_cube_uv() {
+    fuse::directx::geometry<fuse::directx::vertex> ret;
 
     float w2 = 0.5f;
     float h2 = 0.5f;
@@ -285,8 +285,8 @@ fuse::directx::geometry create_cube_uv() {
     return ret;
 }
 
-fuse::directx::geometry create_plain(int width, int height) {
-    fuse::directx::geometry ret;
+fuse::directx::geometry<fuse::directx::vertex> create_plain(int width, int height) {
+    fuse::directx::geometry<fuse::directx::vertex> ret;
 
     auto cnt = (width + 1) * (height + 1);
     ret.vertices.resize(cnt);
@@ -339,8 +339,8 @@ DirectX::SimpleMath::Vector3 read_v3(std::ifstream &ifs) {
     return Vector3(x, y, z);
 }
 
-fuse::directx::geometry load_mesh(const std::string &path) {
-    fuse::directx::geometry ret;
+fuse::directx::geometry<fuse::directx::vertex> load_mesh(const std::string &path) {
+    fuse::directx::geometry<fuse::directx::vertex> ret;
 
     std::ifstream fs(path.data());
     if (fs.is_open()) {

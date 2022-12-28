@@ -36,7 +36,7 @@ namespace fuse::directx {
         SetWindowPos(info.hwnd, 0, 100, 100, info.width, info.height, 0);
     }
 
-    void directx_12::init_geometries(std::vector<geometry> &geometries) {
+    void directx_12::init_geometries(std::vector<geometry<vertex>> &geometries) {
         ThrowIfFailed(_cmd_alloc->Reset());
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr));
 

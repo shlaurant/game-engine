@@ -21,8 +21,14 @@ namespace fuse::directx {
         DirectX::SimpleMath::Vector3 normal;
     };
 
+    struct vertex_billboard {
+        DirectX::SimpleMath::Vector3 position;
+        DirectX::SimpleMath::Vector2 size;
+    };
+
+    template <typename T>
     struct geometry {
-        std::vector<vertex> vertices;
+        std::vector<T> vertices;
         std::vector<uint16_t> indices;
 
         DirectX::SimpleMath::Matrix world_matrix = DirectX::SimpleMath::Matrix::Identity;

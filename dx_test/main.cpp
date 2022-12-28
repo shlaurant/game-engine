@@ -13,10 +13,10 @@ Input input;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-std::vector<fuse::directx::geometry> create_geometries();
+std::vector<fuse::directx::geometry<fuse::directx::vertex>> create_geometries();
 std::vector<fuse::directx::object_constant> create_obj_const();
 std::vector<fuse::directx::render_info>
-create_render_info(const std::vector<fuse::directx::geometry> &, int offset);
+create_render_info(const std::vector<fuse::directx::geometry<fuse::directx::vertex>> &, int offset);
 fuse::directx::light_info create_light_info();
 
 int
@@ -134,8 +134,8 @@ CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-std::vector<fuse::directx::geometry> create_geometries() {
-    std::vector<fuse::directx::geometry> ret;
+std::vector<fuse::directx::geometry<fuse::directx::vertex>> create_geometries() {
+    std::vector<fuse::directx::geometry<fuse::directx::vertex>> ret;
 
     auto cube0 = create_cube_uv();
     ret.emplace_back(cube0);
@@ -199,7 +199,7 @@ std::vector<fuse::directx::object_constant> create_obj_const() {
 }
 
 std::vector<fuse::directx::render_info>
-create_render_info(const std::vector<fuse::directx::geometry> &geo,
+create_render_info(const std::vector<fuse::directx::geometry<fuse::directx::vertex>> &geo,
                    int offset) {
     std::vector<fuse::directx::render_info> infos(geo.size());
 

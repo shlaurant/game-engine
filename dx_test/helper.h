@@ -43,17 +43,17 @@ void print_transform(const transform &);
 DirectX::SimpleMath::Vector4
 mult(const DirectX::SimpleMath::Vector4 &, const DirectX::SimpleMath::Matrix &);
 
-fuse::directx::geometry create_cube();
+fuse::directx::geometry<fuse::directx::vertex> create_cube();
 
-fuse::directx::geometry create_tetra();
+fuse::directx::geometry<fuse::directx::vertex> create_tetra();
 
-fuse::directx::geometry create_cube_uv();
+fuse::directx::geometry<fuse::directx::vertex> create_cube_uv();
 
-fuse::directx::geometry create_plain(int width, int height);
+fuse::directx::geometry<fuse::directx::vertex> create_plain(int width, int height);
 
 DirectX::SimpleMath::Vector4 white();
 DirectX::SimpleMath::Vector4 red();
 DirectX::SimpleMath::Vector4 green();
 DirectX::SimpleMath::Vector4 blue();
 
-fuse::directx::geometry load_mesh(const std::string &path);
+fuse::directx::geometry<fuse::directx::vertex> load_mesh(const std::string &path);

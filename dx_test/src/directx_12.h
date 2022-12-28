@@ -27,7 +27,7 @@ namespace fuse::directx {
         };
 
         void init(const window_info &);
-        void init_geometries(std::vector<geometry> &);
+        void init_geometries(std::vector<geometry<vertex>> &);
         int load_texture(const std::wstring &path);
         void bind_texture(int obj, int texture);
 
@@ -89,6 +89,9 @@ namespace fuse::directx {
         ComPtr <ID3D12Resource> _index_buffer;
         D3D12_VERTEX_BUFFER_VIEW _vertex_buffer_view;
         D3D12_INDEX_BUFFER_VIEW _index_buffer_view;
+
+        ComPtr <ID3D12Resource> _billboard_vertex_buffer;
+        D3D12_VERTEX_BUFFER_VIEW _billboard_vertex_buffer_view;
 
         void init_base(const window_info &info);
         void init_cmds();
