@@ -189,6 +189,8 @@ namespace fuse::directx {
         ds_desc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
         ds_desc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
 
+        ret.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
+
         ret.DepthStencilState = ds_desc;
 
         return ret;

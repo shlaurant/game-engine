@@ -222,8 +222,10 @@ create_render_info(const std::vector<fuse::directx::geometry> &geo,
     infos[3].mirror_plane = Plane(Vector3(-1.5f, 0.f, 5.f), Vector3::Backward);
     infos[3].do_reflect = false;
     infos[4].do_reflect = false;
+    infos[4].do_shadow = true;
 
     infos.erase(infos.begin() + 3);
+    infos.erase(infos.begin() + 2);
 
     return std::move(infos);
 }
