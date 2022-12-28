@@ -79,11 +79,6 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 
         dx12.init_geometries(geo);
         auto infos = create_render_info(geo, 0);
-        infos[1].is_transparent = true;
-        infos[3].is_mirror = true;
-        infos[3].is_transparent = true;
-        infos[3].mirror_plane = Plane(Vector3(-1.5f, 0.f, 5.f), Vector3::Backward);
-        infos[3].do_reflect = false;
 
         while (msg.message != WM_QUIT) {
             if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
@@ -159,7 +154,7 @@ std::vector<fuse::directx::geometry> create_geometries() {
 std::vector<fuse::directx::object_constant> create_obj_const() {
     std::vector<fuse::directx::object_constant> consts(4);
 
-    DirectX::SimpleMath::Vector3 tmp = {1.f, 0.5f, 3.f};
+    DirectX::SimpleMath::Vector3 tmp = {1.f, 1.5f, 3.f};
     auto t0 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
     consts[0].world_matrix = t0;
     consts[0].material.diffuse_albedo = Vector4(0.5f, 0.5f, 0.5f, 5.f);
@@ -182,7 +177,7 @@ std::vector<fuse::directx::object_constant> create_obj_const() {
     consts[2].material.fresnel_r0 = Vector3(0.01f, 0.01f, 0.01f);
     consts[2].material.roughness = 0.9f;
 
-    DirectX::SimpleMath::Vector3 mirror = {-1.5f, 0.f, 5.f};
+    DirectX::SimpleMath::Vector3 mirror = {-1.5f, 0.f, 7.f};
     consts[3].world_matrix = DirectX::SimpleMath::Matrix::CreateTranslation(
             mirror);
     consts[3].material.diffuse_albedo = Vector4(0.5f, 0.5f, 0.5f, 0.3f);;
@@ -205,7 +200,16 @@ create_render_info(const std::vector<fuse::directx::geometry> &geo,
         infos[i].do_reflect = true;
         infos[i].is_transparent = false;
         infos[i].is_mirror = false;
+        infos[i].do_shadow = false;
     }
+
+    infos[0].do_shadow = true;
+    infos[1].is_transparent = true;
+    infos[1].do_shadow = true;
+    infos[3].is_mirror = true;
+    infos[3].is_transparent = true;
+    infos[3].mirror_plane = Plane(Vector3(-1.5f, 0.f, 5.f), Vector3::Backward);
+    infos[3].do_reflect = false;
 
     return std::move(infos);
 }

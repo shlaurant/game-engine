@@ -4,6 +4,7 @@ cbuffer globals :register(b0) {
     row_major float4x4 reflection_matrix[10];
     int reflection_count;
     float3 pad0;
+    row_major float4x4 shadow_matrix;
 }
 
 cbuffer camera :register(b1) {
@@ -55,6 +56,8 @@ VS_OUT VS_Main(VS_IN input)
 
 #ifdef REFLECTION
     float4x4 world = mul(w, reflection_matrix[0]);
+#elif SHADOW
+    float4x4 world = mul(w, shadow_matrix);
 #else
     float4x4 world = w;
 #endif
@@ -69,15 +72,19 @@ VS_OUT VS_Main(VS_IN input)
 
 float4 PS_Main(VS_OUT input) : SV_Target
 {
-    input.normal = normalize(input.normal);
     float4 color = tex.Sample(sam_aw, input.uv);
-
     clip(color.w * mat.diffuse_albedo.w - 0.1f);
+
+#ifdef SHADOW
+    color = (0.f, 0.f, 0.f, 0.5f);
+#else
+    input.normal = normalize(input.normal);
 
     float3 to_eye = normalize(camera_pos - input.pos.xyz);
     float4 light_color = calc_light(lights, active_light_counts, mat, input.pos.xyz, input.normal, to_eye);
     color *= light_color;
     color.w *= mat.diffuse_albedo.w;
+#endif
 
     return color;
 }

@@ -163,4 +163,34 @@ namespace fuse::directx {
 
         return ret;
     }
+
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC
+    pipeline_state::shadow_desc(D3D12_INPUT_ELEMENT_DESC *ed, UINT ed_cnt,
+                                ID3D12RootSignature *rs,
+                                const std::vector<uint8_t> &vs,
+                                const std::vector<uint8_t> &ps) {
+        auto ret = transparent_desc(ed, ed_cnt, rs, vs, ps);
+
+        D3D12_DEPTH_STENCIL_DESC ds_desc = {};
+        ds_desc.DepthEnable = true;
+        ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+        ds_desc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+        ds_desc.StencilEnable = true;
+        ds_desc.StencilReadMask = 0xff;
+        ds_desc.StencilWriteMask = 0xff;
+
+        ds_desc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
+        ds_desc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_INCR;
+        ds_desc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+        ds_desc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+        ds_desc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+        ds_desc.BackFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+        ds_desc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+        ds_desc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+        ret.DepthStencilState = ds_desc;
+
+        return ret;
+    }
 }

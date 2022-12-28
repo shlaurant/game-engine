@@ -12,6 +12,7 @@ namespace fuse::directx {
         bool do_reflect;
         bool is_mirror;
         DirectX::SimpleMath::Vector4 mirror_plane;
+        bool do_shadow;
     };
 
     struct vertex {
@@ -29,12 +30,6 @@ namespace fuse::directx {
         size_t vertex_offset = 0;
         size_t index_offset = 0;
         size_t w_offset = 0;
-    };
-
-    struct global {
-        DirectX::SimpleMath::Matrix reflection_matrix[10];
-        int reflection_count;
-        DirectX::SimpleMath::Vector3 pad0;
     };
 
     struct material {
@@ -73,5 +68,12 @@ namespace fuse::directx {
         light lights[50];//should be same with LIGHT_COUNT in shader code
         int active_count;
         DirectX::SimpleMath::Vector3 pad0;
+    };
+
+    struct global {
+        DirectX::SimpleMath::Matrix reflection_matrix[10];
+        int reflection_count;
+        DirectX::SimpleMath::Vector3 pad0;
+        DirectX::SimpleMath::Matrix shadow_matrix;
     };
 }

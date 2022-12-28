@@ -23,7 +23,7 @@ namespace fuse::directx {
         const static int OBJ_CNT = 10;
 
         enum class layer : uint8_t {
-            opaque, transparent, mirror, reflection, end
+            opaque, transparent, mirror, reflection, shadow, end
         };
 
         void init(const window_info &);
@@ -71,6 +71,7 @@ namespace fuse::directx {
 
         //resource
         static const int TABLE_SIZE = 2;
+        global _global;
         ComPtr <ID3D12Resource> _global_buffer;//globals set automatically.
         ComPtr <ID3D12Resource> _vp_buffer;
         ComPtr <ID3D12Resource> _light_buffer;

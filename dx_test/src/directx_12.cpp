@@ -246,14 +246,17 @@ namespace fuse::directx {
         std::vector<size_t> mirrors;
         std::vector<size_t> trans;
         std::vector<size_t> reflects;
-
-        global g = {};
+        std::vector<size_t> shadows;
 
         _cmd_list->SetPipelineState(
                 _pso_list[static_cast<uint8_t>(layer::opaque)].Get());
         for (auto i = 0; i < infos.size(); ++i) {
             if (infos[i].do_reflect) {
                 reflects.push_back(i);
+            }
+
+            if (infos[i].do_shadow) {
+                shadows.push_back(i);
             }
 
             if (infos[i].is_mirror) {
@@ -274,12 +277,12 @@ namespace fuse::directx {
             int k = 0;
             for (auto i: mirrors) {
                 render(infos[i]);
-                g.reflection_matrix[k]
+                _global.reflection_matrix[k]
                         = Matrix::CreateReflection(infos[i].mirror_plane);
                 ++k;
             }
-            g.reflection_count = mirrors.size();
-            update_const_buffer(_global_buffer, &g, 0);
+            _global.reflection_count = mirrors.size();
+            update_const_buffer(_global_buffer, &_global, 0);
 
 
             _cmd_list->SetPipelineState(
@@ -296,6 +299,13 @@ namespace fuse::directx {
             _cmd_list->SetPipelineState(
                     _pso_list[static_cast<uint8_t>(layer::transparent)].Get());
             for (auto i: trans) render(infos[i]);
+        }
+
+        if (shadows.size() > 0) {
+            _cmd_list->OMSetStencilRef(0);
+            _cmd_list->SetPipelineState(
+                    _pso_list[static_cast<uint8_t>(layer::shadow)].Get());
+            for (auto i: shadows) render(infos[i]);
         }
     }
 
@@ -405,6 +415,12 @@ namespace fuse::directx {
 
     void directx_12::init_global_buf() {
         _global_buffer = create_const_buffer<global>(1, _device);
+        auto plane = Plane(Vector3(0.f, 0.001f, 0.f), Vector3::Up);
+        auto n = Vector4(0.f, -1.f, 1.f, 0.f);
+        n.Normalize();
+        n = -n;
+        _global.shadow_matrix = DirectX::XMMatrixShadow(plane, n);
+        update_const_buffer(_global_buffer, &_global, 0);
     }
 
     void directx_12::init_camera_buf() {
@@ -475,7 +491,9 @@ namespace fuse::directx {
 
         auto vs_data = DX::ReadData(L"shader\\vs.cso");
         auto vs_ref_data = DX::ReadData(L"shader\\vs_ref.cso");
+        auto vs_sha_data = DX::ReadData(L"shader\\vs_sha.cso");
         auto ps_data = DX::ReadData(L"shader\\ps.cso");
+        auto ps_sha_data = DX::ReadData(L"shader\\ps_sha.cso");
 
         D3D12_INPUT_ELEMENT_DESC ie_desc[] = {
                 {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
@@ -506,22 +524,32 @@ namespace fuse::directx {
 
 
         auto mirror_pso = pipeline_state::mirror_desc(ie_desc,
-                                                           _countof(ie_desc),
-                                                           _signature.Get(),
-                                                           vs_data,
-                                                           ps_data);
+                                                      _countof(ie_desc),
+                                                      _signature.Get(),
+                                                      vs_data,
+                                                      ps_data);
         ThrowIfFailed(_device->CreateGraphicsPipelineState
                 (&mirror_pso, IID_PPV_ARGS(
                         &_pso_list[static_cast<uint8_t>(layer::mirror)])));
 
         auto ref_pso = pipeline_state::reflection_desc(ie_desc,
-                                                        _countof(ie_desc),
-                                                        _signature.Get(),
-                                                        vs_ref_data,
-                                                        ps_data);
+                                                       _countof(ie_desc),
+                                                       _signature.Get(),
+                                                       vs_ref_data,
+                                                       ps_data);
         ThrowIfFailed(_device->CreateGraphicsPipelineState
                 (&ref_pso, IID_PPV_ARGS(
                         &_pso_list[static_cast<uint8_t>(layer::reflection)])));
+
+        auto shadow_pso = pipeline_state::shadow_desc(ie_desc,
+                                                      _countof(ie_desc),
+                                                      _signature.Get(),
+                                                      vs_sha_data,
+                                                      ps_sha_data);
+
+        ThrowIfFailed(_device->CreateGraphicsPipelineState
+                (&shadow_pso, IID_PPV_ARGS(
+                        &_pso_list[static_cast<uint8_t>(layer::shadow)])));
     }
 
     void directx_12::execute_cmd_list() {
