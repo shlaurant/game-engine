@@ -55,3 +55,5 @@ DirectX::SimpleMath::Vector4 white();
 DirectX::SimpleMath::Vector4 red();
 DirectX::SimpleMath::Vector4 green();
 DirectX::SimpleMath::Vector4 blue();
+
+fuse::directx::geometry load_mesh(const std::string &path);

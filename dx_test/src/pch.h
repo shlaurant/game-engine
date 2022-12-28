@@ -6,6 +6,8 @@
 #include <iterator>
 #include <array>
 #include <filesystem>
+#include <fstream>
+#include <iostream>
 
 #include "d3dx12.h"
 #include <windows.h>

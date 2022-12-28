@@ -327,3 +327,58 @@ DirectX::SimpleMath::Vector4 green() {
 DirectX::SimpleMath::Vector4 blue() {
     return {0.f, 0.f, 1.f, 1.f};
 }
+
+DirectX::SimpleMath::Vector3 read_v3(std::ifstream &ifs) {
+    std::string str;
+    ifs >> str;
+    auto x = std::stof(str);
+    ifs >> str;
+    auto y = std::stof(str);
+    ifs >> str;
+    auto z = std::stof(str);
+    return Vector3(x, y, z);
+}
+
+fuse::directx::geometry load_mesh(const std::string &path) {
+    fuse::directx::geometry ret;
+
+    std::ifstream fs(path.data());
+    if (fs.is_open()) {
+        std::string str;
+        fs >> str >> str;
+        auto vcnt = std::stoi(str);
+        fs >> str >> str;
+        auto tcnt = std::stoi(str);
+
+        std::getline(fs, str);
+        std::getline(fs, str);
+        std::getline(fs, str);
+
+        for (auto i = 0; i < vcnt; ++i) {
+            fuse::directx::vertex v;
+            v.position = read_v3(fs);
+            v.normal = read_v3(fs);
+            ret.vertices.emplace_back(v);
+            v.uv = Vector2(0.f, 0.f);
+        }
+
+        std::getline(fs, str);
+        std::getline(fs, str);
+        std::getline(fs, str);
+        std::getline(fs, str);
+
+        for (auto i = 0; i < tcnt; ++i) {
+            fs >> str;
+            uint16_t ind = std::stoi(str);
+            ret.indices.push_back(ind);
+            fs >> str;
+            ind = std::stoi(str);
+            ret.indices.push_back(ind);
+            fs >> str;
+            ind = std::stoi(str);
+            ret.indices.push_back(ind);
+        }
+    }
+
+    return ret;
+}

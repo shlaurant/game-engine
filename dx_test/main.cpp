@@ -76,6 +76,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.bind_texture(1, 3);
         dx12.bind_texture(2, 2);
         dx12.bind_texture(3, 1);
+        dx12.bind_texture(4, 1);
 
         dx12.init_geometries(geo);
         auto infos = create_render_info(geo, 0);
@@ -148,11 +149,14 @@ std::vector<fuse::directx::geometry> create_geometries() {
     auto mirror = create_plain(5, 5);
     ret.emplace_back(mirror);
 
+    auto skull = load_mesh("resource/skull.txt");
+    ret.emplace_back(skull);
+
     return std::move(ret);
 }
 
 std::vector<fuse::directx::object_constant> create_obj_const() {
-    std::vector<fuse::directx::object_constant> consts(4);
+    std::vector<fuse::directx::object_constant> consts(5);
 
     DirectX::SimpleMath::Vector3 tmp = {1.f, 1.5f, 3.f};
     auto t0 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
@@ -184,6 +188,13 @@ std::vector<fuse::directx::object_constant> create_obj_const() {
     consts[3].material.fresnel_r0 = Vector3(0.95f, 0.95f, 0.95f);
     consts[3].material.roughness = 0.1f;
 
+
+    DirectX::SimpleMath::Vector3 skull = {-5.f, 0.f, 3.f};
+    consts[4].world_matrix = Matrix::CreateTranslation(skull);
+    consts[4].material.diffuse_albedo = Vector4(1.f, 1.f, 1.0f, 1.0f);;
+    consts[4].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+    consts[4].material.roughness = 0.3f;
+
     return std::move(consts);
 }
 
@@ -210,6 +221,9 @@ create_render_info(const std::vector<fuse::directx::geometry> &geo,
     infos[3].is_transparent = true;
     infos[3].mirror_plane = Plane(Vector3(-1.5f, 0.f, 5.f), Vector3::Backward);
     infos[3].do_reflect = false;
+    infos[4].do_reflect = false;
+
+    infos.erase(infos.begin() + 3);
 
     return std::move(infos);
 }
@@ -229,7 +243,7 @@ fuse::directx::light_info create_light_info() {
         li.lights[0].spot_pow;
 
         li.lights[1].type = 3;
-        li.lights[1].color = DirectX::SimpleMath::Vector3(.5f, .5f, .5f);
+        li.lights[1].color = DirectX::SimpleMath::Vector3(.2f, .2f, .2f);
         li.lights[1].fo_start;
         li.lights[1].direction;
         li.lights[1].fo_end;
