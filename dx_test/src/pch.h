@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <map>
 
 #include "d3dx12.h"
 #include <windows.h>
