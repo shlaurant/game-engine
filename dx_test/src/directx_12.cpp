@@ -36,7 +36,8 @@ namespace fuse::directx {
         SetWindowPos(info.hwnd, 0, 100, 100, info.width, info.height, 0);
     }
 
-    void directx_12::init_geometries(std::vector<geometry<vertex>> &geometries) {
+    void
+    directx_12::init_geometries(std::vector<geometry<vertex>> &geometries) {
         ThrowIfFailed(_cmd_alloc->Reset());
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr));
 
@@ -104,34 +105,8 @@ namespace fuse::directx {
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr));
 
         DirectX::ScratchImage image;
-        auto ext = std::filesystem::path(path).extension();
-
-        if (ext == L".dds" || ext == L".DDS")
-            LoadFromDDSFile(path.c_str(), DirectX::DDS_FLAGS_NONE, nullptr,
-                            image);
-        else if (ext == L".tga" || ext == L".TGA")
-            LoadFromTGAFile(path.c_str(), nullptr, image);
-        else
-            LoadFromWICFile(path.c_str(), DirectX::WIC_FLAGS_NONE, nullptr,
-                            image);
-
-        ComPtr<ID3D12Resource> buf;
-        ThrowIfFailed(
-                DirectX::CreateTexture(_device.Get(), image.GetMetadata(),
-                                       &buf));
-
-        std::vector<D3D12_SUBRESOURCE_DATA> sub_reses;
-        ThrowIfFailed(DirectX::PrepareUpload(_device.Get(), image.GetImages(),
-                                             image.GetImageCount(),
-                                             image.GetMetadata(), sub_reses));
-
-        auto ub = create_upload_buffer(1,
-                                       GetRequiredIntermediateSize(buf.Get(), 0,
-                                                                   static_cast<uint32_t>(sub_reses.size())),
-                                       _device);
-        UpdateSubresources(_cmd_list.Get(), buf.Get(), ub.Get(),
-                           0, 0, static_cast<uint32_t>(sub_reses.size()),
-                           sub_reses.data());
+        ComPtr<ID3D12Resource> ub;
+        ComPtr<ID3D12Resource> buf = load_texture(path, image, ub);
 
         _cmd_list->Close();
         execute_cmd_list();
@@ -145,6 +120,39 @@ namespace fuse::directx {
 
         _texture_buffers.emplace_back(std::make_pair(desc, buf));
         return _texture_buffers.size() - 1;
+    }
+
+    ComPtr<ID3D12Resource> directx_12::load_texture(const std::wstring &path,
+                                                    DirectX::ScratchImage &image,
+                                                    ComPtr<ID3D12Resource> &upload_buffer) {
+        auto ext = std::filesystem::path(path).extension();
+
+        if (ext == L".dds" || ext == L".DDS")
+            LoadFromDDSFile(path.c_str(), DirectX::DDS_FLAGS_NONE, nullptr,
+                            image);
+        else if (ext == L".tga" || ext == L".TGA")
+            LoadFromTGAFile(path.c_str(), nullptr, image);
+        else
+            LoadFromWICFile(path.c_str(), DirectX::WIC_FLAGS_NONE, nullptr,
+                            image);
+
+        ComPtr<ID3D12Resource> tmp;
+        ThrowIfFailed(
+                DirectX::CreateTexture(_device.Get(), image.GetMetadata(),
+                                       &tmp));
+
+        std::vector<D3D12_SUBRESOURCE_DATA> sub_reses;
+        ThrowIfFailed(DirectX::PrepareUpload(_device.Get(), image.GetImages(),
+                                             image.GetImageCount(),
+                                             image.GetMetadata(), sub_reses));
+
+        upload_buffer = create_upload_buffer(1, GetRequiredIntermediateSize(
+                                                     tmp.Get(), 0, static_cast<uint32_t>(sub_reses.size())),
+                                             _device);
+        UpdateSubresources(_cmd_list.Get(), tmp.Get(), upload_buffer.Get(),
+                           0, 0, static_cast<uint32_t>(sub_reses.size()),
+                           sub_reses.data());
+        return tmp;
     }
 
     void directx_12::bind_texture(int obj, int texture) {
@@ -205,41 +213,6 @@ namespace fuse::directx {
         _back_buffer = (_back_buffer + 1) % SWAP_CHAIN_BUFFER_COUNT;
 
         wait_cmd_queue_sync();
-    }
-
-    void
-    directx_12::render(directx_12::layer l,
-                       const std::vector<render_info> &infos) {
-        switch (l) {
-            case layer::opaque:
-                _cmd_list->SetPipelineState(
-                        _pso_list[static_cast<uint8_t>(layer::opaque)].Get());
-                for (const auto &e: infos) render(e);
-                break;
-            case layer::transparent:
-                _cmd_list->SetPipelineState(
-                        _pso_list[static_cast<uint8_t>(layer::transparent)].Get());
-                for (const auto &e: infos) render(e);
-                break;
-            case layer::mirror:
-                _cmd_list->OMSetStencilRef(1);
-                _cmd_list->SetPipelineState(
-                        _pso_list[static_cast<uint8_t>(layer::mirror)].Get());
-                for (const auto &e: infos) render(e);
-                _cmd_list->OMSetStencilRef(0);
-                break;
-            case layer::reflection:
-                _cmd_list->OMSetStencilRef(1);
-                _cmd_list->SetPipelineState(
-                        _pso_list[static_cast<uint8_t>(layer::reflection)].Get());
-                for (const auto &e: infos) render(e);
-                _cmd_list->OMSetStencilRef(0);
-                break;
-            case layer::end:
-                //do nothing;
-                break;
-        }
-
     }
 
     void directx_12::render(const std::vector<render_info> &infos) {
@@ -457,7 +430,7 @@ namespace fuse::directx {
     void directx_12::init_root_signature() {
         CD3DX12_DESCRIPTOR_RANGE ranges[] = {
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 3),
-                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0)
+                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0)
         };
         CD3DX12_ROOT_PARAMETER param[4];
         param[0].InitAsConstantBufferView(static_cast<uint32_t>(0));//global

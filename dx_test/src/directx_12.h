@@ -36,7 +36,6 @@ namespace fuse::directx {
         void update_obj_constants(const std::vector<object_constant> &);
 
         void render_begin();
-        void render(layer, const std::vector<render_info> &);
         void render(const std::vector<render_info> &);
         void render_end();
 
@@ -90,9 +89,6 @@ namespace fuse::directx {
         D3D12_VERTEX_BUFFER_VIEW _vertex_buffer_view;
         D3D12_INDEX_BUFFER_VIEW _index_buffer_view;
 
-        ComPtr <ID3D12Resource> _billboard_vertex_buffer;
-        D3D12_VERTEX_BUFFER_VIEW _billboard_vertex_buffer_view;
-
         void init_base(const window_info &info);
         void init_cmds();
         void init_swap_chain(const window_info &info);
@@ -113,5 +109,9 @@ namespace fuse::directx {
         void render(const render_info &);
 
         UINT group_size();
+
+        ComPtr <ID3D12Resource>
+        load_texture(const std::wstring &path, DirectX::ScratchImage &image,
+                     ComPtr <ID3D12Resource> &upload_buffer);
     };
 }
