@@ -36,55 +36,6 @@ namespace fuse::directx {
         SetWindowPos(info.hwnd, 0, 100, 100, info.width, info.height, 0);
     }
 
-    void
-    directx_12::init_geometries(std::vector<geometry<vertex>> &geometries) {
-        ThrowIfFailed(_cmd_alloc->Reset());
-        ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr));
-
-        ComPtr<ID3D12Resource> u_buffer_v;
-        std::vector<vertex> vertices;
-        size_t index = 0;
-        for (auto &e: geometries) {
-            e.vertex_offset = index;
-            std::copy(e.vertices.begin(), e.vertices.end(),
-                      std::back_inserter(vertices));
-            index += e.vertices.size();
-        }
-        auto vert_arr = new vertex[vertices.size()];
-        auto vert_byte_size = sizeof(vertex) * vertices.size();
-        std::copy(vertices.begin(), vertices.end(), vert_arr);
-
-        _vertex_buffer = create_default_buffer(vert_arr, vert_byte_size,
-                                               u_buffer_v, _device, _cmd_list);
-        _vertex_buffer_view.BufferLocation = _vertex_buffer->GetGPUVirtualAddress();
-        _vertex_buffer_view.StrideInBytes = sizeof(vertex);
-        _vertex_buffer_view.SizeInBytes = vert_byte_size;
-
-        ComPtr<ID3D12Resource> u_buffer_i;
-        std::vector<uint16_t> indices;
-        size_t index_i = 0;
-        for (auto &e: geometries) {
-            e.index_offset = index_i;
-            std::copy(e.indices.begin(), e.indices.end(),
-                      std::back_inserter(indices));
-            index_i += e.indices.size();
-        }
-        auto index_arr = new uint16_t[indices.size()];
-        std::copy(indices.begin(), indices.end(), index_arr);
-        _index_buffer = create_default_buffer(index_arr,
-                                              sizeof(uint16_t) * indices.size(),
-                                              u_buffer_i, _device, _cmd_list);
-        _index_buffer_view.BufferLocation = _index_buffer->GetGPUVirtualAddress();
-        _index_buffer_view.Format = DXGI_FORMAT_R16_UINT;
-        _index_buffer_view.SizeInBytes = sizeof(uint16_t) * indices.size();
-
-        _cmd_list->Close();
-        execute_cmd_list();
-        wait_cmd_queue_sync();
-        delete[] vert_arr;
-        delete[] index_arr;
-    }
-
     void directx_12::update_camera(const camera &cam) {
         update_const_buffer<camera>(_vp_buffer, &cam, 0);
     }

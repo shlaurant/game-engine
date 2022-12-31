@@ -30,7 +30,6 @@ namespace fuse::directx {
         };
 
         void init(const window_info &);
-        void init_geometries(std::vector<geometry<vertex>> &);
 
         template<typename T>
         void init_geometries(std::vector<geometry<T>> &geometries) {
@@ -141,10 +140,6 @@ namespace fuse::directx {
         std::vector<ComPtr < ID3D12PipelineState>> _pso_list;
 
         //vertex & index buffer
-        ComPtr <ID3D12Resource> _vertex_buffer;
-        ComPtr <ID3D12Resource> _index_buffer;
-        D3D12_VERTEX_BUFFER_VIEW _vertex_buffer_view;
-        D3D12_INDEX_BUFFER_VIEW _index_buffer_view;
         std::unordered_map<uint32_t, std::pair<ComPtr <
                                                ID3D12Resource>, D3D12_VERTEX_BUFFER_VIEW>> _vertex_buffers;
         std::unordered_map<uint32_t, std::pair<ComPtr <
