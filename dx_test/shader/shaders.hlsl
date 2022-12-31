@@ -1,6 +1,8 @@
 #include "light.hlsl"
 #include "register.hlsl"
 
+Texture2D tex : register(t0);
+
 struct VS_IN
 {
     float3 pos : POSITION;

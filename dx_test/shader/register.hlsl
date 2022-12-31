@@ -25,9 +25,6 @@ cbuffer object_const :register(b3) {
     material mat;
 };
 
-Texture2D tex : register(t0);
-Texture2DArray tex_arr : register(t1);
-
 SamplerState sam_pw : register(s0);
 SamplerState sam_pc : register(s1);
 SamplerState sam_pm : register(s2);

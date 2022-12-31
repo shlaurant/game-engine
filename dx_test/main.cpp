@@ -72,13 +72,15 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.load_texture(L"resource\\white.png");
         dx12.load_texture(L"resource\\ground_color.jpg");
         dx12.load_texture(L"resource\\WireFence.dds");
+        dx12.load_texture(L"resource\\treeArray2.dds");
         dx12.bind_texture(0, 0);
         dx12.bind_texture(1, 3);
         dx12.bind_texture(2, 2);
         dx12.bind_texture(3, 1);
         dx12.bind_texture(4, 1);
+        dx12.bind_texture(5, 4);
 
-        dx12.init_geometries(geo);
+        dx12.init_geometries<fuse::directx::vertex>(geo);
         auto infos = create_render_info(geo, 0);
 
         while (msg.message != WM_QUIT) {
@@ -152,11 +154,18 @@ std::vector<fuse::directx::geometry<fuse::directx::vertex>> create_geometries() 
     auto skull = load_mesh("resource/skull.txt");
     ret.emplace_back(skull);
 
+    fuse::directx::geometry<fuse::directx::vertex> billboard;
+    billboard.vertices.push_back({DirectX::SimpleMath::Vector3::Zero,
+                                  DirectX::SimpleMath::Vector2::Zero,
+                                  DirectX::SimpleMath::Vector3::Backward});
+    billboard.indices.push_back(0);
+    ret.emplace_back(billboard);
+
     return std::move(ret);
 }
 
 std::vector<fuse::directx::object_constant> create_obj_const() {
-    std::vector<fuse::directx::object_constant> consts(5);
+    std::vector<fuse::directx::object_constant> consts(6);
 
     DirectX::SimpleMath::Vector3 tmp = {1.f, 1.5f, 3.f};
     auto t0 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
@@ -195,6 +204,12 @@ std::vector<fuse::directx::object_constant> create_obj_const() {
     consts[4].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
     consts[4].material.roughness = 0.3f;
 
+    DirectX::SimpleMath::Vector3 billboard = {0.f, 0.f, 10.f};
+    consts[5].world_matrix = Matrix::CreateTranslation(billboard);
+    consts[5].material.diffuse_albedo = Vector4(1.f, 1.f, 1.0f, 1.0f);;
+    consts[5].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+    consts[5].material.roughness = 1.f;
+
     return std::move(consts);
 }
 
@@ -223,6 +238,7 @@ create_render_info(const std::vector<fuse::directx::geometry<fuse::directx::vert
     infos[3].do_reflect = false;
     infos[4].do_reflect = false;
     infos[4].do_shadow = true;
+    infos[5].is_billboard = true;
 
     infos.erase(infos.begin() + 3);
     infos.erase(infos.begin() + 2);

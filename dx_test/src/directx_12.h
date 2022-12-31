@@ -6,6 +6,9 @@
 #include "common.h"
 #include "resource.h"
 #include "constants.h"
+#include "dx_util.h"
+#include "debug.h"
+#include "typeid.h"
 
 using namespace Microsoft::WRL;
 
@@ -23,11 +26,65 @@ namespace fuse::directx {
         const static int OBJ_CNT = 10;
 
         enum class layer : uint8_t {
-            opaque, transparent, mirror, reflection, shadow, end
+            opaque, transparent, mirror, reflection, shadow, billboard, end
         };
 
         void init(const window_info &);
         void init_geometries(std::vector<geometry<vertex>> &);
+
+        template<typename T>
+        void init_geometries(std::vector<geometry<T>> &geometries) {
+            ThrowIfFailed(_cmd_alloc->Reset());
+            ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr));
+
+            ComPtr<ID3D12Resource> u_buffer_v;
+            std::vector<T> vertices;
+            size_t index = 0;
+            for (auto &e: geometries) {
+                e.vertex_offset = index;
+                std::copy(e.vertices.begin(), e.vertices.end(),
+                          std::back_inserter(vertices));
+                index += e.vertices.size();
+            }
+            auto vert_byte_size = sizeof(T) * vertices.size();
+            std::copy(vertices.begin(), vertices.end(), vertices.data());
+
+            auto vb = create_default_buffer(vertices.data(), vert_byte_size,
+                                            u_buffer_v, _device, _cmd_list);
+            D3D12_VERTEX_BUFFER_VIEW vbv;
+            vbv.BufferLocation = vb->GetGPUVirtualAddress();
+            vbv.StrideInBytes = sizeof(T);
+            vbv.SizeInBytes = vert_byte_size;
+            _vertex_buffers[type_id<T>()] = std::make_pair(vb, vbv);
+
+            ComPtr<ID3D12Resource> u_buffer_i;
+            std::vector<uint16_t> indices;
+            size_t index_i = 0;
+            for (auto &e: geometries) {
+                e.index_offset = index_i;
+                std::copy(e.indices.begin(), e.indices.end(),
+                          std::back_inserter(indices));
+                index_i += e.indices.size();
+            }
+
+            auto ib = create_default_buffer(indices.data(),
+                                            sizeof(uint16_t) *
+                                            indices.size(),
+                                            u_buffer_i, _device,
+                                            _cmd_list);
+
+            D3D12_INDEX_BUFFER_VIEW ibv;
+            ibv.BufferLocation = ib->GetGPUVirtualAddress();
+            ibv.Format = DXGI_FORMAT_R16_UINT;
+            ibv.SizeInBytes = sizeof(uint16_t) * indices.size();
+
+            _index_buffers[type_id<T>()] = std::make_pair(ib, ibv);
+
+            _cmd_list->Close();
+            execute_cmd_list();
+            wait_cmd_queue_sync();
+        }
+
         int load_texture(const std::wstring &path);
         void bind_texture(int obj, int texture);
 
@@ -88,6 +145,10 @@ namespace fuse::directx {
         ComPtr <ID3D12Resource> _index_buffer;
         D3D12_VERTEX_BUFFER_VIEW _vertex_buffer_view;
         D3D12_INDEX_BUFFER_VIEW _index_buffer_view;
+        std::unordered_map<uint32_t, std::pair<ComPtr <
+                                               ID3D12Resource>, D3D12_VERTEX_BUFFER_VIEW>> _vertex_buffers;
+        std::unordered_map<uint32_t, std::pair<ComPtr <
+                                               ID3D12Resource>, D3D12_INDEX_BUFFER_VIEW>> _index_buffers;
 
         void init_base(const window_info &info);
         void init_cmds();

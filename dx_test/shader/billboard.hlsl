@@ -1,6 +1,8 @@
 #include "light.hlsl"
 #include "register.hlsl"
 
+Texture2DArray tex_arr : register(t0);
+
 struct VS_IN
 {
     float3 position : POSITION;

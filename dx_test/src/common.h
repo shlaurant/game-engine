@@ -4,6 +4,7 @@
 
 namespace fuse::directx {
     struct render_info {
+        bool is_billboard;
         int object_index;
         int index_count;
         int index_offset;

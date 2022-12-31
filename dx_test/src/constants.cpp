@@ -79,6 +79,18 @@ namespace fuse::directx {
     }
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC
+    pipeline_state::billboard_desc(D3D12_INPUT_ELEMENT_DESC *ed, UINT ed_cnt,
+                                   ID3D12RootSignature *rs,
+                                   const std::vector<uint8_t> &vs,
+                                   const std::vector<uint8_t> &ps,
+                                   const std::vector<uint8_t> &gs) {
+        auto ret = default_desc(ed, ed_cnt, rs, vs, ps);
+        ret.GS = {gs.data(), gs.size()};
+        ret.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+        return ret;
+    }
+
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC
     pipeline_state::transparent_desc(D3D12_INPUT_ELEMENT_DESC *ed, UINT ed_cnt,
                                      ID3D12RootSignature *rs,
                                      const std::vector<uint8_t> &vs,

@@ -192,12 +192,6 @@ namespace fuse::directx {
                                          1.f, 0, 0, nullptr);
         _cmd_list->OMSetRenderTargets(1, &_rtv_handle[_back_buffer], FALSE,
                                       &_dsv_handle);
-
-        D3D12_VERTEX_BUFFER_VIEW tv[] = {_vertex_buffer_view};
-        _cmd_list->IASetVertexBuffers(0, 1, tv);
-        _cmd_list->IASetIndexBuffer(&_index_buffer_view);
-        _cmd_list->IASetPrimitiveTopology(
-                D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     }
 
     void directx_12::render_end() {
@@ -216,6 +210,27 @@ namespace fuse::directx {
     }
 
     void directx_12::render(const std::vector<render_info> &infos) {
+        _cmd_list->IASetVertexBuffers(0, 1,
+                                      &(_vertex_buffers[type_id<vertex_billboard>()].second));
+        _cmd_list->IASetIndexBuffer(&(_index_buffers[type_id<vertex_billboard>()].second));
+        _cmd_list->IASetPrimitiveTopology(
+                D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+        _cmd_list->SetPipelineState(
+                _pso_list[static_cast<uint8_t>(layer::billboard)].Get());
+
+        for (const auto &e: infos) {
+            if (e.is_billboard) {
+                render(e);
+            }
+        }
+
+
+        _cmd_list->IASetVertexBuffers(0, 1,
+                                      &(_vertex_buffers[type_id<vertex>()].second));
+        _cmd_list->IASetIndexBuffer(&(_index_buffers[type_id<vertex>()].second));
+        _cmd_list->IASetPrimitiveTopology(
+                D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
         std::vector<size_t> mirrors;
         std::vector<size_t> trans;
         std::vector<size_t> reflects;
@@ -224,6 +239,8 @@ namespace fuse::directx {
         _cmd_list->SetPipelineState(
                 _pso_list[static_cast<uint8_t>(layer::opaque)].Get());
         for (auto i = 0; i < infos.size(); ++i) {
+            if (infos[i].is_billboard) continue;
+
             if (infos[i].do_reflect) {
                 reflects.push_back(i);
             }
@@ -430,7 +447,7 @@ namespace fuse::directx {
     void directx_12::init_root_signature() {
         CD3DX12_DESCRIPTOR_RANGE ranges[] = {
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 3),
-                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0)
+                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0)
         };
         CD3DX12_ROOT_PARAMETER param[4];
         param[0].InitAsConstantBufferView(static_cast<uint32_t>(0));//global
@@ -523,6 +540,26 @@ namespace fuse::directx {
         ThrowIfFailed(_device->CreateGraphicsPipelineState
                 (&shadow_pso, IID_PPV_ARGS(
                         &_pso_list[static_cast<uint8_t>(layer::shadow)])));
+
+        D3D12_INPUT_ELEMENT_DESC ie_desc_bill[] = {
+                {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+                {"SIZE",     0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+        };
+
+        auto vs_bill_data = DX::ReadData(L"shader\\vs_bill.cso");
+        auto ps_bill_data = DX::ReadData(L"shader\\ps_bill.cso");
+        auto gs_bill_data = DX::ReadData(L"shader\\gs_bill.cso");
+        auto billboard_pso = pipeline_state::billboard_desc(ie_desc_bill,
+                                                            _countof(
+                                                                    ie_desc_bill),
+                                                            _signature.Get(),
+                                                            vs_bill_data,
+                                                            ps_bill_data,
+                                                            gs_bill_data);
+
+        ThrowIfFailed(_device->CreateGraphicsPipelineState
+                (&billboard_pso, IID_PPV_ARGS(
+                        &_pso_list[static_cast<uint8_t>(layer::billboard)])));
     }
 
     void directx_12::execute_cmd_list() {
