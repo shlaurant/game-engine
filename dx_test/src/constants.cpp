@@ -87,6 +87,7 @@ namespace fuse::directx {
         auto ret = default_desc(ed, ed_cnt, rs, vs, ps);
         ret.GS = {gs.data(), gs.size()};
         ret.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+        ret.BlendState.AlphaToCoverageEnable = true;
         return ret;
     }
 
