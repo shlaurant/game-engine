@@ -100,6 +100,9 @@ namespace fuse::directx {
         ComPtr <ID3D12Device> _device;
         D3D12_VIEWPORT _view_port;
         D3D12_RECT _scissors_rect;
+        UINT msaa_sample_count = 4;
+        UINT msaa_quality_levels;
+
 
         //cmd queue
         ComPtr <ID3D12CommandQueue> _cmd_queue;
@@ -114,6 +117,8 @@ namespace fuse::directx {
         ComPtr <ID3D12Resource> _rtv_buffer[SWAP_CHAIN_BUFFER_COUNT];
         ComPtr <ID3D12DescriptorHeap> _rtv_heap;
         D3D12_CPU_DESCRIPTOR_HANDLE _rtv_handle[SWAP_CHAIN_BUFFER_COUNT];
+        ComPtr<ID3D12Resource> _msaa_render_buffer;
+        ComPtr<ID3D12DescriptorHeap> _msaa_render_buffer_heap;
 
         const DXGI_FORMAT DSV_FORMAT = DXGI_FORMAT_D24_UNORM_S8_UINT;
         ComPtr <ID3D12Resource> _dsv_buffer;
@@ -148,7 +153,7 @@ namespace fuse::directx {
         void init_base(const window_info &info);
         void init_cmds();
         void init_swap_chain(const window_info &info);
-        void init_rtv();
+        void init_rtv(const window_info &);
         void init_dsv(const window_info &);
 
         void init_global_buf();

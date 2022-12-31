@@ -19,7 +19,7 @@ namespace fuse::directx {
         init_base(info);
         init_cmds();
         init_swap_chain(info);
-        init_rtv();
+        init_rtv(info);
         init_dsv(info);
 
         init_global_buf();
@@ -132,25 +132,44 @@ namespace fuse::directx {
         ID3D12DescriptorHeap *heaps[] = {_res_desc_heap.Get()};
         _cmd_list->SetDescriptorHeaps(1, heaps);
 
-        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        auto barrier0 = CD3DX12_RESOURCE_BARRIER::Transition(
                 _rtv_buffer[_back_buffer].Get(), D3D12_RESOURCE_STATE_PRESENT,
+                D3D12_RESOURCE_STATE_RESOLVE_DEST);
+        _cmd_list->ResourceBarrier(1, &barrier0);
+
+        auto barrier1 = CD3DX12_RESOURCE_BARRIER::Transition(
+                _msaa_render_buffer.Get(), D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
                 D3D12_RESOURCE_STATE_RENDER_TARGET);
-        _cmd_list->ResourceBarrier(1, &barrier);
-        _cmd_list->ClearRenderTargetView(_rtv_handle[_back_buffer],
+        _cmd_list->ResourceBarrier(1, &barrier1);
+
+
+//        _cmd_list->ClearRenderTargetView(_rtv_handle[_back_buffer],
+//                                         DirectX::Colors::Aqua, 0, nullptr);
+        auto msaa_handle = _msaa_render_buffer_heap->GetCPUDescriptorHandleForHeapStart();
+        _cmd_list->ClearRenderTargetView(msaa_handle,
                                          DirectX::Colors::Aqua, 0, nullptr);
         _cmd_list->ClearDepthStencilView(_dsv_handle, D3D12_CLEAR_FLAG_DEPTH |
                                                       D3D12_CLEAR_FLAG_STENCIL,
                                          1.f, 0, 0, nullptr);
-        _cmd_list->OMSetRenderTargets(1, &_rtv_handle[_back_buffer], FALSE,
+        _cmd_list->OMSetRenderTargets(1, &msaa_handle, FALSE,
                                       &_dsv_handle);
     }
 
     void directx_12::render_end() {
-        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        auto barrier1 = CD3DX12_RESOURCE_BARRIER::Transition(
+                _msaa_render_buffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+        _cmd_list->ResourceBarrier(1, &barrier1);
+
+        _cmd_list->ResolveSubresource(_rtv_buffer[_back_buffer].Get(), 0,
+                                      _msaa_render_buffer.Get(), 0,
+                                      DXGI_FORMAT_R8G8B8A8_UNORM);
+
+        auto barrier0 = CD3DX12_RESOURCE_BARRIER::Transition(
                 _rtv_buffer[_back_buffer].Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_RESOLVE_DEST,
                 D3D12_RESOURCE_STATE_PRESENT);
-        _cmd_list->ResourceBarrier(1, &barrier);
+        _cmd_list->ResourceBarrier(1, &barrier0);
         ThrowIfFailed(_cmd_list->Close())
 
         execute_cmd_list();
@@ -163,7 +182,8 @@ namespace fuse::directx {
     void directx_12::render(const std::vector<render_info> &infos) {
         _cmd_list->IASetVertexBuffers(0, 1,
                                       &(_vertex_buffers[type_id<vertex_billboard>()].second));
-        _cmd_list->IASetIndexBuffer(&(_index_buffers[type_id<vertex_billboard>()].second));
+        _cmd_list->IASetIndexBuffer(
+                &(_index_buffers[type_id<vertex_billboard>()].second));
         _cmd_list->IASetPrimitiveTopology(
                 D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
         _cmd_list->SetPipelineState(
@@ -177,7 +197,8 @@ namespace fuse::directx {
 
         _cmd_list->IASetVertexBuffers(0, 1,
                                       &(_vertex_buffers[type_id<vertex>()].second));
-        _cmd_list->IASetIndexBuffer(&(_index_buffers[type_id<vertex>()].second));
+        _cmd_list->IASetIndexBuffer(
+                &(_index_buffers[type_id<vertex>()].second));
         _cmd_list->IASetPrimitiveTopology(
                 D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -265,6 +286,16 @@ namespace fuse::directx {
         _view_port = {0, 0, static_cast<float>(info.width),
                       static_cast<float>(info.height), 0, 1};
         _scissors_rect = CD3DX12_RECT{0, 0, info.width, info.height};
+
+        D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS quality_levels;
+        quality_levels.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        quality_levels.SampleCount = msaa_sample_count;
+        quality_levels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
+        quality_levels.NumQualityLevels = 0;
+        ThrowIfFailed(_device->CheckFeatureSupport(
+                D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
+                &quality_levels, sizeof(quality_levels)));
+        msaa_quality_levels = quality_levels.NumQualityLevels;
     }
 
     void directx_12::init_cmds() {
@@ -303,7 +334,7 @@ namespace fuse::directx {
                                                 &_swap_chain))
     }
 
-    void directx_12::init_rtv() {
+    void directx_12::init_rtv(const window_info &info) {
         auto rtv_heap_size = _device->GetDescriptorHandleIncrementSize(
                 D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
         D3D12_DESCRIPTOR_HEAP_DESC rtv_dh_desc;
@@ -313,6 +344,7 @@ namespace fuse::directx {
         rtv_dh_desc.NodeMask = 0;
         _device->CreateDescriptorHeap(&rtv_dh_desc, IID_PPV_ARGS(&_rtv_heap));
         auto rtv_dh_begin = _rtv_heap->GetCPUDescriptorHandleForHeapStart();
+
         for (auto i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i) {
             _rtv_handle[i] = CD3DX12_CPU_DESCRIPTOR_HANDLE(rtv_dh_begin,
                                                            rtv_heap_size * i);
@@ -320,6 +352,39 @@ namespace fuse::directx {
             _device->CreateRenderTargetView(_rtv_buffer[i].Get(), nullptr,
                                             _rtv_handle[i]);
         }
+
+        D3D12_DESCRIPTOR_HEAP_DESC msaa_desc_heap_desc;
+        msaa_desc_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+        msaa_desc_heap_desc.NumDescriptors = 1;
+        msaa_desc_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        msaa_desc_heap_desc.NodeMask = 0;
+        ThrowIfFailed(_device->CreateDescriptorHeap(&msaa_desc_heap_desc,
+                                                    IID_PPV_ARGS(
+                                                            &_msaa_render_buffer_heap)));
+
+        auto msaa_buf_desc = CD3DX12_RESOURCE_DESC::Tex2D(
+                DXGI_FORMAT_R8G8B8A8_UNORM,
+                info.width, info.height, 1,
+                1, msaa_sample_count,
+                msaa_quality_levels - 1);
+        msaa_buf_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+        D3D12_CLEAR_VALUE clear_value;
+        clear_value.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        memcpy(clear_value.Color, DirectX::Colors::Aqua, sizeof(float) * 4);
+        auto msaa_heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+
+        ThrowIfFailed(
+                _device->CreateCommittedResource(&msaa_heap_prop,
+                                                 D3D12_HEAP_FLAG_NONE,
+                                                 &msaa_buf_desc,
+                                                 D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
+                                                 &clear_value, IID_PPV_ARGS(
+                                &_msaa_render_buffer)));
+
+
+        _device->CreateRenderTargetView(_msaa_render_buffer.Get(),
+                                        nullptr,
+                                        _msaa_render_buffer_heap->GetCPUDescriptorHandleForHeapStart());
     }
 
     void directx_12::init_dsv(const window_info &info) {
@@ -334,7 +399,9 @@ namespace fuse::directx {
         _dsv_handle = _dsv_desc_heap->GetCPUDescriptorHandleForHeapStart();
 
         auto r_desc = CD3DX12_RESOURCE_DESC::Tex2D(DSV_FORMAT,
-                                                   info.width, info.height);
+                                                   info.width, info.height, 1,
+                                                   1, msaa_sample_count,
+                                                   msaa_quality_levels - 1);
         r_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
         auto heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);

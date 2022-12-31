@@ -71,7 +71,7 @@ namespace fuse::directx {
         ret.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         ret.NumRenderTargets = 1;
         ret.RTVFormats[0] = RTV_FORMAT;
-        ret.SampleDesc.Count = 1;
+        ret.SampleDesc.Count = 4;
         ret.SampleDesc.Quality = 0;
         ret.VS = {vs.data(), vs.size()};
         ret.PS = {ps.data(), ps.size()};
