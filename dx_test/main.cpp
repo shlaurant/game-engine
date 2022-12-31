@@ -1,4 +1,3 @@
-#include <Windows.h>
 #include <WinUser.h>
 #include <windowsx.h>
 
@@ -16,7 +15,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 std::vector<fuse::directx::geometry<fuse::directx::vertex>> create_geometries();
 std::vector<fuse::directx::object_constant> create_obj_const();
 std::vector<fuse::directx::render_info>
-create_render_info(const std::vector<fuse::directx::geometry<fuse::directx::vertex>> &, int offset);
+create_render_info(
+        const std::vector<fuse::directx::geometry<fuse::directx::vertex>> &,
+        int offset);
 fuse::directx::light_info create_light_info();
 
 int
@@ -79,9 +80,34 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.bind_texture(3, 1);
         dx12.bind_texture(4, 1);
         dx12.bind_texture(5, 4);
+        dx12.bind_texture(6, 4);
+
 
         dx12.init_geometries<fuse::directx::vertex>(geo);
+        std::vector<fuse::directx::geometry<fuse::directx::vertex_billboard>> geo1;
+        geo1.resize(2);
+        fuse::directx::vertex_billboard v {Vector3(0.0f, 0.0f, 0.f), Vector2(1.f, 1.f)};
+        geo1[0].vertices.emplace_back(v);
+        geo1[0].indices.emplace_back(0);
+
+        fuse::directx::vertex_billboard v1 {Vector3(0.0f, 0.0f, 0.f), Vector2(1.f, 1.f)};
+        geo1[1].vertices.emplace_back(v1);
+        geo1[1].indices.emplace_back(0);
+
+        dx12.init_geometries<fuse::directx::vertex_billboard>(geo1);
+
         auto infos = create_render_info(geo, 0);
+        fuse::directx::render_info binfo{true, 5, (int) geo1[0].indices.size(),
+                                         (int) geo1[0].index_offset,
+                                         (int) geo1[0].vertex_offset, false,
+                                         false, false, Vector4::Zero, false};
+        fuse::directx::render_info binfo1{true, 6, (int) geo1[1].indices.size(),
+                                         (int) geo1[1].index_offset,
+                                         (int) geo1[1].vertex_offset, false,
+                                         false, false, Vector4::Zero, false};
+
+        infos.emplace_back(binfo);
+        infos.emplace_back(binfo1);
 
         while (msg.message != WM_QUIT) {
             if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
@@ -136,7 +162,8 @@ CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-std::vector<fuse::directx::geometry<fuse::directx::vertex>> create_geometries() {
+std::vector<fuse::directx::geometry<fuse::directx::vertex>>
+create_geometries() {
     std::vector<fuse::directx::geometry<fuse::directx::vertex>> ret;
 
     auto cube0 = create_cube_uv();
@@ -154,18 +181,11 @@ std::vector<fuse::directx::geometry<fuse::directx::vertex>> create_geometries() 
     auto skull = load_mesh("resource/skull.txt");
     ret.emplace_back(skull);
 
-    fuse::directx::geometry<fuse::directx::vertex> billboard;
-    billboard.vertices.push_back({DirectX::SimpleMath::Vector3::Zero,
-                                  DirectX::SimpleMath::Vector2::Zero,
-                                  DirectX::SimpleMath::Vector3::Backward});
-    billboard.indices.push_back(0);
-    ret.emplace_back(billboard);
-
     return std::move(ret);
 }
 
 std::vector<fuse::directx::object_constant> create_obj_const() {
-    std::vector<fuse::directx::object_constant> consts(6);
+    std::vector<fuse::directx::object_constant> consts(7);
 
     DirectX::SimpleMath::Vector3 tmp = {1.f, 1.5f, 3.f};
     auto t0 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
@@ -204,18 +224,25 @@ std::vector<fuse::directx::object_constant> create_obj_const() {
     consts[4].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
     consts[4].material.roughness = 0.3f;
 
-    DirectX::SimpleMath::Vector3 billboard = {0.f, 0.f, 10.f};
-    consts[5].world_matrix = Matrix::CreateTranslation(billboard);
+    consts[5].position = Vector3(0.f, 0.f, 10.f);
+    consts[5].world_matrix = Matrix::CreateTranslation(consts[5].position);
     consts[5].material.diffuse_albedo = Vector4(1.f, 1.f, 1.0f, 1.0f);;
     consts[5].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
     consts[5].material.roughness = 1.f;
+
+    consts[6].position = Vector3(3.f, 0.f, 10.f);
+    consts[6].world_matrix = Matrix::CreateTranslation(consts[6].position);
+    consts[6].material.diffuse_albedo = Vector4(1.f, 1.f, 1.0f, 1.0f);;
+    consts[6].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+    consts[6].material.roughness = 1.f;
 
     return std::move(consts);
 }
 
 std::vector<fuse::directx::render_info>
-create_render_info(const std::vector<fuse::directx::geometry<fuse::directx::vertex>> &geo,
-                   int offset) {
+create_render_info(
+        const std::vector<fuse::directx::geometry<fuse::directx::vertex>> &geo,
+        int offset) {
     std::vector<fuse::directx::render_info> infos(geo.size());
 
     for (auto i = 0; i < geo.size(); ++i) {
@@ -238,7 +265,6 @@ create_render_info(const std::vector<fuse::directx::geometry<fuse::directx::vert
     infos[3].do_reflect = false;
     infos[4].do_reflect = false;
     infos[4].do_shadow = true;
-    infos[5].is_billboard = true;
 
     infos.erase(infos.begin() + 3);
     infos.erase(infos.begin() + 2);

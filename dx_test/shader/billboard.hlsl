@@ -35,32 +35,38 @@ VS_OUT VS_Main(VS_IN input)
 void GS_Main(point VS_OUT input[1], uint id:SV_PrimitiveID, inout TriangleStream<GS_OUT> stream)
 {
     float3 up = float3(0.f, 1.f, 0.f);
-    float3 look = camera_pos - input[0].position;
+    float3 look = camera_pos - obj_position;
     look.y = 0.f;
     look = normalize(look);
     float3 left = cross(up, look);
 
+    float4x4 wvp = mul(w, vp);
+
     GS_OUT gout;
 
     gout.position = float4(input[0].position + (input[0].size.x / 2) * left, 1.f);
+    gout.position = mul(gout.position, wvp);
     gout.normal = look;
     gout.uv = float2(0.f, 1.f);
     gout.id = id;
     stream.Append(gout);
 
     gout.position = float4(input[0].position + (input[0].size.x / 2) * left + input[0].size.y * up, 1.f);
+    gout.position = mul(gout.position, wvp);
     gout.normal = look;
     gout.uv = float2(0.f, 0.f);
     gout.id = id;
     stream.Append(gout);
 
     gout.position = float4(input[0].position - (input[0].size.x / 2) * left, 1.f);
+    gout.position = mul(gout.position, wvp);
     gout.normal = look;
     gout.uv = float2(1.f, 1.f);
     gout.id = id;
     stream.Append(gout);
 
     gout.position = float4(input[0].position - (input[0].size.x / 2) * left + input[0].size.y * up, 1.f);
+    gout.position = mul(gout.position, wvp);
     gout.normal = look;
     gout.uv = float2(1.f, 0.f);
     gout.id = id;

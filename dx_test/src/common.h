@@ -46,6 +46,8 @@ namespace fuse::directx {
     };
 
     struct object_constant {
+        DirectX::SimpleMath::Vector3 position;
+        float pad0;
         DirectX::SimpleMath::Matrix world_matrix;
         material material;
     };

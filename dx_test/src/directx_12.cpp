@@ -175,7 +175,6 @@ namespace fuse::directx {
             }
         }
 
-
         _cmd_list->IASetVertexBuffers(0, 1,
                                       &(_vertex_buffers[type_id<vertex>()].second));
         _cmd_list->IASetIndexBuffer(&(_index_buffers[type_id<vertex>()].second));
