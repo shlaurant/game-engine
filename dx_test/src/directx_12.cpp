@@ -29,6 +29,7 @@ namespace fuse::directx {
 
         init_root_signature();
         init_shader();
+        init_shader();
 
         //window resize;
         RECT rect = {0, 0, info.width, info.height};
@@ -163,7 +164,7 @@ namespace fuse::directx {
 
         _cmd_list->ResolveSubresource(_rtv_buffer[_back_buffer].Get(), 0,
                                       _msaa_render_buffer.Get(), 0,
-                                      DXGI_FORMAT_R8G8B8A8_UNORM);
+                                      RTV_FORMAT);
 
         auto barrier0 = CD3DX12_RESOURCE_BARRIER::Transition(
                 _rtv_buffer[_back_buffer].Get(),
@@ -288,7 +289,7 @@ namespace fuse::directx {
         _scissors_rect = CD3DX12_RECT{0, 0, info.width, info.height};
 
         D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS quality_levels;
-        quality_levels.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        quality_levels.Format = RTV_FORMAT;
         quality_levels.SampleCount = msaa_sample_count;
         quality_levels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
         quality_levels.NumQualityLevels = 0;
@@ -319,7 +320,7 @@ namespace fuse::directx {
         swap_desc.BufferDesc.Height = static_cast<uint32_t>(info.height);
         swap_desc.BufferDesc.RefreshRate.Numerator = 60;
         swap_desc.BufferDesc.RefreshRate.Denominator = 1;
-        swap_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        swap_desc.BufferDesc.Format = RTV_FORMAT;
         swap_desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
         swap_desc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
         swap_desc.SampleDesc.Count = 1;
@@ -363,13 +364,13 @@ namespace fuse::directx {
                                                             &_msaa_render_buffer_heap)));
 
         auto msaa_buf_desc = CD3DX12_RESOURCE_DESC::Tex2D(
-                DXGI_FORMAT_R8G8B8A8_UNORM,
+                RTV_FORMAT,
                 info.width, info.height, 1,
                 1, msaa_sample_count,
                 msaa_quality_levels - 1);
         msaa_buf_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         D3D12_CLEAR_VALUE clear_value;
-        clear_value.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        clear_value.Format = RTV_FORMAT;
         memcpy(clear_value.Color, DirectX::Colors::Aqua, sizeof(float) * 4);
         auto msaa_heap_prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 

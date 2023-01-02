@@ -24,6 +24,7 @@ namespace fuse::directx {
     public:
         const static int SWAP_CHAIN_BUFFER_COUNT = 2;
         const static int OBJ_CNT = 10;
+        const static DXGI_FORMAT RTV_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 
         enum class layer : uint8_t {
             opaque, transparent, mirror, reflection, shadow, billboard, end
