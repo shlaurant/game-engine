@@ -208,4 +208,16 @@ namespace fuse::directx {
 
         return ret;
     }
+
+    D3D12_COMPUTE_PIPELINE_STATE_DESC
+    pipeline_state::blur_desc(ID3D12RootSignature *rs,
+                              const std::vector<uint8_t> &cs) {
+        D3D12_COMPUTE_PIPELINE_STATE_DESC ret = {};
+        ret.pRootSignature = rs;
+        ret.NodeMask = 0;
+        ret.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+        ret.CS = {cs.data(), cs.size()};
+
+        return ret;
+    }
 }

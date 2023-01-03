@@ -61,5 +61,7 @@ namespace fuse::directx {
                         ID3D12RootSignature *rs,
                         const std::vector<uint8_t> &vs,
                         const std::vector<uint8_t> &ps);
+
+        static D3D12_COMPUTE_PIPELINE_STATE_DESC blur_desc(ID3D12RootSignature *rs, const std::vector<uint8_t> &cs);
     };
 }

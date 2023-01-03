@@ -9,6 +9,7 @@
 #include "dx_util.h"
 #include "debug.h"
 #include "typeid.h"
+#include "blur.h"
 
 using namespace Microsoft::WRL;
 
@@ -27,7 +28,7 @@ namespace fuse::directx {
         const static DXGI_FORMAT RTV_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 
         enum class layer : uint8_t {
-            opaque, transparent, mirror, reflection, shadow, billboard, end
+            opaque, transparent, mirror, reflection, shadow, billboard, blur_h, blur_v, end
         };
 
         void init(const window_info &);
@@ -151,6 +152,10 @@ namespace fuse::directx {
         std::unordered_map<uint32_t, std::pair<ComPtr <
                                                ID3D12Resource>, D3D12_INDEX_BUFFER_VIEW>> _index_buffers;
 
+        //cs
+        blur _blur;
+        ComPtr<ID3D12RootSignature> _blur_rs;
+
         void init_base(const window_info &info);
         void init_cmds();
         void init_swap_chain(const window_info &info);
@@ -175,5 +180,7 @@ namespace fuse::directx {
         ComPtr <ID3D12Resource>
         load_texture(const std::wstring &path, DirectX::ScratchImage &image,
                      ComPtr <ID3D12Resource> &upload_buffer);
+        void init_default_signature();
+        void init_blur_signature();
     };
 }

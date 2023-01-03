@@ -26,6 +26,7 @@ namespace fuse::directx {
         init_camera_buf();
         init_light_buf();
         init_resources();
+        _blur.init(_device, info.width, info.height);
 
         init_root_signature();
         init_shader();
@@ -166,10 +167,16 @@ namespace fuse::directx {
                                       _msaa_render_buffer.Get(), 0,
                                       RTV_FORMAT);
 
+        _blur.blur_texture(_cmd_list, _rtv_buffer[_back_buffer],
+                           _pso_list[static_cast<uint8_t>(layer::blur_h)],
+                           _pso_list[static_cast<uint8_t>(layer::blur_v)],
+                           _blur_rs);
+
         auto barrier0 = CD3DX12_RESOURCE_BARRIER::Transition(
                 _rtv_buffer[_back_buffer].Get(),
                 D3D12_RESOURCE_STATE_RESOLVE_DEST,
                 D3D12_RESOURCE_STATE_PRESENT);
+
         _cmd_list->ResourceBarrier(1, &barrier0);
         ThrowIfFailed(_cmd_list->Close())
 
@@ -463,6 +470,36 @@ namespace fuse::directx {
     }
 
     void directx_12::init_root_signature() {
+        init_default_signature();
+        init_blur_signature();
+
+    }
+    void directx_12::init_blur_signature() {
+        CD3DX12_DESCRIPTOR_RANGE blur_ranges[] = {
+                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0),
+                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0)
+        };
+
+        CD3DX12_ROOT_PARAMETER blur_param[2];
+        blur_param[0].InitAsConstants(12, 0);
+        blur_param[1].InitAsDescriptorTable(_countof(blur_ranges), blur_ranges);
+
+        auto blur_rs_desc = CD3DX12_ROOT_SIGNATURE_DESC(_countof(blur_param),
+                                                        blur_param);
+        blur_rs_desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+        ComPtr<ID3DBlob> blob_signature0;
+        ComPtr<ID3DBlob> blob_error0;
+        ThrowIfFailed(D3D12SerializeRootSignature(&blur_rs_desc,
+                                                  D3D_ROOT_SIGNATURE_VERSION_1,
+                                                  &blob_signature0,
+                                                  &blob_error0));
+        ThrowIfFailed(_device->CreateRootSignature(0,
+                                                   blob_signature0->GetBufferPointer(),
+                                                   blob_signature0->GetBufferSize(),
+                                                   IID_PPV_ARGS(&_blur_rs)));
+    }
+    void directx_12::init_default_signature() {
         CD3DX12_DESCRIPTOR_RANGE ranges[] = {
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 3),
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0)
@@ -483,9 +520,10 @@ namespace fuse::directx {
         ComPtr<ID3DBlob> blob_error;
         D3D12SerializeRootSignature(&rs_desc, D3D_ROOT_SIGNATURE_VERSION_1,
                                     &blob_signature, &blob_error);
-        _device->CreateRootSignature(0, blob_signature->GetBufferPointer(),
-                                     blob_signature->GetBufferSize(),
-                                     IID_PPV_ARGS(&_signature));
+        ThrowIfFailed(_device->CreateRootSignature(0,
+                                                   blob_signature->GetBufferPointer(),
+                                                   blob_signature->GetBufferSize(),
+                                                   IID_PPV_ARGS(&_signature)));
     }
 
     void directx_12::init_shader() {
@@ -578,6 +616,19 @@ namespace fuse::directx {
         ThrowIfFailed(_device->CreateGraphicsPipelineState
                 (&billboard_pso, IID_PPV_ARGS(
                         &_pso_list[static_cast<uint8_t>(layer::billboard)])));
+
+        auto cs_blur_h_data = DX::ReadData(L"shader\\cs_blur_h.cso");
+        auto cs_blur_v_data = DX::ReadData(L"shader\\cs_blur_v.cso");
+        auto blur_h_pso = pipeline_state::blur_desc(_blur_rs.Get(),
+                                                    cs_blur_h_data);
+        auto blur_v_pso = pipeline_state::blur_desc(_blur_rs.Get(),
+                                                    cs_blur_v_data);
+        ThrowIfFailed(_device->CreateComputePipelineState(&blur_h_pso,
+                                                          IID_PPV_ARGS(
+                                                                  &_pso_list[static_cast<uint8_t>(layer::blur_h)])));
+        ThrowIfFailed(_device->CreateComputePipelineState(&blur_v_pso,
+                                                          IID_PPV_ARGS(
+                                                                  &_pso_list[static_cast<uint8_t>(layer::blur_v)])));
     }
 
     void directx_12::execute_cmd_list() {

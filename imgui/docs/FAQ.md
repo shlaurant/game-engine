@@ -252,7 +252,7 @@ Begin("MyWindow");
 Button("Play");        // Label = "Play",   ID = hash of ("MyWindow", "Play")
 Button("Play##foo1");  // Label = "Play",   ID = hash of ("MyWindow", "Play##foo1")  // Different from other buttons
 Button("Play##foo2");  // Label = "Play",   ID = hash of ("MyWindow", "Play##foo2")  // Different from other buttons
-Button("##foo");       // Label = "",       ID = hash of ("MyWindow", "##foo")       // Different from window
+Button("##foo");       // Label = "",       ID = hash of ("MyWindow", "##do_blur")       // Different from window
 End();
 ```
 - If you want to completely hide the label, but still need an ID:
