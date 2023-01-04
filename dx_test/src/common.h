@@ -14,6 +14,7 @@ namespace fuse::directx {
         bool is_mirror;
         DirectX::SimpleMath::Vector4 mirror_plane;
         bool do_shadow;
+        bool is_terrain = false;
     };
 
     struct vertex {
