@@ -2,7 +2,7 @@
 
 namespace fuse::directx {
     enum class renderee_type : uint8_t {
-        common, billboard, terrain, count
+        opaque, translucent, billboard, terrain, count
     };
 
     enum renderee_option {

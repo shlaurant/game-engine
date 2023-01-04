@@ -114,7 +114,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         {
             auto skull = std::make_shared<fuse::directx::renderee>();
             skull->name = "skull";
-            skull->type = fuse::directx::renderee_type::common;
+            skull->type = fuse::directx::renderee_type::opaque;
             skull->geometry = "skull";
             skull->texture[0] = "white";
             skull->constants.position = Vector3(-5.f, 0.f, 3.f);
@@ -123,6 +123,18 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             skull->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
             skull->constants.material.roughness = 0.3f;
             renderees.emplace_back(skull);
+
+            auto wire = std::make_shared<fuse::directx::renderee>();
+            wire->name = "wire";
+            wire->type = fuse::directx::renderee_type::translucent;
+            wire->geometry = "cube0";
+            wire->texture[0] = "wire";
+            wire->constants.position = Vector3(0.f, 0.f, 3.f);
+            wire->constants.world_matrix = Matrix::CreateTranslation(wire->constants.position);
+            wire->constants.material.diffuse_albedo = Vector4(1.f, 1.f, 1.f, 1.0f);;
+            wire->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+            wire->constants.material.roughness = 0.5f;
+            renderees.emplace_back(wire);
         }
 
         dx12.init_renderees(renderees);

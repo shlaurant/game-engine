@@ -61,13 +61,17 @@ namespace fuse::directx {
         for (auto e: vec) {
             e->id = id;
             _renderees[static_cast<uint8_t>(e->type)].emplace_back(e);
+            ++id;
         }
 
         for (auto &typed_renderees: _renderees) {
             for (auto &ptr: typed_renderees) {
                 uint32_t tid;
                 switch (ptr->type) {
-                    case renderee_type::common:
+                    case renderee_type::opaque:
+                        tid = type_id<vertex>();
+                        break;
+                    case renderee_type::translucent:
                         tid = type_id<vertex>();
                         break;
                     case renderee_type::billboard:
@@ -75,6 +79,9 @@ namespace fuse::directx {
                         break;
                     case renderee_type::terrain:
                         tid = type_id<vertex>();
+                        break;
+                    case renderee_type::count:
+                        //do nothing
                         break;
                 }
                 ptr->geo = _geo_infos[tid][ptr->geometry];
@@ -122,7 +129,14 @@ namespace fuse::directx {
         _cmd_list->SetPipelineState(
                 _pso_list[static_cast<uint8_t>(layer::opaque)].Get());
 
-        for (const auto &e: _renderees[static_cast<uint8_t>(renderee_type::common)]) {
+        for (const auto &e: _renderees[static_cast<uint8_t>(renderee_type::opaque)]) {
+            render(e);
+        }
+
+        _cmd_list->SetPipelineState(
+                _pso_list[static_cast<uint8_t>(layer::transparent)].Get());
+
+        for (const auto &e: _renderees[static_cast<uint8_t>(renderee_type::translucent)]) {
             render(e);
         }
     }
