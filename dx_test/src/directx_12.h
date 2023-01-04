@@ -27,10 +27,6 @@ namespace fuse::directx {
         const static int OBJ_CNT = 10;
         const static DXGI_FORMAT RTV_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-        enum class layer : uint8_t {
-            opaque, transparent, mirror, reflection, shadow, billboard, blur_h, blur_v, end
-        };
-
         void init(const window_info &);
 
         template<typename T>
@@ -98,6 +94,14 @@ namespace fuse::directx {
         void render_end();
 
     private:
+        enum class layer : uint8_t {
+            opaque, transparent, mirror, reflection, shadow, billboard, blur_h, blur_v, end
+        };
+
+        enum class shader_type {
+            general, blur, terrain
+        };
+
         ComPtr <IDXGIFactory> _factory;
         ComPtr <ID3D12Device> _device;
         D3D12_VIEWPORT _view_port;
@@ -128,8 +132,7 @@ namespace fuse::directx {
         D3D12_CPU_DESCRIPTOR_HANDLE _dsv_handle;
 
         //root sig
-        ComPtr <ID3D12RootSignature> _signature;
-        ComPtr <ID3D12DescriptorHeap> _root_desc_table;
+        std::unordered_map<shader_type, ComPtr <ID3D12RootSignature>> _signatures;
 
         //resource
         static const int TABLE_SIZE = 2;
@@ -154,7 +157,6 @@ namespace fuse::directx {
 
         //cs
         blur _blur;
-        ComPtr<ID3D12RootSignature> _blur_rs;
 
         void init_base(const window_info &info);
         void init_cmds();

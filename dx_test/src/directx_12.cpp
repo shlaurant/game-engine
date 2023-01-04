@@ -122,7 +122,7 @@ namespace fuse::directx {
     void directx_12::render_begin() {
         ThrowIfFailed(_cmd_alloc->Reset())
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr))
-        _cmd_list->SetGraphicsRootSignature(_signature.Get());
+        _cmd_list->SetGraphicsRootSignature(_signatures[shader_type::general].Get());
         _cmd_list->SetGraphicsRootConstantBufferView(0,
                                                      _global_buffer->GetGPUVirtualAddress());
         _cmd_list->SetGraphicsRootConstantBufferView(1,
@@ -170,7 +170,7 @@ namespace fuse::directx {
         _blur.blur_texture(_cmd_list, _rtv_buffer[_back_buffer],
                            _pso_list[static_cast<uint8_t>(layer::blur_h)],
                            _pso_list[static_cast<uint8_t>(layer::blur_v)],
-                           _blur_rs);
+                           _signatures[shader_type::blur]);
 
         auto barrier0 = CD3DX12_RESOURCE_BARRIER::Transition(
                 _rtv_buffer[_back_buffer].Get(),
@@ -497,7 +497,7 @@ namespace fuse::directx {
         ThrowIfFailed(_device->CreateRootSignature(0,
                                                    blob_signature0->GetBufferPointer(),
                                                    blob_signature0->GetBufferSize(),
-                                                   IID_PPV_ARGS(&_blur_rs)));
+                                                   IID_PPV_ARGS(&_signatures[shader_type::blur])));
     }
     void directx_12::init_default_signature() {
         CD3DX12_DESCRIPTOR_RANGE ranges[] = {
@@ -523,7 +523,7 @@ namespace fuse::directx {
         ThrowIfFailed(_device->CreateRootSignature(0,
                                                    blob_signature->GetBufferPointer(),
                                                    blob_signature->GetBufferSize(),
-                                                   IID_PPV_ARGS(&_signature)));
+                                                   IID_PPV_ARGS(&_signatures[shader_type::general])));
     }
 
     void directx_12::init_shader() {
@@ -549,7 +549,7 @@ namespace fuse::directx {
 
         auto opaque_desc = pipeline_state::default_desc(ie_desc,
                                                         _countof(ie_desc),
-                                                        _signature.Get(),
+                                                        _signatures[shader_type::general].Get(),
                                                         vs_data,
                                                         ps_data);
 
@@ -560,7 +560,7 @@ namespace fuse::directx {
 
         auto trans_pso = pipeline_state::transparent_desc(ie_desc,
                                                           _countof(ie_desc),
-                                                          _signature.Get(),
+                                                          _signatures[shader_type::general].Get(),
                                                           vs_data,
                                                           ps_data);
 
@@ -571,7 +571,7 @@ namespace fuse::directx {
 
         auto mirror_pso = pipeline_state::mirror_desc(ie_desc,
                                                       _countof(ie_desc),
-                                                      _signature.Get(),
+                                                      _signatures[shader_type::general].Get(),
                                                       vs_data,
                                                       ps_data);
         ThrowIfFailed(_device->CreateGraphicsPipelineState
@@ -580,7 +580,7 @@ namespace fuse::directx {
 
         auto ref_pso = pipeline_state::reflection_desc(ie_desc,
                                                        _countof(ie_desc),
-                                                       _signature.Get(),
+                                                       _signatures[shader_type::general].Get(),
                                                        vs_ref_data,
                                                        ps_data);
         ThrowIfFailed(_device->CreateGraphicsPipelineState
@@ -589,7 +589,7 @@ namespace fuse::directx {
 
         auto shadow_pso = pipeline_state::shadow_desc(ie_desc,
                                                       _countof(ie_desc),
-                                                      _signature.Get(),
+                                                      _signatures[shader_type::general].Get(),
                                                       vs_sha_data,
                                                       ps_sha_data);
 
@@ -608,7 +608,7 @@ namespace fuse::directx {
         auto billboard_pso = pipeline_state::billboard_desc(ie_desc_bill,
                                                             _countof(
                                                                     ie_desc_bill),
-                                                            _signature.Get(),
+                                                            _signatures[shader_type::general].Get(),
                                                             vs_bill_data,
                                                             ps_bill_data,
                                                             gs_bill_data);
@@ -619,9 +619,9 @@ namespace fuse::directx {
 
         auto cs_blur_h_data = DX::ReadData(L"shader\\cs_blur_h.cso");
         auto cs_blur_v_data = DX::ReadData(L"shader\\cs_blur_v.cso");
-        auto blur_h_pso = pipeline_state::blur_desc(_blur_rs.Get(),
+        auto blur_h_pso = pipeline_state::blur_desc(_signatures[shader_type::blur].Get(),
                                                     cs_blur_h_data);
-        auto blur_v_pso = pipeline_state::blur_desc(_blur_rs.Get(),
+        auto blur_v_pso = pipeline_state::blur_desc(_signatures[shader_type::blur].Get(),
                                                     cs_blur_v_data);
         ThrowIfFailed(_device->CreateComputePipelineState(&blur_h_pso,
                                                           IID_PPV_ARGS(
