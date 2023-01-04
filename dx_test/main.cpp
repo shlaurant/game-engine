@@ -127,7 +127,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             auto wire = std::make_shared<fuse::directx::renderee>();
             wire->name = "wire";
             wire->type = fuse::directx::renderee_type::translucent;
-            wire->geometry = "cube0";
+            wire->geometry = "cube";
             wire->texture[0] = "wire";
             wire->constants.position = Vector3(0.f, 0.f, 3.f);
             wire->constants.world_matrix = Matrix::CreateTranslation(wire->constants.position);
@@ -135,6 +135,30 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             wire->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
             wire->constants.material.roughness = 0.5f;
             renderees.emplace_back(wire);
+
+            auto cube0 = std::make_shared<fuse::directx::renderee>();
+            cube0->name = "cube0";
+            cube0->type = fuse::directx::renderee_type::translucent;
+            cube0->geometry = "cube";
+            cube0->texture[0] = "white";
+            cube0->constants.position = Vector3(3.f, 0.f, 3.f);
+            cube0->constants.world_matrix = Matrix::CreateTranslation(cube0->constants.position);
+            cube0->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f, .5f);;
+            cube0->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+            cube0->constants.material.roughness = 0.5f;
+            renderees.emplace_back(cube0);
+
+            auto tree_billboard = std::make_shared<fuse::directx::renderee>();
+            tree_billboard->name = "tree_billboard";
+            tree_billboard->type = fuse::directx::renderee_type::billboard;
+            tree_billboard->geometry = "billboard_0";
+            tree_billboard->texture[0] = "tree_arr";
+            tree_billboard->constants.position = Vector3(0.f, 0.f, 10.f);
+            tree_billboard->constants.world_matrix = Matrix::CreateTranslation(tree_billboard->constants.position);
+            tree_billboard->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f, 1.f);;
+            tree_billboard->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+            tree_billboard->constants.material.roughness = 1.f;
+            renderees.emplace_back(tree_billboard);
         }
 
         dx12.init_renderees(renderees);
@@ -198,12 +222,8 @@ create_geometries() {
     std::vector<fuse::directx::geometry<fuse::directx::vertex>> ret;
 
     auto cube0 = create_cube_uv();
-    cube0.name = "cube0";
+    cube0.name = "cube";
     ret.emplace_back(cube0);
-
-    auto cube1 = create_cube_uv();
-    cube1.name = "cube1";
-    ret.emplace_back(cube1);
 
     auto plane = create_plain(100, 100);
     plane.name = "plane";
