@@ -83,7 +83,7 @@ namespace fuse::directx {
         }
 
         int load_texture(const std::wstring &path);
-        void bind_texture(int obj, int texture);
+        void bind_texture(int obj, int texture, int regi);
 
         void update_camera(const camera &);
         void update_lights(const light_info &);
@@ -135,7 +135,7 @@ namespace fuse::directx {
         std::unordered_map<shader_type, ComPtr <ID3D12RootSignature>> _signatures;
 
         //resource
-        static const int TABLE_SIZE = 2;
+        static const int TABLE_SIZE = 3;
         global _global;
         ComPtr <ID3D12Resource> _global_buffer;//globals set automatically.
         ComPtr <ID3D12Resource> _vp_buffer;
@@ -184,5 +184,6 @@ namespace fuse::directx {
                      ComPtr <ID3D12Resource> &upload_buffer);
         void init_default_signature();
         void init_blur_signature();
+        void init_terrain_signature();
     };
 }

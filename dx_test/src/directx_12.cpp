@@ -108,12 +108,12 @@ namespace fuse::directx {
         return tmp;
     }
 
-    void directx_12::bind_texture(int obj, int texture) {
+    void directx_12::bind_texture(int obj, int texture, int regi) {
         auto handle = _res_desc_heap->GetCPUDescriptorHandleForHeapStart();
         auto handle_sz = _device->GetDescriptorHandleIncrementSize(
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         handle.ptr += obj * group_size();
-        handle.ptr += handle_sz;
+        handle.ptr += handle_sz * (regi + 1);
         auto texture_res = _texture_buffers[texture].second;
         auto desc = _texture_buffers[texture].first;
         _device->CreateShaderResourceView(texture_res.Get(), &desc, handle);
@@ -472,8 +472,37 @@ namespace fuse::directx {
     void directx_12::init_root_signature() {
         init_default_signature();
         init_blur_signature();
-
+//        init_terrain_signature();
     }
+
+    void directx_12::init_terrain_signature() {
+        CD3DX12_DESCRIPTOR_RANGE ranges[] = {
+                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 3),
+                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0)
+        };
+        CD3DX12_ROOT_PARAMETER param[4];
+        param[0].InitAsConstantBufferView(static_cast<uint32_t>(0));//global
+        param[1].InitAsConstantBufferView(static_cast<uint32_t>(1));//camera
+        param[2].InitAsConstantBufferView(static_cast<uint32_t>(2));//lights
+        param[3].InitAsDescriptorTable(_countof(ranges), ranges);//object const
+
+        auto sampler_arr = sampler::samplers();
+
+        auto rs_desc = CD3DX12_ROOT_SIGNATURE_DESC(_countof(param), param, 9,
+                                                   sampler_arr.data());
+        rs_desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+        ComPtr<ID3DBlob> blob_signature;
+        ComPtr<ID3DBlob> blob_error;
+        D3D12SerializeRootSignature(&rs_desc, D3D_ROOT_SIGNATURE_VERSION_1,
+                                    &blob_signature, &blob_error);
+        ThrowIfFailed(_device->CreateRootSignature(0,
+                                                   blob_signature->GetBufferPointer(),
+                                                   blob_signature->GetBufferSize(),
+                                                   IID_PPV_ARGS(
+                                                           &_signatures[shader_type::terrain])));
+    }
+
     void directx_12::init_blur_signature() {
         CD3DX12_DESCRIPTOR_RANGE blur_ranges[] = {
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0),
@@ -502,7 +531,7 @@ namespace fuse::directx {
     void directx_12::init_default_signature() {
         CD3DX12_DESCRIPTOR_RANGE ranges[] = {
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 3),
-                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0)
+                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0)
         };
         CD3DX12_ROOT_PARAMETER param[4];
         param[0].InitAsConstantBufferView(static_cast<uint32_t>(0));//global

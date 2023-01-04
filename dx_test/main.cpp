@@ -74,13 +74,13 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.load_texture(L"resource\\ground_color.jpg");
         dx12.load_texture(L"resource\\WireFence.dds");
         dx12.load_texture(L"resource\\treeArray2.dds");
-        dx12.bind_texture(0, 0);
-        dx12.bind_texture(1, 3);
-        dx12.bind_texture(2, 2);
-        dx12.bind_texture(3, 1);
-        dx12.bind_texture(4, 1);
-        dx12.bind_texture(5, 4);
-        dx12.bind_texture(6, 4);
+        dx12.bind_texture(0, 0, 0);
+        dx12.bind_texture(1, 3, 0);
+        dx12.bind_texture(2, 2, 0);
+        dx12.bind_texture(3, 1, 0);
+        dx12.bind_texture(4, 1, 0);
+        dx12.bind_texture(5, 4, 0);
+        dx12.bind_texture(6, 4, 0);
 
 
         dx12.init_geometries<fuse::directx::vertex>(geo);
