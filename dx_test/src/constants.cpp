@@ -232,6 +232,7 @@ namespace fuse::directx {
         ret.HS = {hs.data(), hs.size()};
         ret.DS = {ds.data(), ds.size()};
         ret.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
+//        ret.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
         return ret;
     }
 }
