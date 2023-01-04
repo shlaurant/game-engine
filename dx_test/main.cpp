@@ -69,18 +69,18 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         camera.transform.position.z = -2.f;
 
         dx12.init({hwnd, 1920, 1080, true});
-        dx12.load_texture(L"resource\\kyaru.png");
-        dx12.load_texture(L"resource\\white.png");
-        dx12.load_texture(L"resource\\ground_color.jpg");
-        dx12.load_texture(L"resource\\WireFence.dds");
-        dx12.load_texture(L"resource\\treeArray2.dds");
-        dx12.bind_texture(0, 0, 0);
-        dx12.bind_texture(1, 3, 0);
-        dx12.bind_texture(2, 2, 0);
-        dx12.bind_texture(3, 1, 0);
-        dx12.bind_texture(4, 1, 0);
-        dx12.bind_texture(5, 4, 0);
-        dx12.bind_texture(6, 4, 0);
+        dx12.load_texture("kyaru",L"resource\\kyaru.png");
+        dx12.load_texture("white",L"resource\\white.png");
+        dx12.load_texture("ground",L"resource\\ground_color.jpg");
+        dx12.load_texture("wire", L"resource\\WireFence.dds");
+        dx12.load_texture("tree_arr",L"resource\\treeArray2.dds");
+        dx12.bind_texture(0, "kyaru", 0);
+        dx12.bind_texture(1, "wire", 0);
+        dx12.bind_texture(2, "ground", 0);
+        dx12.bind_texture(3, "white", 0);
+        dx12.bind_texture(4, "white", 0);
+        dx12.bind_texture(5, "tree_arr", 0);
+        dx12.bind_texture(6, "tree_arr", 0);
 
 
         dx12.init_geometries<fuse::directx::vertex>(geo);

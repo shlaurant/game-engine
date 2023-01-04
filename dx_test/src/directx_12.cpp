@@ -52,7 +52,7 @@ namespace fuse::directx {
         }
     }
 
-    int directx_12::load_texture(const std::wstring &path) {
+    void directx_12::load_texture(const std::string &name, const std::wstring &path) {
         ThrowIfFailed(_cmd_alloc->Reset());
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr));
 
@@ -70,8 +70,7 @@ namespace fuse::directx {
         desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
         desc.Texture2D.MipLevels = 1;
 
-        _texture_buffers.emplace_back(std::make_pair(desc, buf));
-        return _texture_buffers.size() - 1;
+        _textures[name] = std::make_pair(desc, buf);
     }
 
     ComPtr<ID3D12Resource> directx_12::load_texture(const std::wstring &path,
@@ -110,14 +109,14 @@ namespace fuse::directx {
         return tmp;
     }
 
-    void directx_12::bind_texture(int obj, int texture, int regi) {
+    void directx_12::bind_texture(int obj, const std::string &texture, int regi) {
         auto handle = _res_desc_heap->GetCPUDescriptorHandleForHeapStart();
         auto handle_sz = _device->GetDescriptorHandleIncrementSize(
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         handle.ptr += obj * group_size();
         handle.ptr += handle_sz * (regi + 1);
-        auto texture_res = _texture_buffers[texture].second;
-        auto desc = _texture_buffers[texture].first;
+        auto texture_res = _textures[texture].second;
+        auto desc = _textures[texture].first;
         _device->CreateShaderResourceView(texture_res.Get(), &desc, handle);
     }
 

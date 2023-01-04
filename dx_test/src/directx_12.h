@@ -82,8 +82,8 @@ namespace fuse::directx {
             wait_cmd_queue_sync();
         }
 
-        int load_texture(const std::wstring &path);
-        void bind_texture(int obj, int texture, int regi);
+        void load_texture(const std::string &name, const std::wstring &path);
+        void bind_texture(int obj, const std::string &texture, int regi);
 
         void update_camera(const camera &);
         void update_lights(const light_info &);
@@ -95,15 +95,24 @@ namespace fuse::directx {
 
     private:
         enum class layer : uint8_t {
-            opaque, transparent, mirror, reflection, shadow, billboard, blur_h, blur_v, terrain, end
+            opaque,
+            transparent,
+            mirror,
+            reflection,
+            shadow,
+            billboard,
+            blur_h,
+            blur_v,
+            terrain,
+            end
         };
 
         enum class shader_type {
             general, blur, terrain
         };
 
-        ComPtr <IDXGIFactory> _factory;
-        ComPtr <ID3D12Device> _device;
+        ComPtr<IDXGIFactory> _factory;
+        ComPtr<ID3D12Device> _device;
         D3D12_VIEWPORT _view_port;
         D3D12_RECT _scissors_rect;
         UINT msaa_sample_count = 4;
@@ -111,49 +120,48 @@ namespace fuse::directx {
 
 
         //cmd queue
-        ComPtr <ID3D12CommandQueue> _cmd_queue;
-        ComPtr <ID3D12CommandAllocator> _cmd_alloc;
-        ComPtr <ID3D12GraphicsCommandList> _cmd_list;
-        ComPtr <ID3D12Fence> _fence;
+        ComPtr<ID3D12CommandQueue> _cmd_queue;
+        ComPtr<ID3D12CommandAllocator> _cmd_alloc;
+        ComPtr<ID3D12GraphicsCommandList> _cmd_list;
+        ComPtr<ID3D12Fence> _fence;
         uint32_t _fence_value = 0;
 
         //swap chain & rtv & dsv
-        ComPtr <IDXGISwapChain> _swap_chain;
+        ComPtr<IDXGISwapChain> _swap_chain;
         uint32_t _back_buffer = 0;
-        ComPtr <ID3D12Resource> _rtv_buffer[SWAP_CHAIN_BUFFER_COUNT];
-        ComPtr <ID3D12DescriptorHeap> _rtv_heap;
+        ComPtr<ID3D12Resource> _rtv_buffer[SWAP_CHAIN_BUFFER_COUNT];
+        ComPtr<ID3D12DescriptorHeap> _rtv_heap;
         D3D12_CPU_DESCRIPTOR_HANDLE _rtv_handle[SWAP_CHAIN_BUFFER_COUNT];
         ComPtr<ID3D12Resource> _msaa_render_buffer;
         ComPtr<ID3D12DescriptorHeap> _msaa_render_buffer_heap;
 
         const DXGI_FORMAT DSV_FORMAT = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        ComPtr <ID3D12Resource> _dsv_buffer;
-        ComPtr <ID3D12DescriptorHeap> _dsv_desc_heap;
+        ComPtr<ID3D12Resource> _dsv_buffer;
+        ComPtr<ID3D12DescriptorHeap> _dsv_desc_heap;
         D3D12_CPU_DESCRIPTOR_HANDLE _dsv_handle;
 
         //root sig
-        std::unordered_map<shader_type, ComPtr <ID3D12RootSignature>> _signatures;
+        std::unordered_map<shader_type, ComPtr<ID3D12RootSignature>> _signatures;
 
         //resource
         static const int TABLE_SIZE = 3;
         global _global;
-        ComPtr <ID3D12Resource> _global_buffer;//globals set automatically.
-        ComPtr <ID3D12Resource> _vp_buffer;
-        ComPtr <ID3D12Resource> _light_buffer;
-        ComPtr <ID3D12Resource> _obj_const_buffer;
-        std::vector<std::pair<D3D12_SHADER_RESOURCE_VIEW_DESC,
-                ComPtr < ID3D12Resource>>>
-        _texture_buffers;
-        ComPtr <ID3D12DescriptorHeap> _res_desc_heap;
+        ComPtr<ID3D12Resource> _global_buffer;//globals set automatically.
+        ComPtr<ID3D12Resource> _vp_buffer;
+        ComPtr<ID3D12Resource> _light_buffer;
+        ComPtr<ID3D12Resource> _obj_const_buffer;
+        std::unordered_map<std::string, std::pair<D3D12_SHADER_RESOURCE_VIEW_DESC,
+                ComPtr<ID3D12Resource>>> _textures;
+        ComPtr<ID3D12DescriptorHeap> _res_desc_heap;
 
         //shader
-        std::vector<ComPtr < ID3D12PipelineState>> _pso_list;
+        std::vector<ComPtr<ID3D12PipelineState>> _pso_list;
 
         //vertex & index buffer
-        std::unordered_map<uint32_t, std::pair<ComPtr <
-                                               ID3D12Resource>, D3D12_VERTEX_BUFFER_VIEW>> _vertex_buffers;
-        std::unordered_map<uint32_t, std::pair<ComPtr <
-                                               ID3D12Resource>, D3D12_INDEX_BUFFER_VIEW>> _index_buffers;
+        std::unordered_map<uint32_t, std::pair<ComPtr<
+                ID3D12Resource>, D3D12_VERTEX_BUFFER_VIEW>> _vertex_buffers;
+        std::unordered_map<uint32_t, std::pair<ComPtr<
+                ID3D12Resource>, D3D12_INDEX_BUFFER_VIEW>> _index_buffers;
 
         //cs
         blur _blur;
@@ -179,9 +187,9 @@ namespace fuse::directx {
 
         UINT group_size();
 
-        ComPtr <ID3D12Resource>
+        ComPtr<ID3D12Resource>
         load_texture(const std::wstring &path, DirectX::ScratchImage &image,
-                     ComPtr <ID3D12Resource> &upload_buffer);
+                     ComPtr<ID3D12Resource> &upload_buffer);
         void init_default_signature();
         void init_blur_signature();
         void init_terrain_signature();
