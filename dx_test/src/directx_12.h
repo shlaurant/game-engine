@@ -22,6 +22,13 @@ namespace fuse::directx {
     };
 
     class directx_12 {
+    private:
+        struct geo_info {
+            UINT vertex_offset;
+            UINT index_offset;
+            UINT index_count;
+        };
+
     public:
         const static int SWAP_CHAIN_BUFFER_COUNT = 2;
         const static int OBJ_CNT = 10;
@@ -36,13 +43,25 @@ namespace fuse::directx {
 
             ComPtr<ID3D12Resource> u_buffer_v;
             std::vector<T> vertices;
-            size_t index = 0;
+            size_t index_v = 0;
+
+            ComPtr<ID3D12Resource> u_buffer_i;
+            std::vector<uint16_t> indices;
+            size_t index_i = 0;
+
             for (auto &e: geometries) {
-                e.vertex_offset = index;
+                e.vertex_offset = index_v;
+                e.index_offset = index_i;
                 std::copy(e.vertices.begin(), e.vertices.end(),
                           std::back_inserter(vertices));
-                index += e.vertices.size();
+                index_v += e.vertices.size();
+                std::copy(e.indices.begin(), e.indices.end(),
+                          std::back_inserter(indices));
+                index_i += e.indices.size();
+
+                _geo_infos[type_id<T>()][e.name] = {(UINT)e.vertex_offset, (UINT)e.index_offset, (UINT)e.indices.size()};
             }
+
             auto vert_byte_size = sizeof(T) * vertices.size();
             std::copy(vertices.begin(), vertices.end(), vertices.data());
 
@@ -53,16 +72,6 @@ namespace fuse::directx {
             vbv.StrideInBytes = sizeof(T);
             vbv.SizeInBytes = vert_byte_size;
             _vertex_buffers[type_id<T>()] = std::make_pair(vb, vbv);
-
-            ComPtr<ID3D12Resource> u_buffer_i;
-            std::vector<uint16_t> indices;
-            size_t index_i = 0;
-            for (auto &e: geometries) {
-                e.index_offset = index_i;
-                std::copy(e.indices.begin(), e.indices.end(),
-                          std::back_inserter(indices));
-                index_i += e.indices.size();
-            }
 
             auto ib = create_default_buffer(indices.data(),
                                             sizeof(uint16_t) *
@@ -145,6 +154,12 @@ namespace fuse::directx {
 
         //resource
         static const int TABLE_SIZE = 3;
+
+        std::unordered_map<uint32_t, std::unordered_map<std::string, geo_info>> _geo_infos;
+        std::unordered_map<uint32_t, std::pair<ComPtr<
+                ID3D12Resource>, D3D12_VERTEX_BUFFER_VIEW>> _vertex_buffers;
+        std::unordered_map<uint32_t, std::pair<ComPtr<
+                ID3D12Resource>, D3D12_INDEX_BUFFER_VIEW>> _index_buffers;
         global _global;
         ComPtr<ID3D12Resource> _global_buffer;//globals set automatically.
         ComPtr<ID3D12Resource> _vp_buffer;
@@ -156,12 +171,6 @@ namespace fuse::directx {
 
         //shader
         std::vector<ComPtr<ID3D12PipelineState>> _pso_list;
-
-        //vertex & index buffer
-        std::unordered_map<uint32_t, std::pair<ComPtr<
-                ID3D12Resource>, D3D12_VERTEX_BUFFER_VIEW>> _vertex_buffers;
-        std::unordered_map<uint32_t, std::pair<ComPtr<
-                ID3D12Resource>, D3D12_INDEX_BUFFER_VIEW>> _index_buffers;
 
         //cs
         blur _blur;

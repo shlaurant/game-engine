@@ -167,18 +167,23 @@ create_geometries() {
     std::vector<fuse::directx::geometry<fuse::directx::vertex>> ret;
 
     auto cube0 = create_cube_uv();
+    cube0.name = "cube0";
     ret.emplace_back(cube0);
 
     auto cube1 = create_cube_uv();
+    cube1.name = "cube1";
     ret.emplace_back(cube1);
 
     auto plane = create_plain(100, 100);
+    plane.name = "plane";
     ret.emplace_back(plane);
 
     auto mirror = create_plain(5, 5);
+    mirror.name = "mirror";
     ret.emplace_back(mirror);
 
     auto skull = load_mesh("resource/skull.txt");
+    skull.name = "skull";
     ret.emplace_back(skull);
 
     return std::move(ret);
