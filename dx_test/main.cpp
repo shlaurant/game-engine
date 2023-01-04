@@ -119,7 +119,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             skull->type = fuse::directx::renderee_type::opaque;
             skull->geometry = "skull";
             skull->texture[0] = "white";
-            skull->constants.position = Vector3(-5.f, 0.f, 3.f);
+            skull->constants.position = Vector3(-5.f, 1.f, 3.f);
             skull->constants.world_matrix = Matrix::CreateTranslation(skull->constants.position);
             skull->constants.material.diffuse_albedo = Vector4(1.f, 1.f, 1.0f, 1.0f);;
             skull->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
@@ -131,7 +131,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             wire->type = fuse::directx::renderee_type::translucent;
             wire->geometry = "cube";
             wire->texture[0] = "wire";
-            wire->constants.position = Vector3(0.f, .5f, 3.f);
+            wire->constants.position = Vector3(0.f, 1.5f, 3.f);
             wire->constants.world_matrix = Matrix::CreateTranslation(wire->constants.position);
             wire->constants.material.diffuse_albedo = Vector4(1.f, 1.f, 1.f, 1.0f);;
             wire->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
@@ -143,7 +143,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             cube0->type = fuse::directx::renderee_type::translucent;
             cube0->geometry = "cube";
             cube0->texture[0] = "white";
-            cube0->constants.position = Vector3(3.f, .5f, 3.f);
+            cube0->constants.position = Vector3(3.f, 1.5f, 3.f);
             cube0->constants.world_matrix = Matrix::CreateTranslation(cube0->constants.position);
             cube0->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f, .5f);;
             cube0->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
@@ -155,7 +155,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             tree_billboard->type = fuse::directx::renderee_type::billboard;
             tree_billboard->geometry = "billboard_0";
             tree_billboard->texture[0] = "tree_arr";
-            tree_billboard->constants.position = Vector3(0.f, 0.f, 10.f);
+            tree_billboard->constants.position = Vector3(0.f, 1.f, 10.f);
             tree_billboard->constants.world_matrix = Matrix::CreateTranslation(tree_billboard->constants.position);
             tree_billboard->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f, 1.f);;
             tree_billboard->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
@@ -252,7 +252,7 @@ create_geometries() {
     skull.name = "skull";
     ret.emplace_back(skull);
 
-    auto terrain = create_terrain(10, 2);
+    auto terrain = create_terrain(20, 2);
     terrain.name = "terrain";
     ret.emplace_back(terrain);
 

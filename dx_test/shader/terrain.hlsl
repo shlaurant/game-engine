@@ -6,7 +6,7 @@
 #define TESS_MAX 3.f
 #define TESS_MIN 1.f
 #define DELTA_FOR_NORMAL 0.1f
-#define HEIGHT_CONST 10.f
+#define HEIGHT_CONST 20.f
 
 Texture2D tex_diffuse : register(t0);
 Texture2D tex_height : register(t1);
@@ -66,7 +66,7 @@ struct CPHS_OUT {
 };
 
 [domain("tri")]
-[partitioning("integer")]
+[partitioning("fractional_odd")]
 [outputtopology("triangle_cw")]
 [outputcontrolpoints(3)]
 [patchconstantfunc("CHS")]
