@@ -79,14 +79,17 @@ namespace fuse::directx {
                                                     ComPtr<ID3D12Resource> &upload_buffer) {
         auto ext = std::filesystem::path(path).extension();
 
-        if (ext == L".dds" || ext == L".DDS")
-            LoadFromDDSFile(path.c_str(), DirectX::DDS_FLAGS_NONE, nullptr,
-                            image);
-        else if (ext == L".tga" || ext == L".TGA")
-            LoadFromTGAFile(path.c_str(), nullptr, image);
-        else
-            LoadFromWICFile(path.c_str(), DirectX::WIC_FLAGS_NONE, nullptr,
-                            image);
+        if (ext == L".dds" || ext == L".DDS") {
+            ThrowIfFailed(LoadFromDDSFile(path.c_str(), DirectX::DDS_FLAGS_NONE,
+                                          nullptr, image))
+        } else if (ext == L".tga" || ext == L".TGA") {
+            ThrowIfFailed(
+                    LoadFromTGAFile(path.c_str(), nullptr, image))
+        } else {
+            ThrowIfFailed(
+                    LoadFromWICFile(path.c_str(), DirectX::WIC_FLAGS_NONE,
+                                    nullptr, image))
+        }
 
         ComPtr<ID3D12Resource> tmp;
         ThrowIfFailed(
@@ -167,10 +170,10 @@ namespace fuse::directx {
                                       _msaa_render_buffer.Get(), 0,
                                       RTV_FORMAT);
 
-        _blur.blur_texture(_cmd_list, _rtv_buffer[_back_buffer],
-                           _pso_list[static_cast<uint8_t>(layer::blur_h)],
-                           _pso_list[static_cast<uint8_t>(layer::blur_v)],
-                           _signatures[shader_type::blur]);
+//        _blur.blur_texture(_cmd_list, _rtv_buffer[_back_buffer],
+//                           _pso_list[static_cast<uint8_t>(layer::blur_h)],
+//                           _pso_list[static_cast<uint8_t>(layer::blur_v)],
+//                           _signatures[shader_type::blur]);
 
         auto barrier0 = CD3DX12_RESOURCE_BARRIER::Transition(
                 _rtv_buffer[_back_buffer].Get(),
@@ -212,8 +215,8 @@ namespace fuse::directx {
         _cmd_list->SetPipelineState(
                 _pso_list[static_cast<uint8_t>(layer::terrain)].Get());
 
-        for(const auto &e :infos){
-            if(e.is_terrain) render(e);
+        for (const auto &e: infos) {
+            if (e.is_terrain) render(e);
         }
 
         _cmd_list->IASetPrimitiveTopology(

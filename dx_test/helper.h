@@ -57,3 +57,5 @@ DirectX::SimpleMath::Vector4 green();
 DirectX::SimpleMath::Vector4 blue();
 
 fuse::directx::geometry<fuse::directx::vertex> load_mesh(const std::string &path);
+
+fuse::directx::geometry<fuse::directx::vertex> create_terrain(int half, int unit_sz);
