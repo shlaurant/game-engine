@@ -220,4 +220,18 @@ namespace fuse::directx {
 
         return ret;
     }
+
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC
+    pipeline_state::terrain_desc(D3D12_INPUT_ELEMENT_DESC *ed, UINT ed_cnt,
+                                 ID3D12RootSignature *rs,
+                                 const std::vector<uint8_t> &vs,
+                                 const std::vector<uint8_t> &hs,
+                                 const std::vector<uint8_t> &ds,
+                                 const std::vector<uint8_t> &ps) {
+        auto ret = default_desc(ed, ed_cnt, rs, vs, ps);
+        ret.HS = {hs.data(), hs.size()};
+        ret.DS = {ds.data(), ds.size()};
+        
+        return ret;
+    }
 }
