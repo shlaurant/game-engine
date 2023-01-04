@@ -95,7 +95,7 @@ namespace fuse::directx {
 
     private:
         enum class layer : uint8_t {
-            opaque, transparent, mirror, reflection, shadow, billboard, blur_h, blur_v, end
+            opaque, transparent, mirror, reflection, shadow, billboard, blur_h, blur_v, terrain, end
         };
 
         enum class shader_type {

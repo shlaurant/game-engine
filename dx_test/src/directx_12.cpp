@@ -30,7 +30,6 @@ namespace fuse::directx {
 
         init_root_signature();
         init_shader();
-        init_shader();
 
         //window resize;
         RECT rect = {0, 0, info.width, info.height};
@@ -122,7 +121,8 @@ namespace fuse::directx {
     void directx_12::render_begin() {
         ThrowIfFailed(_cmd_alloc->Reset())
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr))
-        _cmd_list->SetGraphicsRootSignature(_signatures[shader_type::general].Get());
+        _cmd_list->SetGraphicsRootSignature(
+                _signatures[shader_type::general].Get());
         _cmd_list->SetGraphicsRootConstantBufferView(0,
                                                      _global_buffer->GetGPUVirtualAddress());
         _cmd_list->SetGraphicsRootConstantBufferView(1,
@@ -526,7 +526,8 @@ namespace fuse::directx {
         ThrowIfFailed(_device->CreateRootSignature(0,
                                                    blob_signature0->GetBufferPointer(),
                                                    blob_signature0->GetBufferSize(),
-                                                   IID_PPV_ARGS(&_signatures[shader_type::blur])));
+                                                   IID_PPV_ARGS(
+                                                           &_signatures[shader_type::blur])));
     }
     void directx_12::init_default_signature() {
         CD3DX12_DESCRIPTOR_RANGE ranges[] = {
@@ -552,7 +553,8 @@ namespace fuse::directx {
         ThrowIfFailed(_device->CreateRootSignature(0,
                                                    blob_signature->GetBufferPointer(),
                                                    blob_signature->GetBufferSize(),
-                                                   IID_PPV_ARGS(&_signatures[shader_type::general])));
+                                                   IID_PPV_ARGS(
+                                                           &_signatures[shader_type::general])));
     }
 
     void directx_12::init_shader() {
@@ -648,16 +650,31 @@ namespace fuse::directx {
 
         auto cs_blur_h_data = DX::ReadData(L"shader\\cs_blur_h.cso");
         auto cs_blur_v_data = DX::ReadData(L"shader\\cs_blur_v.cso");
-        auto blur_h_pso = pipeline_state::blur_desc(_signatures[shader_type::blur].Get(),
-                                                    cs_blur_h_data);
-        auto blur_v_pso = pipeline_state::blur_desc(_signatures[shader_type::blur].Get(),
-                                                    cs_blur_v_data);
+        auto blur_h_pso = pipeline_state::blur_desc(
+                _signatures[shader_type::blur].Get(),
+                cs_blur_h_data);
+        auto blur_v_pso = pipeline_state::blur_desc(
+                _signatures[shader_type::blur].Get(),
+                cs_blur_v_data);
         ThrowIfFailed(_device->CreateComputePipelineState(&blur_h_pso,
                                                           IID_PPV_ARGS(
                                                                   &_pso_list[static_cast<uint8_t>(layer::blur_h)])));
         ThrowIfFailed(_device->CreateComputePipelineState(&blur_v_pso,
                                                           IID_PPV_ARGS(
                                                                   &_pso_list[static_cast<uint8_t>(layer::blur_v)])));
+
+        auto vs_terrain = DX::ReadData(L"shader\\vs_terrain.cso");
+        auto hs_terrain = DX::ReadData(L"shader\\hs_terrain.cso");
+        auto ds_terrain = DX::ReadData(L"shader\\ds_terrain.cso");
+        auto ps_terrain = DX::ReadData(L"shader\\ps_terrain.cso");
+
+        auto
+        terrain_pso = pipeline_state::terrain_desc(ie_desc, _countof(ie_desc),
+                                                   _signatures[shader_type::general].Get(),
+                                                   vs_terrain, hs_terrain,
+                                                   ds_terrain, ps_terrain);
+        ThrowIfFailed(_device->CreateGraphicsPipelineState(&terrain_pso,
+                                                           IID_PPV_ARGS(&_pso_list[static_cast<uint8_t>(layer::terrain)])));
     }
 
     void directx_12::execute_cmd_list() {

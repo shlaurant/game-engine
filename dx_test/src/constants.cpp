@@ -231,7 +231,7 @@ namespace fuse::directx {
         auto ret = default_desc(ed, ed_cnt, rs, vs, ps);
         ret.HS = {hs.data(), hs.size()};
         ret.DS = {ds.data(), ds.size()};
-        
+        ret.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
         return ret;
     }
 }

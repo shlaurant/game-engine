@@ -12,6 +12,7 @@ Texture2D tex_height : register(t1);
 struct VS_IN {
     float3 pos:POSITION;
     float2 uv:TEXCOORD;
+    float3 normal:NORMAL;
 };
 
 struct VS_OUT {
