@@ -52,7 +52,83 @@ namespace fuse::directx {
         }
     }
 
-    void directx_12::load_texture(const std::string &name, const std::wstring &path) {
+    void
+    directx_12::init_renderees(std::vector<std::shared_ptr<renderee>> vec) {
+        _renderees.clear();
+        _renderees.resize(static_cast<uint8_t>(renderee_type::count));
+
+        int id = 0;
+        for (auto e: vec) {
+            e->id = id;
+            _renderees[static_cast<uint8_t>(e->type)].emplace_back(e);
+        }
+
+        for (auto &typed_renderees: _renderees) {
+            for (auto &ptr: typed_renderees) {
+                uint32_t tid;
+                switch (ptr->type) {
+                    case renderee_type::common:
+                        tid = type_id<vertex>();
+                        break;
+                    case renderee_type::billboard:
+                        tid = type_id<vertex_billboard>();
+                        break;
+                    case renderee_type::terrain:
+                        tid = type_id<vertex>();
+                        break;
+                }
+                ptr->geo = _geo_infos[tid][ptr->geometry];
+
+                for (auto i = 0; i < _countof(ptr->texture); ++i) {
+                    if (!ptr->texture[i].empty())
+                        bind_texture(ptr->id, ptr->texture[i], i);
+                }
+
+                update_const_buffer(_obj_const_buffer, &(ptr->constants),
+                                    ptr->id);
+            }
+        }
+    }
+
+    void directx_12::render() {
+        _cmd_list->IASetVertexBuffers(0, 1,
+                                      &(_vertex_buffers[type_id<vertex_billboard>()].second));
+        _cmd_list->IASetIndexBuffer(
+                &(_index_buffers[type_id<vertex_billboard>()].second));
+        _cmd_list->IASetPrimitiveTopology(
+                D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+        _cmd_list->SetPipelineState(
+                _pso_list[static_cast<uint8_t>(layer::billboard)].Get());
+
+        for (const auto &e: _renderees[static_cast<uint8_t>(renderee_type::billboard)]) {
+            render(e);
+        }
+
+        _cmd_list->IASetVertexBuffers(0, 1,
+                                      &(_vertex_buffers[type_id<vertex>()].second));
+        _cmd_list->IASetIndexBuffer(
+                &(_index_buffers[type_id<vertex>()].second));
+        _cmd_list->IASetPrimitiveTopology(
+                D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
+        _cmd_list->SetPipelineState(
+                _pso_list[static_cast<uint8_t>(layer::terrain)].Get());
+
+        for (const auto &e: _renderees[static_cast<uint8_t>(renderee_type::terrain)]) {
+            render(e);
+        }
+
+        _cmd_list->IASetPrimitiveTopology(
+                D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        _cmd_list->SetPipelineState(
+                _pso_list[static_cast<uint8_t>(layer::opaque)].Get());
+
+        for (const auto &e: _renderees[static_cast<uint8_t>(renderee_type::common)]) {
+            render(e);
+        }
+    }
+
+    void directx_12::load_texture(const std::string &name,
+                                  const std::wstring &path) {
         ThrowIfFailed(_cmd_alloc->Reset());
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr));
 
@@ -109,7 +185,8 @@ namespace fuse::directx {
         return tmp;
     }
 
-    void directx_12::bind_texture(int obj, const std::string &texture, int regi) {
+    void
+    directx_12::bind_texture(int obj, const std::string &texture, int regi) {
         auto handle = _res_desc_heap->GetCPUDescriptorHandleForHeapStart();
         auto handle_sz = _device->GetDescriptorHandleIncrementSize(
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -296,6 +373,16 @@ namespace fuse::directx {
 
         _cmd_list->DrawIndexedInstanced(info.index_count, 1, info.index_offset,
                                         info.vertex_offset, 0);
+    }
+
+    void directx_12::render(const std::shared_ptr<renderee> &r) {
+        auto handle = _res_desc_heap->GetGPUDescriptorHandleForHeapStart();
+        handle.ptr += group_size() * r->id;
+        _cmd_list->SetGraphicsRootDescriptorTable(3, handle);
+
+        _cmd_list->DrawIndexedInstanced(r->geo.index_count, 1,
+                                        r->geo.index_offset,
+                                        r->geo.vertex_offset, 0);
     }
 
     void directx_12::init_base(const window_info &info) {

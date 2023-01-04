@@ -74,40 +74,58 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.load_texture("ground",L"resource\\ground_color.jpg");
         dx12.load_texture("wire", L"resource\\WireFence.dds");
         dx12.load_texture("tree_arr",L"resource\\treeArray2.dds");
-        dx12.bind_texture(0, "kyaru", 0);
-        dx12.bind_texture(1, "wire", 0);
-        dx12.bind_texture(2, "ground", 0);
-        dx12.bind_texture(3, "white", 0);
-        dx12.bind_texture(4, "white", 0);
-        dx12.bind_texture(5, "tree_arr", 0);
-        dx12.bind_texture(6, "tree_arr", 0);
+//        dx12.bind_texture(0, "kyaru", 0);
+//        dx12.bind_texture(1, "wire", 0);
+//        dx12.bind_texture(2, "ground", 0);
+//        dx12.bind_texture(3, "white", 0);
+//        dx12.bind_texture(4, "white", 0);
+//        dx12.bind_texture(5, "tree_arr", 0);
+//        dx12.bind_texture(6, "tree_arr", 0);
 
 
-        dx12.init_geometries<fuse::directx::vertex>(geo);
         std::vector<fuse::directx::geometry<fuse::directx::vertex_billboard>> geo1;
         geo1.resize(2);
         fuse::directx::vertex_billboard v {Vector3(0.0f, 0.0f, 0.f), Vector2(1.f, 1.f)};
+        geo1[0].name = "billboard_0";
         geo1[0].vertices.emplace_back(v);
         geo1[0].indices.emplace_back(0);
 
         fuse::directx::vertex_billboard v1 {Vector3(0.0f, 0.0f, 0.f), Vector2(1.f, 1.f)};
+        geo1[1].name = "billboard_1";
         geo1[1].vertices.emplace_back(v1);
         geo1[1].indices.emplace_back(0);
 
+        dx12.init_geometries<fuse::directx::vertex>(geo);
         dx12.init_geometries<fuse::directx::vertex_billboard>(geo1);
 
-        auto infos = create_render_info(geo, 0);
-        fuse::directx::render_info binfo{true, 5, (int) geo1[0].indices.size(),
-                                         (int) geo1[0].index_offset,
-                                         (int) geo1[0].vertex_offset, false,
-                                         false, false, Vector4::Zero, false};
-        fuse::directx::render_info binfo1{true, 6, (int) geo1[1].indices.size(),
-                                         (int) geo1[1].index_offset,
-                                         (int) geo1[1].vertex_offset, false,
-                                         false, false, Vector4::Zero, false};
+//        auto infos = create_render_info(geo, 0);
+//        fuse::directx::render_info binfo{true, 5, (int) geo1[0].indices.size(),
+//                                         (int) geo1[0].index_offset,
+//                                         (int) geo1[0].vertex_offset, false,
+//                                         false, false, Vector4::Zero, false};
+//        fuse::directx::render_info binfo1{true, 6, (int) geo1[1].indices.size(),
+//                                         (int) geo1[1].index_offset,
+//                                         (int) geo1[1].vertex_offset, false,
+//                                         false, false, Vector4::Zero, false};
+//
+//        infos.emplace_back(binfo);
+//        infos.emplace_back(binfo1);
+        std::vector<std::shared_ptr<fuse::directx::renderee>> renderees;
+        {
+            auto skull = std::make_shared<fuse::directx::renderee>();
+            skull->name = "skull";
+            skull->type = fuse::directx::renderee_type::common;
+            skull->geometry = "skull";
+            skull->texture[0] = "white";
+            skull->constants.position = Vector3(-5.f, 0.f, 3.f);
+            skull->constants.world_matrix = Matrix::CreateTranslation(skull->constants.position);
+            skull->constants.material.diffuse_albedo = Vector4(1.f, 1.f, 1.0f, 1.0f);;
+            skull->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+            skull->constants.material.roughness = 0.3f;
+            renderees.emplace_back(skull);
+        }
 
-        infos.emplace_back(binfo);
-        infos.emplace_back(binfo1);
+        dx12.init_renderees(renderees);
 
         while (msg.message != WM_QUIT) {
             if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
@@ -121,9 +139,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                 c.position = camera.transform.position;
                 dx12.update_camera(c);
                 dx12.update_lights(li);
-                dx12.update_obj_constants(consts);
+//                dx12.update_obj_constants(consts);
                 dx12.render_begin();
-                dx12.render(infos);
+                dx12.render();
+//                dx12.render(infos);
                 dx12.render_end();
             }
         }

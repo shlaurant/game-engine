@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "typeid.h"
 #include "blur.h"
+#include "renderee.h"
 
 using namespace Microsoft::WRL;
 
@@ -22,13 +23,6 @@ namespace fuse::directx {
     };
 
     class directx_12 {
-    private:
-        struct geo_info {
-            UINT vertex_offset;
-            UINT index_offset;
-            UINT index_count;
-        };
-
     public:
         const static int SWAP_CHAIN_BUFFER_COUNT = 2;
         const static int OBJ_CNT = 10;
@@ -59,7 +53,9 @@ namespace fuse::directx {
                           std::back_inserter(indices));
                 index_i += e.indices.size();
 
-                _geo_infos[type_id<T>()][e.name] = {(UINT)e.vertex_offset, (UINT)e.index_offset, (UINT)e.indices.size()};
+                _geo_infos[type_id<T>()][e.name] = {(UINT) e.vertex_offset,
+                                                    (UINT) e.index_offset,
+                                                    (UINT) e.indices.size()};
             }
 
             auto vert_byte_size = sizeof(T) * vertices.size();
@@ -97,6 +93,11 @@ namespace fuse::directx {
         void update_camera(const camera &);
         void update_lights(const light_info &);
         void update_obj_constants(const std::vector<object_constant> &);
+
+        void init_renderees(std::vector<std::shared_ptr<renderee>>);
+        std::vector<std::vector<std::shared_ptr<renderee>>> _renderees;
+        void render();
+        void render(const std::shared_ptr<renderee> &);
 
         void render_begin();
         void render(const std::vector<render_info> &);
