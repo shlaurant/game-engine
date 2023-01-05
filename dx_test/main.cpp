@@ -199,6 +199,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             tree_billboard->type = fuse::directx::renderee_type::billboard;
             tree_billboard->geometry = "billboard_0";
             tree_billboard->texture[0] = "tree_arr";
+            tree_billboard->material = "metal";
             tree_billboard->constants.position = Vector3(0.f, 6.f, 10.f);
             tree_billboard->constants.world_matrix = Matrix::CreateTranslation(
                     tree_billboard->constants.position);
