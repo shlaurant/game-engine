@@ -27,6 +27,8 @@ cbuffer object_const :register(b3) {
     material mat;
 };
 
+StructuredBuffer<material> materials : register(t0, space1);
+
 SamplerState sam_pw : register(s0);
 SamplerState sam_pc : register(s1);
 SamplerState sam_pm : register(s2);

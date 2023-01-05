@@ -86,13 +86,12 @@ namespace fuse::directx {
             execute_cmd_list();
             wait_cmd_queue_sync();
         }
-
         void load_texture(const std::string &name, const std::wstring &path);
         void bind_texture(int obj, const std::string &texture, int regi);
+        void load_material(const std::vector<std::string> &names, const std::vector<material> &mat);
 
         void update_camera(const camera &);
         void update_lights(const light_info &);
-        void update_obj_constants(const std::vector<object_constant> &);
 
         void init_renderees(std::vector<std::shared_ptr<renderee>>);
         std::vector<std::vector<std::shared_ptr<renderee>>> _renderees;
@@ -166,6 +165,8 @@ namespace fuse::directx {
         ComPtr<ID3D12Resource> _vp_buffer;
         ComPtr<ID3D12Resource> _light_buffer;
         ComPtr<ID3D12Resource> _obj_const_buffer;
+        ComPtr<ID3D12Resource> _mat_buffer;
+        std::unordered_map<std::string, int> _mat_ids;
         std::unordered_map<std::string, std::pair<D3D12_SHADER_RESOURCE_VIEW_DESC,
                 ComPtr<ID3D12Resource>>> _textures;
         ComPtr<ID3D12DescriptorHeap> _res_desc_heap;

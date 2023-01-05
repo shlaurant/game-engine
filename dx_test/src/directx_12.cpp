@@ -46,13 +46,6 @@ namespace fuse::directx {
     }
 
     void
-    directx_12::update_obj_constants(const std::vector<object_constant> &vec) {
-        for (auto i = 0; i < vec.size(); ++i) {
-            update_const_buffer(_obj_const_buffer, &(vec[i]), i);
-        }
-    }
-
-    void
     directx_12::init_renderees(std::vector<std::shared_ptr<renderee>> vec) {
         _renderees.clear();
         _renderees.resize(static_cast<uint8_t>(renderee_type::count));
@@ -93,6 +86,8 @@ namespace fuse::directx {
 
                 update_const_buffer(_obj_const_buffer, &(ptr->constants),
                                     ptr->id);
+
+                ptr->material_id = _mat_ids[ptr->material];
             }
         }
     }
@@ -211,6 +206,14 @@ namespace fuse::directx {
         _device->CreateShaderResourceView(texture_res.Get(), &desc, handle);
     }
 
+    void directx_12::load_material(const std::vector<std::string> &names,
+                                   const std::vector<material> &mat) {
+        for (auto i = 0; i < names.size(); ++i) {
+            update_upload_buffer(_mat_buffer, &(mat[i]), i, sizeof(material));
+            _mat_ids[names[i]] = i;
+        }
+    }
+
     void directx_12::render_begin() {
         ThrowIfFailed(_cmd_alloc->Reset())
         ThrowIfFailed(_cmd_list->Reset(_cmd_alloc.Get(), nullptr))
@@ -222,6 +225,8 @@ namespace fuse::directx {
                                                      _vp_buffer->GetGPUVirtualAddress());
         _cmd_list->SetGraphicsRootConstantBufferView(2,
                                                      _light_buffer->GetGPUVirtualAddress());
+        _cmd_list->SetGraphicsRootShaderResourceView(3, _mat_buffer->GetGPUVirtualAddress());
+
         _cmd_list->RSSetViewports(1, &_view_port);
         _cmd_list->RSSetScissorRects(1, &_scissors_rect);
         ID3D12DescriptorHeap *heaps[] = {_res_desc_heap.Get()};
@@ -238,8 +243,6 @@ namespace fuse::directx {
         _cmd_list->ResourceBarrier(1, &barrier1);
 
 
-//        _cmd_list->ClearRenderTargetView(_rtv_handle[_back_buffer],
-//                                         DirectX::Colors::Aqua, 0, nullptr);
         auto msaa_handle = _msaa_render_buffer_heap->GetCPUDescriptorHandleForHeapStart();
         _cmd_list->ClearRenderTargetView(msaa_handle,
                                          DirectX::Colors::Aqua, 0, nullptr);
@@ -383,7 +386,7 @@ namespace fuse::directx {
     void directx_12::render(const render_info &info) {
         auto handle = _res_desc_heap->GetGPUDescriptorHandleForHeapStart();
         handle.ptr += group_size() * info.object_index;
-        _cmd_list->SetGraphicsRootDescriptorTable(3, handle);
+        _cmd_list->SetGraphicsRootDescriptorTable(4, handle);
 
         _cmd_list->DrawIndexedInstanced(info.index_count, 1, info.index_offset,
                                         info.vertex_offset, 0);
@@ -392,7 +395,7 @@ namespace fuse::directx {
     void directx_12::render(const std::shared_ptr<renderee> &r) {
         auto handle = _res_desc_heap->GetGPUDescriptorHandleForHeapStart();
         handle.ptr += group_size() * r->id;
-        _cmd_list->SetGraphicsRootDescriptorTable(3, handle);
+        _cmd_list->SetGraphicsRootDescriptorTable(4, handle);
 
         _cmd_list->DrawIndexedInstanced(r->geo.index_count, 1,
                                         r->geo.index_offset,
@@ -561,6 +564,7 @@ namespace fuse::directx {
     void directx_12::init_resources() {
         _obj_const_buffer = create_const_buffer<object_constant>(OBJ_CNT,
                                                                  _device);
+        _mat_buffer = create_upload_buffer(OBJ_CNT, sizeof(material), _device);
 
         D3D12_DESCRIPTOR_HEAP_DESC h_desc = {};
         h_desc.NodeMask = 0;
@@ -592,11 +596,12 @@ namespace fuse::directx {
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 3),
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0)
         };
-        CD3DX12_ROOT_PARAMETER param[4];
+        CD3DX12_ROOT_PARAMETER param[5];
         param[0].InitAsConstantBufferView(static_cast<uint32_t>(0));//global
         param[1].InitAsConstantBufferView(static_cast<uint32_t>(1));//camera
         param[2].InitAsConstantBufferView(static_cast<uint32_t>(2));//lights
-        param[3].InitAsDescriptorTable(_countof(ranges), ranges);//object const
+        param[3].InitAsShaderResourceView(0, 1);//mats
+        param[4].InitAsDescriptorTable(_countof(ranges), ranges);//object const
 
         auto sampler_arr = sampler::samplers();
 
@@ -646,11 +651,12 @@ namespace fuse::directx {
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 3),
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0)
         };
-        CD3DX12_ROOT_PARAMETER param[4];
+        CD3DX12_ROOT_PARAMETER param[5];
         param[0].InitAsConstantBufferView(static_cast<uint32_t>(0));//global
         param[1].InitAsConstantBufferView(static_cast<uint32_t>(1));//camera
         param[2].InitAsConstantBufferView(static_cast<uint32_t>(2));//lights
-        param[3].InitAsDescriptorTable(_countof(ranges), ranges);//object const
+        param[3].InitAsShaderResourceView(0, 1);//mats
+        param[4].InitAsDescriptorTable(_countof(ranges), ranges);//object const
 
         auto sampler_arr = sampler::samplers();
 
