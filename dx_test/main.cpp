@@ -162,18 +162,18 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             tree_billboard->constants.material.roughness = 1.f;
             renderees.emplace_back(tree_billboard);
 
-            auto terrain = std::make_shared<fuse::directx::renderee>();
-            terrain->name = "terrain";
-            terrain->type = fuse::directx::renderee_type::terrain;
-            terrain->geometry = "terrain";
-            terrain->texture[0] = "terrain_d";
-            terrain->texture[1] = "terrain_h";
-            terrain->constants.position = Vector3(0.f, 0.f, 0.f);
-            terrain->constants.world_matrix = Matrix::CreateTranslation(terrain->constants.position);
-            terrain->constants.material.diffuse_albedo = Vector4(1.f, 1.f, 1.f, 1.f);;
-            terrain->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
-            terrain->constants.material.roughness = 1.f;
-            renderees.emplace_back(terrain);
+//            auto terrain = std::make_shared<fuse::directx::renderee>();
+//            terrain->name = "terrain";
+//            terrain->type = fuse::directx::renderee_type::terrain;
+//            terrain->geometry = "terrain";
+//            terrain->texture[0] = "terrain_d";
+//            terrain->texture[1] = "terrain_h";
+//            terrain->constants.position = Vector3(0.f, 0.f, 0.f);
+//            terrain->constants.world_matrix = Matrix::CreateTranslation(terrain->constants.position);
+//            terrain->constants.material.diffuse_albedo = Vector4(1.f, 1.f, 1.f, 1.f);;
+//            terrain->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+//            terrain->constants.material.roughness = 1.f;
+//            renderees.emplace_back(terrain);
         }
 
         dx12.init_renderees(renderees);

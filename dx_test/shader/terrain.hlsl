@@ -6,7 +6,7 @@
 #define TESS_MAX 3.f
 #define TESS_MIN 1.f
 #define DELTA_FOR_NORMAL 0.01f
-#define HEIGHT_CONST 20.f
+#define HEIGHT_CONST 80.f
 
 Texture2D tex_diffuse : register(t0);
 Texture2D tex_height : register(t1);
@@ -110,23 +110,28 @@ DS_OUT DS(CHS_OUT patch, float3 location : SV_DomainLocation, const OutputPatch<
 
     position.y = height(input, location.x, location.y, location.z);
 
-    float4 delta0 = pos(input, location.x + DELTA_FOR_NORMAL, location.y - DELTA_FOR_NORMAL, location.z);
-    delta0 = mul(delta0, w);
-    delta0.y = height(input, location.x + DELTA_FOR_NORMAL, location.y - DELTA_FOR_NORMAL, location.z);
-    float4 delta1 = pos(input, location.x - DELTA_FOR_NORMAL, location.y + DELTA_FOR_NORMAL, location.z);
-    delta1 = mul(delta1, w);
-    delta1.y = height(input, location.x - DELTA_FOR_NORMAL, location.y + DELTA_FOR_NORMAL, location.z);
-    float3 v0 = (float3)(delta1 - delta0);
+    // float4 delta0 = pos(input, location.x + DELTA_FOR_NORMAL, location.y - DELTA_FOR_NORMAL, location.z);
+    // delta0 = mul(delta0, w);
+    // delta0.y = height(input, location.x + DELTA_FOR_NORMAL, location.y - DELTA_FOR_NORMAL, location.z);
+    // float4 delta1 = pos(input, location.x - DELTA_FOR_NORMAL, location.y + DELTA_FOR_NORMAL, location.z);
+    // delta1 = mul(delta1, w);
+    // delta1.y = height(input, location.x - DELTA_FOR_NORMAL, location.y + DELTA_FOR_NORMAL, location.z);
+    // float3 v0 = (float3)(delta1 - delta0);
+    //
+    // float4 delta2 = pos(input, location.x + DELTA_FOR_NORMAL, location.y, location.z - DELTA_FOR_NORMAL);
+    // delta2 = mul(delta2, w);
+    // delta2.y = height(input, location.x + DELTA_FOR_NORMAL, location.y, location.z - DELTA_FOR_NORMAL);
+    // float4 delta3 = pos(input, location.x - DELTA_FOR_NORMAL, location.y, location.z + DELTA_FOR_NORMAL);
+    // delta3 = mul(delta3, w);
+    // delta3.y = height(input, location.x - DELTA_FOR_NORMAL, location.y, location.z + DELTA_FOR_NORMAL);
+    // float3 v1 = (float3)(delta3 - delta2);
+    float3 v1 = float3(0.f, 0.f, DELTA_FOR_NORMAL * 2);
+    v1.y = tex_height.SampleLevel(sam_lw, uv - float2(0.f,DELTA_FOR_NORMAL), 0).x - tex_height.SampleLevel(sam_lw, uv + float2(0.f,DELTA_FOR_NORMAL), 0).x;
 
-    float4 delta2 = pos(input, location.x + DELTA_FOR_NORMAL, location.y, location.z - DELTA_FOR_NORMAL);
-    delta2 = mul(delta2, w);
-    delta2.y = height(input, location.x + DELTA_FOR_NORMAL, location.y, location.z - DELTA_FOR_NORMAL);
-    float4 delta3 = pos(input, location.x - DELTA_FOR_NORMAL, location.y, location.z + DELTA_FOR_NORMAL);
-    delta3 = mul(delta3, w);
-    delta3.y = height(input, location.x - DELTA_FOR_NORMAL, location.y, location.z + DELTA_FOR_NORMAL);
-    float3 v1 = (float3)(delta3 - delta2);
+    float3 v2 = float3(DELTA_FOR_NORMAL * 2, 0.f, 0.f);
+    v2.y = tex_height.SampleLevel(sam_lw, uv + float2(DELTA_FOR_NORMAL, 0.f), 0).x - tex_height.SampleLevel(sam_lw, uv - float2(DELTA_FOR_NORMAL, 0.f), 0).x;
     
-    float3 normal = cross(v0, v1);
+    float3 normal = cross(v1, v2);
     normal = normalize(normal);
 
     float4x4 wvp = mul(w, vp);
@@ -140,13 +145,14 @@ DS_OUT DS(CHS_OUT patch, float3 location : SV_DomainLocation, const OutputPatch<
 
 float4 PS(DS_OUT input) :SV_Target
 {
-    float4 color = tex_diffuse.Sample(sam_aw, input.uv);
+    float4 diffuse_albedo = tex_diffuse.Sample(sam_aw, input.uv) * mat.diffuse_albedo;
     input.normal = normalize(input.normal);
     
+    material new_mat = {diffuse_albedo, mat.fresnel_r0, mat.roughness};
     float3 to_eye = normalize(camera_pos - input.pos_w.xyz);
-    float4 light_color = calc_light(lights, active_light_counts, mat, input.pos_w.xyz, input.normal, to_eye);
-    color *= light_color;
-    color.w *= mat.diffuse_albedo.w;
+    float4 light_color = calc_light(lights, active_light_counts, new_mat, input.pos_w.xyz, input.normal, to_eye);
+    float4 color = light_color;
+    color.w = diffuse_albedo.w;
 
     return color;
 }

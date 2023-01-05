@@ -53,27 +53,42 @@ float3 directional_light(light l, material mat, float3 normal, float3 to_eye){
 float3 point_light(light l, material mat, float3 pos, float3 normal, float3 to_eye){
     float3 light_v = l.position - pos;
     float distance = length(light_v);
+    float3 ret;
 
-    if(distance > l.fo_end) return float3(0.f, 0.f, 0.f);
-    light_v /= distance;
-    float3 light_color = l.color * max(dot(light_v, normal), 0.0f);
-    light_color *= attenuation_linear(distance, l.fo_start, l.fo_end);
+    if(distance > l.fo_end)
+    {
+        ret = float3(0.f, 0.f, 0.f);
+    } else
+    {
+        light_v /= distance;
+        float3 light_color = l.color * max(dot(light_v, normal), 0.0f);
+        light_color *= attenuation_linear(distance, l.fo_start, l.fo_end);
+        ret = blinn_phong(light_color, light_v, normal, to_eye, mat);
+    }
 
-    return blinn_phong(light_color, light_v, normal, to_eye, mat);
+    return ret;
 }
 
 float3 spot_light(light l, material mat, float3 pos, float3 normal, float3 to_eye){
     float3 light_v = l.position - pos;
     float distance = length(light_v);
+    float3 ret;
 
-    if(distance > l.fo_end) return float3(0.f, 0.f, 0.f);
-    light_v /= distance;
-    float3 light_color = l.color * max(dot(light_v, normal), 0.0f);
-    light_color *= attenuation_linear(distance, l.fo_start, l.fo_end);
+    if(distance > l.fo_end)
+    {
+        ret = float3(0.f, 0.f, 0.f);
+    } else
+    {
+        light_v /= distance;
+        float3 light_color = l.color * max(dot(light_v, normal), 0.0f);
+        light_color *= attenuation_linear(distance, l.fo_start, l.fo_end);
 
-    light_color *= pow(max(dot(-light_v, l.direction), 0.0f), l.spot_pow);
+        light_color *= pow(max(dot(-light_v, l.direction), 0.0f), l.spot_pow);
 
-    return blinn_phong(light_color, light_v, normal, to_eye, mat);
+        ret = blinn_phong(light_color, light_v, normal, to_eye, mat);
+    }
+
+    return ret;
 }
 
 float4 calc_light(light lights[LIGHT_COUNT], int active_cnt, material mat, float3 pos, float3 normal, float3 to_eye){

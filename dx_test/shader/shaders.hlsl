@@ -41,18 +41,19 @@ VS_OUT VS_Main(VS_IN input)
 
 float4 PS_Main(VS_OUT input) : SV_Target
 {
-    float4 color = tex.Sample(sam_aw, input.uv);
-    clip(color.w * mat.diffuse_albedo.w - 0.1f);
+    float4 diffuse_albedo = tex.Sample(sam_aw, input.uv) * mat.diffuse_albedo;
+    clip(diffuse_albedo.w * mat.diffuse_albedo.w - 0.1f);
 
 #ifdef SHADOW
-    color = float4(0.f, 0.f, 0.f, 0.5f);
+    float4 color = float4(0.f, 0.f, 0.f, 0.5f);
 #else
     input.normal = normalize(input.normal);
 
+    material new_mat = {diffuse_albedo, mat.fresnel_r0, mat.roughness};
     float3 to_eye = normalize(camera_pos - input.pos_w.xyz);
-    float4 light_color = calc_light(lights, active_light_counts, mat, input.pos_w.xyz, input.normal, to_eye);
-    color *= light_color;
-    color.w *= mat.diffuse_albedo.w;
+    float4 light_color = calc_light(lights, active_light_counts, new_mat, input.pos_w.xyz, input.normal, to_eye);
+    float4 color = light_color;
+    color.w = diffuse_albedo.w;
 #endif
 
     return color;
