@@ -82,7 +82,7 @@ float4 PS_Main(GS_OUT input):SV_Target
 {
     float3 uvw = float3(input.uv, input.id % 3);
     float4 diffuse_albedo = tex_arr.Sample(sam_aw, uvw) * materials[obj_pad0].diffuse_albedo;
-    clip(diffuse_albedo.w * mat.diffuse_albedo.w - 0.1f);
+    clip(diffuse_albedo.w * materials[obj_pad0].diffuse_albedo.w - 0.1f);
 
 #ifdef SHADOW
     float4 color = float4(0.f, 0.f, 0.f, 0.5f);

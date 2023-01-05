@@ -24,7 +24,6 @@ cbuffer object_const :register(b3) {
     float3 obj_position;
     int obj_pad0;
     row_major float4x4 w;
-    material mat;
 };
 
 StructuredBuffer<material> materials : register(t0, space1);

@@ -13,7 +13,6 @@ Input input;
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 std::vector<fuse::directx::geometry<fuse::directx::vertex>> create_geometries();
-std::vector<fuse::directx::object_constant> create_obj_const();
 std::vector<fuse::directx::render_info>
 create_render_info(
         const std::vector<fuse::directx::geometry<fuse::directx::vertex>> &,
@@ -63,10 +62,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
     try {
         fuse::directx::directx_12 dx12;
         auto geo = create_geometries();
-        auto consts = create_obj_const();
         auto li = create_light_info();
         camera camera;
         camera.transform.position.z = -2.f;
+        camera.transform.position.y = 5.f;
 
         dx12.init({hwnd, 1920, 1080, true});
         dx12.load_texture("kyaru", L"resource\\kyaru.png");
@@ -95,13 +94,17 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.init_geometries<fuse::directx::vertex>(geo);
         dx12.init_geometries<fuse::directx::vertex_billboard>(geo1);
 
-        dx12.load_material({"default", "metal", "rough"},
+        dx12.load_material({"default", "metal", "rough", "glass", "terrain"},
                            {{Vector4(.5f, .5f, .5f, 1.f),
-                             Vector3(0.5f, 0.5f, 0.5f), .5f},
+                                    Vector3(0.5f, 0.5f, 0.5f), .5f},
                             {Vector4(.5f, .5f, .5f, 1.f),
-                             Vector3(0.9f, 0.9f, 0.9f), .1f},
+                                    Vector3(0.9f, 0.9f, 0.9f), .1f},
                             {Vector4(.5f, .5f, .5f, 1.f),
-                             Vector3(0.1f, 0.1f, 0.1f), .9f}});
+                                    Vector3(0.1f, 0.1f, 0.1f), .9f},
+                            {Vector4(.5f, .5f, .5f, .5f),
+                                    Vector3(0.5f, 0.5f, 0.5f), .1f},
+                            {Vector4(.5f, .5f, .5f, 1.f),
+                                    Vector3(0.001f, 0.001, 0.001f), .99f}});
 
         std::vector<std::shared_ptr<fuse::directx::renderee>> renderees;
         {
@@ -110,15 +113,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             skull0->type = fuse::directx::renderee_type::opaque;
             skull0->geometry = "skull";
             skull0->texture[0] = "white";
-            skull0->material = "metal";
+            skull0->material = "default";
             skull0->constants.position = Vector3(-5.f, 1.f, 3.f);
             skull0->constants.world_matrix = Matrix::CreateTranslation(
                     skull0->constants.position);
-            skull0->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f,
-                                                                1.0f);;
-            skull0->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f,
-                                                            0.05f);
-            skull0->constants.material.roughness = 0.9f;
             renderees.emplace_back(skull0);
 
             auto skull1 = std::make_shared<fuse::directx::renderee>();
@@ -130,11 +128,6 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             skull1->constants.position = Vector3(-12.f, 1.f, 3.f);
             skull1->constants.world_matrix = Matrix::CreateTranslation(
                     skull1->constants.position);
-            skull1->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f,
-                                                                1.0f);;
-            skull1->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f,
-                                                            0.05f);
-            skull1->constants.material.roughness = 0.1f;
             renderees.emplace_back(skull1);
 
             auto skull2 = std::make_shared<fuse::directx::renderee>();
@@ -142,14 +135,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             skull2->type = fuse::directx::renderee_type::opaque;
             skull2->geometry = "skull";
             skull2->texture[0] = "white";
+            skull2->material = "metal";
             skull2->constants.position = Vector3(-19.f, 1.f, 3.f);
             skull2->constants.world_matrix = Matrix::CreateTranslation(
                     skull2->constants.position);
-            skull2->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f,
-                                                                1.0f);;
-            skull2->constants.material.fresnel_r0 = Vector3(0.95f, 0.93f,
-                                                            0.88f);
-            skull2->constants.material.roughness = 0.1f;
             renderees.emplace_back(skull2);
 
             auto skull3 = std::make_shared<fuse::directx::renderee>();
@@ -157,13 +146,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             skull3->type = fuse::directx::renderee_type::translucent;
             skull3->geometry = "skull";
             skull3->texture[0] = "white";
+            skull3->material = "glass";
             skull3->constants.position = Vector3(-26.f, 1.f, 3.f);
             skull3->constants.world_matrix = Matrix::CreateTranslation(
                     skull3->constants.position);
-            skull3->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f,
-                                                                .5f);;
-            skull3->constants.material.fresnel_r0 = Vector3(0.9f, 0.9f, 0.9f);
-            skull3->constants.material.roughness = 0.1f;
             renderees.emplace_back(skull3);
 
             auto wire = std::make_shared<fuse::directx::renderee>();
@@ -171,13 +157,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             wire->type = fuse::directx::renderee_type::translucent;
             wire->geometry = "cube";
             wire->texture[0] = "wire";
-            wire->constants.position = Vector3(0.f, 1.5f, 3.f);
+            wire->material = "rough";
+            wire->constants.position = Vector3(0.f, 6.f, 3.f);
             wire->constants.world_matrix = Matrix::CreateTranslation(
                     wire->constants.position);
-            wire->constants.material.diffuse_albedo = Vector4(1.f, 1.f, 1.f,
-                                                              1.0f);;
-            wire->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
-            wire->constants.material.roughness = 0.5f;
             renderees.emplace_back(wire);
 
             auto cube0 = std::make_shared<fuse::directx::renderee>();
@@ -185,13 +168,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             cube0->type = fuse::directx::renderee_type::translucent;
             cube0->geometry = "cube";
             cube0->texture[0] = "white";
-            cube0->constants.position = Vector3(3.f, 1.5f, 3.f);
+            cube0->material = "glass";
+            cube0->constants.position = Vector3(3.f, 6.f, 3.f);
             cube0->constants.world_matrix = Matrix::CreateTranslation(
                     cube0->constants.position);
-            cube0->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f,
-                                                               .5f);;
-            cube0->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
-            cube0->constants.material.roughness = 0.5f;
             renderees.emplace_back(cube0);
 
             auto tree_billboard = std::make_shared<fuse::directx::renderee>();
@@ -199,18 +179,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             tree_billboard->type = fuse::directx::renderee_type::billboard;
             tree_billboard->geometry = "billboard_0";
             tree_billboard->texture[0] = "tree_arr";
-            tree_billboard->material = "metal";
+            tree_billboard->material = "rough";
             tree_billboard->constants.position = Vector3(0.f, 6.f, 10.f);
             tree_billboard->constants.world_matrix = Matrix::CreateTranslation(
                     tree_billboard->constants.position);
-            tree_billboard->constants.material.diffuse_albedo = Vector4(.5f,
-                                                                        .5f,
-                                                                        .5f,
-                                                                        1.f);;
-            tree_billboard->constants.material.fresnel_r0 = Vector3(0.05f,
-                                                                    0.05f,
-                                                                    0.05f);
-            tree_billboard->constants.material.roughness = 1.f;
             renderees.emplace_back(tree_billboard);
 
             auto terrain = std::make_shared<fuse::directx::renderee>();
@@ -219,14 +191,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             terrain->geometry = "terrain";
             terrain->texture[0] = "terrain_d";
             terrain->texture[1] = "terrain_h";
+            terrain->material = "terrain";
             terrain->constants.position = Vector3(0.f, 0.f, 0.f);
             terrain->constants.world_matrix = Matrix::CreateTranslation(
                     terrain->constants.position);
-            terrain->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f,
-                                                                 .5f);;
-            terrain->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f,
-                                                             0.05f);
-            terrain->constants.material.roughness = .99f;
             renderees.emplace_back(terrain);
         }
 
@@ -309,61 +277,6 @@ create_geometries() {
     ret.emplace_back(terrain);
 
     return std::move(ret);
-}
-
-std::vector<fuse::directx::object_constant> create_obj_const() {
-    std::vector<fuse::directx::object_constant> consts(7);
-
-    DirectX::SimpleMath::Vector3 tmp = {1.f, 1.5f, 3.f};
-    auto t0 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp);
-    consts[0].world_matrix = t0;
-    consts[0].material.diffuse_albedo = Vector4(0.5f, 0.5f, 0.5f, 5.f);
-    consts[0].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
-    consts[0].material.roughness = 0.5f;
-
-    DirectX::SimpleMath::Vector3 tmp2 = {-1.f, 0.5f, 3.f};
-    auto t1 = DirectX::SimpleMath::Matrix::CreateTranslation(tmp2);
-    consts[1].world_matrix = t1;
-    consts[1].material.diffuse_albedo = Vector4(0.1f, 0.1f, 0.1f, 1.f);;
-    consts[1].material.fresnel_r0 = Vector3(0.95f, 0.93f, 0.88f);
-    consts[1].material.roughness = 0.1f;
-
-    transform t2;
-    t2.position.x = -50;
-    t2.position.z = -50;
-    t2.rotation.x = DirectX::XM_PI / 2;
-    consts[2].world_matrix = t2.rotation_matrix() * t2.translation_matrix();
-    consts[2].material.diffuse_albedo = Vector4(0.8f, 0.8f, 0.8f, 1.f);;
-    consts[2].material.fresnel_r0 = Vector3(0.01f, 0.01f, 0.01f);
-    consts[2].material.roughness = 0.9f;
-
-    DirectX::SimpleMath::Vector3 mirror = {-1.5f, 0.f, 7.f};
-    consts[3].world_matrix = DirectX::SimpleMath::Matrix::CreateTranslation(
-            mirror);
-    consts[3].material.diffuse_albedo = Vector4(0.5f, 0.5f, 0.5f, 0.3f);;
-    consts[3].material.fresnel_r0 = Vector3(0.95f, 0.95f, 0.95f);
-    consts[3].material.roughness = 0.1f;
-
-
-    DirectX::SimpleMath::Vector3 skull = {-5.f, 0.f, 3.f};
-    consts[4].world_matrix = Matrix::CreateTranslation(skull);
-    consts[4].material.diffuse_albedo = Vector4(1.f, 1.f, 1.0f, 1.0f);;
-    consts[4].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
-    consts[4].material.roughness = 0.3f;
-
-    consts[5].position = Vector3(0.f, 0.f, 10.f);
-    consts[5].world_matrix = Matrix::CreateTranslation(consts[5].position);
-    consts[5].material.diffuse_albedo = Vector4(1.f, 1.f, 1.0f, 1.0f);;
-    consts[5].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
-    consts[5].material.roughness = 1.f;
-
-    consts[6].position = Vector3(3.f, 0.f, 10.f);
-    consts[6].world_matrix = Matrix::CreateTranslation(consts[6].position);
-    consts[6].material.diffuse_albedo = Vector4(1.f, 1.f, 1.0f, 1.0f);;
-    consts[6].material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
-    consts[6].material.roughness = 1.f;
-
-    return std::move(consts);
 }
 
 std::vector<fuse::directx::render_info>

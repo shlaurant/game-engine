@@ -50,7 +50,6 @@ namespace fuse::directx {
         DirectX::SimpleMath::Vector3 position;
         int mat_id;
         DirectX::SimpleMath::Matrix world_matrix;
-        material material;
     };
 
     struct camera {
