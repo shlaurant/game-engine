@@ -76,13 +76,6 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.load_texture("tree_arr",L"resource\\treeArray2.dds");
         dx12.load_texture("terrain_d",L"resource\\terrain_d.png");
         dx12.load_texture("terrain_h",L"resource\\terrain_h.png");
-//        dx12.bind_texture(0, "kyaru", 0);
-//        dx12.bind_texture(1, "wire", 0);
-//        dx12.bind_texture(2, "ground", 0);
-//        dx12.bind_texture(3, "white", 0);
-//        dx12.bind_texture(4, "white", 0);
-//        dx12.bind_texture(5, "tree_arr", 0);
-//        dx12.bind_texture(6, "tree_arr", 0);
 
 
         std::vector<fuse::directx::geometry<fuse::directx::vertex_billboard>> geo1;
@@ -100,18 +93,6 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         dx12.init_geometries<fuse::directx::vertex>(geo);
         dx12.init_geometries<fuse::directx::vertex_billboard>(geo1);
 
-//        auto infos = create_render_info(geo, 0);
-//        fuse::directx::render_info binfo{true, 5, (int) geo1[0].indices.size(),
-//                                         (int) geo1[0].index_offset,
-//                                         (int) geo1[0].vertex_offset, false,
-//                                         false, false, Vector4::Zero, false};
-//        fuse::directx::render_info binfo1{true, 6, (int) geo1[1].indices.size(),
-//                                         (int) geo1[1].index_offset,
-//                                         (int) geo1[1].vertex_offset, false,
-//                                         false, false, Vector4::Zero, false};
-//
-//        infos.emplace_back(binfo);
-//        infos.emplace_back(binfo1);
         std::vector<std::shared_ptr<fuse::directx::renderee>> renderees;
         {
             auto skull0 = std::make_shared<fuse::directx::renderee>();
@@ -198,18 +179,18 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             tree_billboard->constants.material.roughness = 1.f;
             renderees.emplace_back(tree_billboard);
 
-//            auto terrain = std::make_shared<fuse::directx::renderee>();
-//            terrain->name = "terrain";
-//            terrain->type = fuse::directx::renderee_type::terrain;
-//            terrain->geometry = "terrain";
-//            terrain->texture[0] = "terrain_d";
-//            terrain->texture[1] = "terrain_h";
-//            terrain->constants.position = Vector3(0.f, 0.f, 0.f);
-//            terrain->constants.world_matrix = Matrix::CreateTranslation(terrain->constants.position);
-//            terrain->constants.material.diffuse_albedo = Vector4(1.f, 1.f, 1.f, 1.f);;
-//            terrain->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
-//            terrain->constants.material.roughness = 1.f;
-//            renderees.emplace_back(terrain);
+            auto terrain = std::make_shared<fuse::directx::renderee>();
+            terrain->name = "terrain";
+            terrain->type = fuse::directx::renderee_type::terrain;
+            terrain->geometry = "terrain";
+            terrain->texture[0] = "terrain_d";
+            terrain->texture[1] = "terrain_h";
+            terrain->constants.position = Vector3(0.f, 0.f, 0.f);
+            terrain->constants.world_matrix = Matrix::CreateTranslation(terrain->constants.position);
+            terrain->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f, .5f);;
+            terrain->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+            terrain->constants.material.roughness = 1.f;
+            renderees.emplace_back(terrain);
         }
 
         dx12.init_renderees(renderees);
@@ -226,10 +207,8 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                 c.position = camera.transform.position;
                 dx12.update_camera(c);
                 dx12.update_lights(li);
-//                dx12.update_obj_constants(consts);
                 dx12.render_begin();
                 dx12.render();
-//                dx12.render(infos);
                 dx12.render_end();
             }
         }
@@ -398,7 +377,7 @@ fuse::directx::light_info create_light_info() {
         li.lights[0].spot_pow;
 
         li.lights[1].type = 3;
-        li.lights[1].color = DirectX::SimpleMath::Vector3(.2f, .2f, .2f);
+        li.lights[1].color = DirectX::SimpleMath::Vector3(.3f, .3f, .3f);
         li.lights[1].fo_start;
         li.lights[1].direction;
         li.lights[1].fo_end;

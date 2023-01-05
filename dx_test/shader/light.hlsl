@@ -33,7 +33,7 @@ float3 fresnel_shlick(float3 r0, float3 normal, float3 light){
 
 float3 blinn_phong(float3 light, float3 light_v, float3 normal, float3 to_eye,
  material mat){
-    const float m = 256.0f * (1.0 - mat.roughness);
+    const float m = 256.0f * saturate(1.0 - mat.roughness);
     float3 half_vec = normalize(to_eye + light_v);
 
     float roughness_factor = (m+8.0f) * pow(max(dot(half_vec, normal), 0.0f), m);
@@ -99,7 +99,7 @@ float4 calc_light(light lights[LIGHT_COUNT], int active_cnt, material mat, float
         if(l.type == 0) ret += directional_light(l, mat, normal, to_eye);
         if(l.type == 1) ret += point_light(l, mat, pos, normal, to_eye);
         if(l.type == 2) ret += spot_light(l, mat, pos, normal, to_eye);
-        if(l.type == 3) ret += l.color;
+        if(l.type == 3) ret += l.color * mat.diffuse_albedo.rgb;
     }
 
     return float4(ret, 1.0f);
