@@ -22,7 +22,7 @@ cbuffer light_info : register(b2) {
 
 cbuffer object_const :register(b3) {
     float3 obj_position;
-    float obj_pad0;
+    int obj_pad0;
     row_major float4x4 w;
     material mat;
 };

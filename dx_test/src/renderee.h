@@ -25,7 +25,6 @@ namespace fuse::directx {
     private:
         int id;
         geo_info geo;
-        int material_id;
 
         friend class directx_12;
     };

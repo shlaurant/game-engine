@@ -84,10 +84,10 @@ namespace fuse::directx {
                         bind_texture(ptr->id, ptr->texture[i], i);
                 }
 
+                ptr->constants.mat_id = _mat_ids[ptr->material];
+
                 update_const_buffer(_obj_const_buffer, &(ptr->constants),
                                     ptr->id);
-
-                ptr->material_id = _mat_ids[ptr->material];
             }
         }
     }
