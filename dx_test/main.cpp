@@ -114,6 +114,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             skull0->geometry = "skull";
             skull0->texture[0] = "white";
             skull0->material = "default";
+            skull0->tr.scale = Vector3(.5f, .5f, .5f);
             skull0->tr.position = Vector3(-5.f, 1.f, 3.f);
             renderees.emplace_back(skull0);
 
