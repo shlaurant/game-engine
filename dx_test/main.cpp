@@ -114,9 +114,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             skull0->geometry = "skull";
             skull0->texture[0] = "white";
             skull0->material = "default";
-            skull0->constants.position = Vector3(-5.f, 1.f, 3.f);
-            skull0->constants.world_matrix = Matrix::CreateTranslation(
-                    skull0->constants.position);
+            skull0->tr.position = Vector3(-5.f, 1.f, 3.f);
             renderees.emplace_back(skull0);
 
             auto skull1 = std::make_shared<fuse::directx::renderee>();
@@ -125,9 +123,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             skull1->geometry = "skull";
             skull1->texture[0] = "white";
             skull1->material = "rough";
-            skull1->constants.position = Vector3(-12.f, 1.f, 3.f);
-            skull1->constants.world_matrix = Matrix::CreateTranslation(
-                    skull1->constants.position);
+            skull1->tr.position = Vector3(-12.f, 1.f, 3.f);
             renderees.emplace_back(skull1);
 
             auto skull2 = std::make_shared<fuse::directx::renderee>();
@@ -136,9 +132,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             skull2->geometry = "skull";
             skull2->texture[0] = "white";
             skull2->material = "metal";
-            skull2->constants.position = Vector3(-19.f, 1.f, 3.f);
-            skull2->constants.world_matrix = Matrix::CreateTranslation(
-                    skull2->constants.position);
+            skull2->tr.position = Vector3(-19.f, 1.f, 3.f);
             renderees.emplace_back(skull2);
 
             auto skull3 = std::make_shared<fuse::directx::renderee>();
@@ -147,9 +141,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             skull3->geometry = "skull";
             skull3->texture[0] = "white";
             skull3->material = "glass";
-            skull3->constants.position = Vector3(-26.f, 1.f, 3.f);
-            skull3->constants.world_matrix = Matrix::CreateTranslation(
-                    skull3->constants.position);
+            skull3->tr.position = Vector3(-26.f, 1.f, 3.f);
             renderees.emplace_back(skull3);
 
             auto wire = std::make_shared<fuse::directx::renderee>();
@@ -158,9 +150,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             wire->geometry = "cube";
             wire->texture[0] = "wire";
             wire->material = "rough";
-            wire->constants.position = Vector3(0.f, 6.f, 3.f);
-            wire->constants.world_matrix = Matrix::CreateTranslation(
-                    wire->constants.position);
+            wire->tr.position = Vector3(0.f, 6.f, 3.f);
             renderees.emplace_back(wire);
 
             auto cube0 = std::make_shared<fuse::directx::renderee>();
@@ -169,9 +159,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             cube0->geometry = "cube";
             cube0->texture[0] = "white";
             cube0->material = "glass";
-            cube0->constants.position = Vector3(3.f, 6.f, 3.f);
-            cube0->constants.world_matrix = Matrix::CreateTranslation(
-                    cube0->constants.position);
+            cube0->tr.position = Vector3(3.f, 6.f, 3.f);
             renderees.emplace_back(cube0);
 
             auto tree_billboard = std::make_shared<fuse::directx::renderee>();
@@ -180,9 +168,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             tree_billboard->geometry = "billboard_0";
             tree_billboard->texture[0] = "tree_arr";
             tree_billboard->material = "rough";
-            tree_billboard->constants.position = Vector3(0.f, 6.f, 10.f);
-            tree_billboard->constants.world_matrix = Matrix::CreateTranslation(
-                    tree_billboard->constants.position);
+            tree_billboard->tr.position = Vector3(0.f, 6.f, 10.f);
             renderees.emplace_back(tree_billboard);
 
             auto terrain = std::make_shared<fuse::directx::renderee>();
@@ -192,9 +178,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             terrain->texture[0] = "terrain_d";
             terrain->texture[1] = "terrain_h";
             terrain->material = "terrain";
-            terrain->constants.position = Vector3(0.f, 0.f, 0.f);
-            terrain->constants.world_matrix = Matrix::CreateTranslation(
-                    terrain->constants.position);
+            terrain->tr.position = Vector3(0.f, 0.f, 0.f);
             renderees.emplace_back(terrain);
         }
 

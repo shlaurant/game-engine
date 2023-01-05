@@ -3,6 +3,20 @@
 #include "SimpleMath.h"
 
 namespace fuse::directx {
+    struct transform {
+        DirectX::SimpleMath::Vector3 position = DirectX::SimpleMath::Vector3::Zero;
+        DirectX::SimpleMath::Vector3 rotation = DirectX::SimpleMath::Vector3::Zero;
+        DirectX::SimpleMath::Vector3 scale = DirectX::SimpleMath::Vector3::One;
+
+        inline DirectX::SimpleMath::Matrix world_matrix() {
+            return DirectX::SimpleMath::Matrix::CreateScale(scale) *
+                   DirectX::SimpleMath::Matrix::CreateRotationX(rotation.x) *
+                   DirectX::SimpleMath::Matrix::CreateRotationY(rotation.y) *
+                   DirectX::SimpleMath::Matrix::CreateRotationY(rotation.z) *
+                   DirectX::SimpleMath::Matrix::CreateTranslation(position);
+        }
+    };
+
     struct render_info {
         bool is_billboard;
         int object_index;
@@ -28,7 +42,7 @@ namespace fuse::directx {
         DirectX::SimpleMath::Vector2 size;
     };
 
-    template <typename T>
+    template<typename T>
     struct geometry {
         std::string name;
         std::vector<T> vertices;

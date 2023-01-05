@@ -85,6 +85,8 @@ namespace fuse::directx {
                 }
 
                 ptr->constants.mat_id = _mat_ids[ptr->material];
+                ptr->constants.position = ptr->tr.position;
+                ptr->constants.world_matrix = ptr->tr.world_matrix();
 
                 update_const_buffer(_obj_const_buffer, &(ptr->constants),
                                     ptr->id);

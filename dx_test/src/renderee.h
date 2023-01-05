@@ -21,10 +21,11 @@ namespace fuse::directx {
         std::string geometry;
         std::string texture[2] = {"", ""};
         std::string material;
-        object_constant constants;
+        transform tr;
     private:
         int id;
         geo_info geo;
+        object_constant constants;
 
         friend class directx_12;
     };
