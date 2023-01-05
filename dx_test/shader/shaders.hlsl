@@ -13,6 +13,7 @@ struct VS_IN
 struct VS_OUT
 {
     float4 pos : SV_Position;
+    float4 pos_w : POSITION;
     float2 uv : TEXCOORD;
     float3 normal : NORMAL;
 };
@@ -31,6 +32,7 @@ VS_OUT VS_Main(VS_IN input)
 
     float4x4 wvp = mul(world, vp);
     output.pos = mul(float4(input.pos, 1.0f), wvp);
+    output.pos_w = output.pos;
     output.uv = input.uv;
     output.normal = mul(input.normal, (float3x3)world);
 
@@ -47,8 +49,8 @@ float4 PS_Main(VS_OUT input) : SV_Target
 #else
     input.normal = normalize(input.normal);
 
-    float3 to_eye = normalize(camera_pos - input.pos.xyz);
-    float4 light_color = calc_light(lights, active_light_counts, mat, input.pos.xyz, input.normal, to_eye);
+    float3 to_eye = normalize(camera_pos - input.pos_w.xyz);
+    float4 light_color = calc_light(lights, active_light_counts, mat, input.pos_w.xyz, input.normal, to_eye);
     color *= light_color;
     color.w *= mat.diffuse_albedo.w;
 #endif

@@ -5,7 +5,7 @@
 #define DIST_MIN 5.f
 #define TESS_MAX 3.f
 #define TESS_MIN 1.f
-#define DELTA_FOR_NORMAL 0.1f
+#define DELTA_FOR_NORMAL 0.01f
 #define HEIGHT_CONST 20.f
 
 Texture2D tex_diffuse : register(t0);
@@ -80,6 +80,7 @@ CPHS_OUT CPHS(InputPatch<VS_OUT, 3> input, uint i : SV_OutputControlPointID, uin
 
 struct DS_OUT {
     float4 pos:SV_Position;
+    float4 pos_w:POSITION;
     float2 uv:TEXCOORD;
     float3 normal:NORMAL;
 };
@@ -109,24 +110,30 @@ DS_OUT DS(CHS_OUT patch, float3 location : SV_DomainLocation, const OutputPatch<
 
     position.y = height(input, location.x, location.y, location.z);
 
-    float4 delta0 = pos(input, location.x - DELTA_FOR_NORMAL, location.y + DELTA_FOR_NORMAL, location.z);
-    delta0.y = height(input, location.x - DELTA_FOR_NORMAL, location.y + DELTA_FOR_NORMAL, location.z);
-
+    float4 delta0 = pos(input, location.x + DELTA_FOR_NORMAL, location.y - DELTA_FOR_NORMAL, location.z);
+    delta0 = mul(delta0, w);
+    delta0.y = height(input, location.x + DELTA_FOR_NORMAL, location.y - DELTA_FOR_NORMAL, location.z);
     float4 delta1 = pos(input, location.x - DELTA_FOR_NORMAL, location.y + DELTA_FOR_NORMAL, location.z);
-    delta1.y = height(input, location.x - DELTA_FOR_NORMAL, location.y, location.z + DELTA_FOR_NORMAL);
+    delta1 = mul(delta1, w);
+    delta1.y = height(input, location.x - DELTA_FOR_NORMAL, location.y + DELTA_FOR_NORMAL, location.z);
+    float3 v0 = (float3)(delta1 - delta0);
+
+    float4 delta2 = pos(input, location.x + DELTA_FOR_NORMAL, location.y, location.z - DELTA_FOR_NORMAL);
+    delta2 = mul(delta2, w);
+    delta2.y = height(input, location.x + DELTA_FOR_NORMAL, location.y, location.z - DELTA_FOR_NORMAL);
+    float4 delta3 = pos(input, location.x - DELTA_FOR_NORMAL, location.y, location.z + DELTA_FOR_NORMAL);
+    delta3 = mul(delta3, w);
+    delta3.y = height(input, location.x - DELTA_FOR_NORMAL, location.y, location.z + DELTA_FOR_NORMAL);
+    float3 v1 = (float3)(delta3 - delta2);
     
-    float s = max(location.y - DELTA_FOR_NORMAL, 0.f);
-    float t = max(location.z - DELTA_FOR_NORMAL, 0.f);
-    float4 delta2 = input[0].pos * (1-s-t) + input[1].pos * s + input[2].pos * t;
-    delta2.y = height(input, 1-s-t, s, t);
-    
-    float3 normal = cross(delta1.xyz - delta0.xyz, delta2.xyz - delta0.xyz);
+    float3 normal = cross(v0, v1);
     normal = normalize(normal);
 
     float4x4 wvp = mul(w, vp);
     output.pos = mul(position, wvp);
+    output.pos_w = output.pos;
     output.uv = uv;
-    output.normal = mul(normal, (float3x3)wvp);
+    output.normal = normal;
     
     return output;
 }
@@ -134,12 +141,12 @@ DS_OUT DS(CHS_OUT patch, float3 location : SV_DomainLocation, const OutputPatch<
 float4 PS(DS_OUT input) :SV_Target
 {
     float4 color = tex_diffuse.Sample(sam_aw, input.uv);
-    // input.normal = normalize(input.normal);
-    //
-    // float3 to_eye = normalize(camera_pos - input.pos.xyz);
-    // float4 light_color = calc_light(lights, active_light_counts, mat, input.pos.xyz, input.normal, to_eye);
-    // color *= light_color;
-    // color.w *= mat.diffuse_albedo.w;
+    input.normal = normalize(input.normal);
+    
+    float3 to_eye = normalize(camera_pos - input.pos_w.xyz);
+    float4 light_color = calc_light(lights, active_light_counts, mat, input.pos_w.xyz, input.normal, to_eye);
+    color *= light_color;
+    color.w *= mat.diffuse_albedo.w;
 
     return color;
 }
