@@ -114,17 +114,53 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
 //        infos.emplace_back(binfo1);
         std::vector<std::shared_ptr<fuse::directx::renderee>> renderees;
         {
-            auto skull = std::make_shared<fuse::directx::renderee>();
-            skull->name = "skull";
-            skull->type = fuse::directx::renderee_type::opaque;
-            skull->geometry = "skull";
-            skull->texture[0] = "white";
-            skull->constants.position = Vector3(-5.f, 1.f, 3.f);
-            skull->constants.world_matrix = Matrix::CreateTranslation(skull->constants.position);
-            skull->constants.material.diffuse_albedo = Vector4(1.f, 1.f, 1.0f, 1.0f);;
-            skull->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
-            skull->constants.material.roughness = 0.3f;
-            renderees.emplace_back(skull);
+            auto skull0 = std::make_shared<fuse::directx::renderee>();
+            skull0->name = "skull0";
+            skull0->type = fuse::directx::renderee_type::opaque;
+            skull0->geometry = "skull";
+            skull0->texture[0] = "white";
+            skull0->constants.position = Vector3(-5.f, 1.f, 3.f);
+            skull0->constants.world_matrix = Matrix::CreateTranslation(skull0->constants.position);
+            skull0->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f, 1.0f);;
+            skull0->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+            skull0->constants.material.roughness = 0.9f;
+            renderees.emplace_back(skull0);
+
+            auto skull1 = std::make_shared<fuse::directx::renderee>();
+            skull1->name = "skull1";
+            skull1->type = fuse::directx::renderee_type::opaque;
+            skull1->geometry = "skull";
+            skull1->texture[0] = "white";
+            skull1->constants.position = Vector3(-12.f, 1.f, 3.f);
+            skull1->constants.world_matrix = Matrix::CreateTranslation(skull1->constants.position);
+            skull1->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f, 1.0f);;
+            skull1->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
+            skull1->constants.material.roughness = 0.1f;
+            renderees.emplace_back(skull1);
+
+            auto skull2 = std::make_shared<fuse::directx::renderee>();
+            skull2->name = "skull2";
+            skull2->type = fuse::directx::renderee_type::opaque;
+            skull2->geometry = "skull";
+            skull2->texture[0] = "white";
+            skull2->constants.position = Vector3(-19.f, 1.f, 3.f);
+            skull2->constants.world_matrix = Matrix::CreateTranslation(skull2->constants.position);
+            skull2->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f, 1.0f);;
+            skull2->constants.material.fresnel_r0 = Vector3(0.95f, 0.93f, 0.88f);
+            skull2->constants.material.roughness = 0.9f;
+            renderees.emplace_back(skull2);
+
+            auto skull3 = std::make_shared<fuse::directx::renderee>();
+            skull3->name = "skull3";
+            skull3->type = fuse::directx::renderee_type::translucent;
+            skull3->geometry = "skull";
+            skull3->texture[0] = "white";
+            skull3->constants.position = Vector3(-26.f, 1.f, 3.f);
+            skull3->constants.world_matrix = Matrix::CreateTranslation(skull3->constants.position);
+            skull3->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f, .5f);;
+            skull3->constants.material.fresnel_r0 = Vector3(0.9f, 0.9f, 0.9f);
+            skull3->constants.material.roughness = 0.1f;
+            renderees.emplace_back(skull3);
 
             auto wire = std::make_shared<fuse::directx::renderee>();
             wire->name = "wire";
