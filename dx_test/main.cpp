@@ -172,7 +172,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             tree_billboard->type = fuse::directx::renderee_type::billboard;
             tree_billboard->geometry = "billboard_0";
             tree_billboard->texture[0] = "tree_arr";
-            tree_billboard->constants.position = Vector3(0.f, 1.f, 10.f);
+            tree_billboard->constants.position = Vector3(0.f, 6.f, 10.f);
             tree_billboard->constants.world_matrix = Matrix::CreateTranslation(tree_billboard->constants.position);
             tree_billboard->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f, 1.f);;
             tree_billboard->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
@@ -189,7 +189,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
             terrain->constants.world_matrix = Matrix::CreateTranslation(terrain->constants.position);
             terrain->constants.material.diffuse_albedo = Vector4(.5f, .5f, .5f, .5f);;
             terrain->constants.material.fresnel_r0 = Vector3(0.05f, 0.05f, 0.05f);
-            terrain->constants.material.roughness = 1.f;
+            terrain->constants.material.roughness = .99f;
             renderees.emplace_back(terrain);
         }
 
@@ -377,7 +377,7 @@ fuse::directx::light_info create_light_info() {
         li.lights[0].spot_pow;
 
         li.lights[1].type = 3;
-        li.lights[1].color = DirectX::SimpleMath::Vector3(.3f, .3f, .3f);
+        li.lights[1].color = DirectX::SimpleMath::Vector3(.5f, .5f, .5f);
         li.lights[1].fo_start;
         li.lights[1].direction;
         li.lights[1].fo_end;
