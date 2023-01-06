@@ -16,6 +16,9 @@ std::vector<fuse::directx::geometry<fuse::directx::vertex>> create_geometries();
 fuse::directx::light_info create_light_info();
 
 std::vector<std::shared_ptr<fuse::directx::renderee>> build_renderees();
+void load_geometries(fuse::directx::directx_12 &dx12);
+void load_materials(fuse::directx::directx_12 &dx12);
+void load_textures(fuse::directx::directx_12 &dx12);
 int
 WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                 int nCmdShow) {
@@ -58,53 +61,17 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
     MSG msg = {};
     try {
         fuse::directx::directx_12 dx12;
-        auto geo = create_geometries();
+
+        dx12.init({hwnd, 1920, 1080, true});
         auto li = create_light_info();
+        load_geometries(dx12);
+        load_textures(dx12);
+        load_materials(dx12);
+        std::vector<std::shared_ptr<fuse::directx::renderee>> renderees = build_renderees();
+        dx12.init_renderees(renderees);
         camera camera;
         camera.transform.position.z = -2.f;
         camera.transform.position.y = 5.f;
-
-        dx12.init({hwnd, 1920, 1080, true});
-        dx12.load_texture("kyaru", L"resource\\kyaru.png");
-        dx12.load_texture("white", L"resource\\white.png");
-        dx12.load_texture("ground", L"resource\\ground_color.jpg");
-        dx12.load_texture("wire", L"resource\\WireFence.dds");
-        dx12.load_texture("tree_arr", L"resource\\treeArray2.dds");
-        dx12.load_texture("terrain_d", L"resource\\terrain_d.png");
-        dx12.load_texture("terrain_h", L"resource\\terrain_h.png");
-
-
-        std::vector<fuse::directx::geometry<fuse::directx::vertex_billboard>> geo1;
-        geo1.resize(2);
-        fuse::directx::vertex_billboard v{Vector3(0.0f, 0.0f, 0.f),
-                                          Vector2(1.f, 1.f)};
-        geo1[0].name = "billboard_0";
-        geo1[0].vertices.emplace_back(v);
-        geo1[0].indices.emplace_back(0);
-
-        fuse::directx::vertex_billboard v1{Vector3(0.0f, 0.0f, 0.f),
-                                           Vector2(1.f, 1.f)};
-        geo1[1].name = "billboard_1";
-        geo1[1].vertices.emplace_back(v1);
-        geo1[1].indices.emplace_back(0);
-
-        dx12.init_geometries<fuse::directx::vertex>(geo);
-        dx12.init_geometries<fuse::directx::vertex_billboard>(geo1);
-
-        dx12.load_material({"default", "metal", "rough", "glass", "terrain"},
-                           {{Vector4(.5f, .5f, .5f, 1.f),
-                                    Vector3(0.5f, 0.5f, 0.5f), .5f},
-                            {Vector4(.5f, .5f, .5f, 1.f),
-                                    Vector3(0.9f, 0.9f, 0.9f), .1f},
-                            {Vector4(.5f, .5f, .5f, 1.f),
-                                    Vector3(0.1f, 0.1f, 0.1f), .9f},
-                            {Vector4(.5f, .5f, .5f, .5f),
-                                    Vector3(0.5f, 0.5f, 0.5f), .1f},
-                            {Vector4(.5f, .5f, .5f, 1.f),
-                                    Vector3(0.001f, 0.001, 0.001f), .99f}});
-
-        std::vector<std::shared_ptr<fuse::directx::renderee>> renderees = build_renderees();
-        dx12.init_renderees(renderees);
 
         while (msg.message != WM_QUIT) {
             if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
@@ -128,6 +95,47 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
     }
 
     return 0;
+}
+void load_textures(fuse::directx::directx_12 &dx12) {
+    dx12.load_texture("kyaru", L"resource\\kyaru.png");
+    dx12.load_texture("white", L"resource\\white.png");
+    dx12.load_texture("ground", L"resource\\ground_color.jpg");
+    dx12.load_texture("wire", L"resource\\WireFence.dds");
+    dx12.load_texture("tree_arr", L"resource\\treeArray2.dds");
+    dx12.load_texture("terrain_d", L"resource\\terrain_d.png");
+    dx12.load_texture("terrain_h", L"resource\\terrain_h.png");
+}
+void load_materials(fuse::directx::directx_12 &dx12) {
+    dx12.load_material({"default", "metal", "rough", "glass", "terrain"},
+                   {{Vector4(.5f, .5f, .5f, 1.f),
+                                Vector3(0.5f, 0.5f, 0.5f), .5f},
+                        {Vector4(.5f, .5f, .5f, 1.f),
+                                Vector3(0.9f, 0.9f, 0.9f), .1f},
+                        {Vector4(.5f, .5f, .5f, 1.f),
+                                Vector3(0.1f, 0.1f, 0.1f), .9f},
+                        {Vector4(.5f, .5f, .5f, .5f),
+                                Vector3(0.5f, 0.5f, 0.5f), .1f},
+                        {Vector4(.5f, .5f, .5f, 1.f),
+                                Vector3(0.001f, 0.001, 0.001f), .99f}});
+}
+void load_geometries(fuse::directx::directx_12 &dx12) {
+    auto geo = create_geometries();
+    std::vector<fuse::directx::geometry<fuse::directx::vertex_billboard>> geo1;
+    geo1.resize(2);
+    fuse::directx::vertex_billboard v{Vector3(0.0f, 0.0f, 0.f),
+                                      Vector2(1.f, 1.f)};
+    geo1[0].name = "billboard_0";
+    geo1[0].vertices.emplace_back(v);
+    geo1[0].indices.emplace_back(0);
+
+    fuse::directx::vertex_billboard v1{Vector3(0.0f, 0.0f, 0.f),
+                                       Vector2(1.f, 1.f)};
+    geo1[1].name = "billboard_1";
+    geo1[1].vertices.emplace_back(v1);
+    geo1[1].indices.emplace_back(0);
+
+    dx12.init_geometries<fuse::directx::vertex>(geo);
+    dx12.init_geometries<fuse::directx::vertex_billboard>(geo1);
 }
 std::vector<std::shared_ptr<fuse::directx::renderee>> build_renderees() {
     std::vector<std::shared_ptr<fuse::directx::renderee>> renderees;
