@@ -130,18 +130,14 @@ void load_materials(fuse::directx::directx_12 &dx12) {
 void load_geometries(fuse::directx::directx_12 &dx12) {
     auto geo = create_geometries();
     std::vector<fuse::directx::geometry<fuse::directx::vertex_billboard>> geo1;
-    geo1.resize(2);
+    geo1.resize(1);
     fuse::directx::vertex_billboard v{Vector3(0.0f, 0.0f, 0.f),
                                       Vector2(1.f, 1.f)};
-    geo1[0].name = "billboard_0";
-    geo1[0].vertices.emplace_back(v);
+    geo1[0].name = "billboard";
+    geo1[0].vertices = {{Vector3(0.0f, 0.0f, 0.f), Vector2(1.f, 1.f)}, {Vector3(1.0f, 0.0f, 0.f), Vector2(1.5f, 1.5f)},{Vector3(2.0f, 0.0f, 0.f), Vector2(1.f, 1.f)}};
     geo1[0].indices.emplace_back(0);
-
-    fuse::directx::vertex_billboard v1{Vector3(0.0f, 0.0f, 0.f),
-                                       Vector2(1.f, 1.f)};
-    geo1[1].name = "billboard_1";
-    geo1[1].vertices.emplace_back(v1);
-    geo1[1].indices.emplace_back(0);
+    geo1[0].indices.emplace_back(1);
+    geo1[0].indices.emplace_back(2);
 
     dx12.init_geometries<fuse::directx::vertex>(geo);
     dx12.init_geometries<fuse::directx::vertex_billboard>(geo1);
@@ -207,7 +203,7 @@ std::vector<std::shared_ptr<fuse::directx::renderee>> build_renderees() {
         auto tree_billboard = std::make_shared<fuse::directx::renderee>();
         tree_billboard->name = "tree_billboard";
         tree_billboard->type = fuse::directx::renderee_type::billboard;
-        tree_billboard->geometry = "billboard_0";
+        tree_billboard->geometry = "billboard";
         tree_billboard->texture[0] = "tree_arr";
         tree_billboard->material = "rough";
         tree_billboard->tr.position = Vector3(0.f, 6.f, 10.f);

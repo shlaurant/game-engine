@@ -152,10 +152,22 @@ namespace fuse::directx {
         wait_cmd_queue_sync();
 
         D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
-        desc.Format = image.GetMetadata().format;
-        desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-        desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        desc.Texture2D.MipLevels = 1;
+        auto &meta = image.GetMetadata();
+        desc.Format = meta.format;
+
+        if (meta.arraySize == 1) {
+            desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+            desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+            desc.Texture2D.MipLevels = meta.mipLevels;
+            desc.Texture2D.MostDetailedMip = 0;
+        } else {
+            desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+            desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+            desc.Texture2DArray.MipLevels = meta.mipLevels;
+            desc.Texture2DArray.MostDetailedMip = 0;
+            desc.Texture2DArray.ArraySize = meta.arraySize;
+        }
+
 
         _textures[name] = std::make_pair(desc, buf);
     }
@@ -227,7 +239,8 @@ namespace fuse::directx {
                                                      _vp_buffer->GetGPUVirtualAddress());
         _cmd_list->SetGraphicsRootConstantBufferView(2,
                                                      _light_buffer->GetGPUVirtualAddress());
-        _cmd_list->SetGraphicsRootShaderResourceView(3, _mat_buffer->GetGPUVirtualAddress());
+        _cmd_list->SetGraphicsRootShaderResourceView(3,
+                                                     _mat_buffer->GetGPUVirtualAddress());
 
         _cmd_list->RSSetViewports(1, &_view_port);
         _cmd_list->RSSetScissorRects(1, &_scissors_rect);
