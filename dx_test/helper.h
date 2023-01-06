@@ -2,6 +2,7 @@
 
 #include "Input.h"
 #include "src/common.h"
+#include "GameTimer.h"
 
 struct transform {
     DirectX::SimpleMath::Vector3 position = DirectX::SimpleMath::Vector3::Zero;
@@ -16,8 +17,8 @@ struct transform {
 struct camera {
     inline static float ratio() { return 1920.f / 1080.f; }
 
-    const float speed_c = .2f;
-    const float rot_c = .01f;
+    const float speed_c = 20.f;
+    const float rot_c = .2f;
 
     transform transform;
 
@@ -31,7 +32,7 @@ struct camera {
     DirectX::SimpleMath::Vector3 right_vector() const;
 };
 
-void handle_input(Input &, camera &);
+void handle_input(Input &, camera &, const GameTimer &);
 
 void print_matrix(const DirectX::SimpleMath::Matrix &);
 

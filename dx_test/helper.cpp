@@ -40,28 +40,29 @@ DirectX::SimpleMath::Vector3 camera::right_vector() const {
                                                transform.translation_matrix())};
 }
 
-void handle_input(Input &input, camera &camera) {
+void handle_input(Input &input, camera &camera, const GameTimer &timer) {
     int dx, dy;
     dx = input.mouse_delta().first;
     dy = input.mouse_delta().second;
-    camera.transform.rotation.y += (float) dx * camera.rot_c;
-    camera.transform.rotation.x += (float) dy * camera.rot_c;
+    camera.transform.rotation.y += (float) dx * camera.rot_c * timer.DeltaTime();
+    camera.transform.rotation.x += (float) dy * camera.rot_c * timer.DeltaTime();
+    camera.transform.rotation.x = std::clamp(camera.transform.rotation.x, -DirectX::XM_PI/2.f, DirectX::XM_PI/2.f);
 
 
     if (input.GetButton(KEY_TYPE::W)) {
-        camera.transform.position += camera.look_vector() * camera.speed_c;
+        camera.transform.position += camera.look_vector() * camera.speed_c * timer.DeltaTime();
     }
 
     if (input.GetButton(KEY_TYPE::S)) {
-        camera.transform.position -= camera.look_vector() * camera.speed_c;
+        camera.transform.position -= camera.look_vector() * camera.speed_c * timer.DeltaTime();
     }
 
     if (input.GetButton(KEY_TYPE::A)) {
-        camera.transform.position -= camera.right_vector() * camera.speed_c;
+        camera.transform.position -= camera.right_vector() * camera.speed_c * timer.DeltaTime();
     }
 
     if (input.GetButton(KEY_TYPE::D)) {
-        camera.transform.position += camera.right_vector() * camera.speed_c;
+        camera.transform.position += camera.right_vector() * camera.speed_c * timer.DeltaTime();
     }
 
     if (input.GetButtonDown(KEY_TYPE::Q)) {

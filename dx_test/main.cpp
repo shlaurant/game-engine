@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "helper.h"
 #include "Input.h"
+#include "GameTimer.h"
 
 using namespace DirectX::SimpleMath;
 
@@ -61,6 +62,8 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
     MSG msg = {};
     try {
         fuse::directx::directx_12 dx12;
+        GameTimer timer;
+        timer.Reset();
 
         dx12.init({hwnd, 1920, 1080, true});
         auto li = create_light_info();
@@ -73,13 +76,15 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
         camera.transform.position.z = -2.f;
         camera.transform.position.y = 5.f;
 
+        timer.Start();
         while (msg.message != WM_QUIT) {
             if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             } else {
+                timer.Tick();
                 input.Update();
-                handle_input(input, camera);
+                handle_input(input, camera, timer);
                 fuse::directx::camera c;
                 c.vp = camera.view() * camera.projection();
                 c.position = camera.transform.position;
