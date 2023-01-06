@@ -13,12 +13,9 @@ Input input;
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 std::vector<fuse::directx::geometry<fuse::directx::vertex>> create_geometries();
-std::vector<fuse::directx::render_info>
-create_render_info(
-        const std::vector<fuse::directx::geometry<fuse::directx::vertex>> &,
-        int offset);
 fuse::directx::light_info create_light_info();
 
+std::vector<std::shared_ptr<fuse::directx::renderee>> build_renderees();
 int
 WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                 int nCmdShow) {
@@ -106,83 +103,7 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                             {Vector4(.5f, .5f, .5f, 1.f),
                                     Vector3(0.001f, 0.001, 0.001f), .99f}});
 
-        std::vector<std::shared_ptr<fuse::directx::renderee>> renderees;
-        {
-            auto skull0 = std::make_shared<fuse::directx::renderee>();
-            skull0->name = "skull0";
-            skull0->type = fuse::directx::renderee_type::opaque;
-            skull0->geometry = "skull";
-            skull0->texture[0] = "white";
-            skull0->material = "default";
-            skull0->tr.scale = Vector3(.5f, .5f, .5f);
-            skull0->tr.position = Vector3(-5.f, 1.f, 3.f);
-            renderees.emplace_back(skull0);
-
-            auto skull1 = std::make_shared<fuse::directx::renderee>();
-            skull1->name = "skull1";
-            skull1->type = fuse::directx::renderee_type::opaque;
-            skull1->geometry = "skull";
-            skull1->texture[0] = "white";
-            skull1->material = "rough";
-            skull1->tr.position = Vector3(-12.f, 1.f, 3.f);
-            renderees.emplace_back(skull1);
-
-            auto skull2 = std::make_shared<fuse::directx::renderee>();
-            skull2->name = "skull2";
-            skull2->type = fuse::directx::renderee_type::opaque;
-            skull2->geometry = "skull";
-            skull2->texture[0] = "white";
-            skull2->material = "metal";
-            skull2->tr.position = Vector3(-19.f, 1.f, 3.f);
-            renderees.emplace_back(skull2);
-
-            auto skull3 = std::make_shared<fuse::directx::renderee>();
-            skull3->name = "skull3";
-            skull3->type = fuse::directx::renderee_type::translucent;
-            skull3->geometry = "skull";
-            skull3->texture[0] = "white";
-            skull3->material = "glass";
-            skull3->tr.position = Vector3(-26.f, 1.f, 3.f);
-            renderees.emplace_back(skull3);
-
-            auto wire = std::make_shared<fuse::directx::renderee>();
-            wire->name = "wire";
-            wire->type = fuse::directx::renderee_type::translucent;
-            wire->geometry = "cube";
-            wire->texture[0] = "wire";
-            wire->material = "rough";
-            wire->tr.position = Vector3(0.f, 6.f, 3.f);
-            renderees.emplace_back(wire);
-
-            auto cube0 = std::make_shared<fuse::directx::renderee>();
-            cube0->name = "cube0";
-            cube0->type = fuse::directx::renderee_type::translucent;
-            cube0->geometry = "cube";
-            cube0->texture[0] = "white";
-            cube0->material = "glass";
-            cube0->tr.position = Vector3(3.f, 6.f, 3.f);
-            renderees.emplace_back(cube0);
-
-            auto tree_billboard = std::make_shared<fuse::directx::renderee>();
-            tree_billboard->name = "tree_billboard";
-            tree_billboard->type = fuse::directx::renderee_type::billboard;
-            tree_billboard->geometry = "billboard_0";
-            tree_billboard->texture[0] = "tree_arr";
-            tree_billboard->material = "rough";
-            tree_billboard->tr.position = Vector3(0.f, 6.f, 10.f);
-            renderees.emplace_back(tree_billboard);
-
-            auto terrain = std::make_shared<fuse::directx::renderee>();
-            terrain->name = "terrain";
-            terrain->type = fuse::directx::renderee_type::terrain;
-            terrain->geometry = "terrain";
-            terrain->texture[0] = "terrain_d";
-            terrain->texture[1] = "terrain_h";
-            terrain->material = "terrain";
-            terrain->tr.position = Vector3(0.f, 0.f, 0.f);
-            renderees.emplace_back(terrain);
-        }
-
+        std::vector<std::shared_ptr<fuse::directx::renderee>> renderees = build_renderees();
         dx12.init_renderees(renderees);
 
         while (msg.message != WM_QUIT) {
@@ -207,6 +128,85 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
     }
 
     return 0;
+}
+std::vector<std::shared_ptr<fuse::directx::renderee>> build_renderees() {
+    std::vector<std::shared_ptr<fuse::directx::renderee>> renderees;
+    {
+        auto skull0 = std::make_shared<fuse::directx::renderee>();
+        skull0->name = "skull0";
+        skull0->type = fuse::directx::renderee_type::opaque;
+        skull0->geometry = "skull";
+        skull0->texture[0] = "white";
+        skull0->material = "default";
+        skull0->tr.scale = Vector3(.5f, .5f, .5f);
+        skull0->tr.position = Vector3(-5.f, 1.f, 3.f);
+        renderees.emplace_back(skull0);
+
+        auto skull1 = std::make_shared<fuse::directx::renderee>();
+        skull1->name = "skull1";
+        skull1->type = fuse::directx::renderee_type::opaque;
+        skull1->geometry = "skull";
+        skull1->texture[0] = "white";
+        skull1->material = "rough";
+        skull1->tr.position = Vector3(-12.f, 1.f, 3.f);
+        renderees.emplace_back(skull1);
+
+        auto skull2 = std::make_shared<fuse::directx::renderee>();
+        skull2->name = "skull2";
+        skull2->type = fuse::directx::renderee_type::opaque;
+        skull2->geometry = "skull";
+        skull2->texture[0] = "white";
+        skull2->material = "metal";
+        skull2->tr.position = Vector3(-19.f, 1.f, 3.f);
+        renderees.emplace_back(skull2);
+
+        auto skull3 = std::make_shared<fuse::directx::renderee>();
+        skull3->name = "skull3";
+        skull3->type = fuse::directx::renderee_type::translucent;
+        skull3->geometry = "skull";
+        skull3->texture[0] = "white";
+        skull3->material = "glass";
+        skull3->tr.position = Vector3(-26.f, 1.f, 3.f);
+        renderees.emplace_back(skull3);
+
+        auto wire = std::make_shared<fuse::directx::renderee>();
+        wire->name = "wire";
+        wire->type = fuse::directx::renderee_type::translucent;
+        wire->geometry = "cube";
+        wire->texture[0] = "wire";
+        wire->material = "rough";
+        wire->tr.position = Vector3(0.f, 6.f, 3.f);
+        renderees.emplace_back(wire);
+
+        auto cube0 = std::make_shared<fuse::directx::renderee>();
+        cube0->name = "cube0";
+        cube0->type = fuse::directx::renderee_type::translucent;
+        cube0->geometry = "cube";
+        cube0->texture[0] = "white";
+        cube0->material = "glass";
+        cube0->tr.position = Vector3(3.f, 6.f, 3.f);
+        renderees.emplace_back(cube0);
+
+        auto tree_billboard = std::make_shared<fuse::directx::renderee>();
+        tree_billboard->name = "tree_billboard";
+        tree_billboard->type = fuse::directx::renderee_type::billboard;
+        tree_billboard->geometry = "billboard_0";
+        tree_billboard->texture[0] = "tree_arr";
+        tree_billboard->material = "rough";
+        tree_billboard->tr.position = Vector3(0.f, 6.f, 10.f);
+        renderees.emplace_back(tree_billboard);
+
+        auto terrain = std::make_shared<fuse::directx::renderee>();
+        terrain->name = "terrain";
+        terrain->type = fuse::directx::renderee_type::terrain;
+        terrain->geometry = "terrain";
+        terrain->texture[0] = "terrain_d";
+        terrain->texture[1] = "terrain_h";
+        terrain->material = "terrain";
+        terrain->tr.position = Vector3(0.f, 0.f, 0.f);
+        renderees.emplace_back(terrain);
+    }
+    return renderees;
 }
 
 LRESULT
@@ -262,39 +262,6 @@ create_geometries() {
     ret.emplace_back(terrain);
 
     return std::move(ret);
-}
-
-std::vector<fuse::directx::render_info>
-create_render_info(
-        const std::vector<fuse::directx::geometry<fuse::directx::vertex>> &geo,
-        int offset) {
-    std::vector<fuse::directx::render_info> infos(geo.size());
-
-    for (auto i = 0; i < geo.size(); ++i) {
-        infos[i].object_index = offset + i;
-        infos[i].index_count = geo[i].indices.size();
-        infos[i].index_offset = geo[i].index_offset;
-        infos[i].vertex_offset = geo[i].vertex_offset;
-        infos[i].do_reflect = true;
-        infos[i].is_transparent = false;
-        infos[i].is_mirror = false;
-        infos[i].do_shadow = false;
-    }
-
-    infos[0].do_shadow = true;
-    infos[1].is_transparent = true;
-    infos[1].do_shadow = true;
-    infos[3].is_mirror = true;
-    infos[3].is_transparent = true;
-    infos[3].mirror_plane = Plane(Vector3(-1.5f, 0.f, 5.f), Vector3::Backward);
-    infos[3].do_reflect = false;
-    infos[4].do_reflect = false;
-    infos[4].do_shadow = true;
-
-    infos.erase(infos.begin() + 3);
-    infos.erase(infos.begin() + 2);
-
-    return std::move(infos);
 }
 
 fuse::directx::light_info create_light_info() {

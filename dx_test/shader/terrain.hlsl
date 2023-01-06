@@ -110,21 +110,6 @@ DS_OUT DS(CHS_OUT patch, float3 location : SV_DomainLocation, const OutputPatch<
 
     position.y = height(input, location.x, location.y, location.z);
 
-    // float4 delta0 = pos(input, location.x + DELTA_FOR_NORMAL, location.y - DELTA_FOR_NORMAL, location.z);
-    // delta0 = mul(delta0, w);
-    // delta0.y = height(input, location.x + DELTA_FOR_NORMAL, location.y - DELTA_FOR_NORMAL, location.z);
-    // float4 delta1 = pos(input, location.x - DELTA_FOR_NORMAL, location.y + DELTA_FOR_NORMAL, location.z);
-    // delta1 = mul(delta1, w);
-    // delta1.y = height(input, location.x - DELTA_FOR_NORMAL, location.y + DELTA_FOR_NORMAL, location.z);
-    // float3 v0 = (float3)(delta1 - delta0);
-    //
-    // float4 delta2 = pos(input, location.x + DELTA_FOR_NORMAL, location.y, location.z - DELTA_FOR_NORMAL);
-    // delta2 = mul(delta2, w);
-    // delta2.y = height(input, location.x + DELTA_FOR_NORMAL, location.y, location.z - DELTA_FOR_NORMAL);
-    // float4 delta3 = pos(input, location.x - DELTA_FOR_NORMAL, location.y, location.z + DELTA_FOR_NORMAL);
-    // delta3 = mul(delta3, w);
-    // delta3.y = height(input, location.x - DELTA_FOR_NORMAL, location.y, location.z + DELTA_FOR_NORMAL);
-    // float3 v1 = (float3)(delta3 - delta2);
     float3 v1 = float3(0.f, 0.f, DELTA_FOR_NORMAL * 2);
     v1.y = tex_height.SampleLevel(sam_lw, uv - float2(0.f,DELTA_FOR_NORMAL), 0).x - tex_height.SampleLevel(sam_lw, uv + float2(0.f,DELTA_FOR_NORMAL), 0).x;
 

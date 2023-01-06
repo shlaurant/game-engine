@@ -79,7 +79,7 @@ namespace fuse {
         disp->add_callback<keydown_event>(on_key);
 
         scene = new ecs::scene(renderer);
-        scene->deserialize("assets/scene.yaml");
+        scene->deserialize(config.scene);
 
 //        scene->start();
 //        scene->serialize("assets/scene.yaml");
