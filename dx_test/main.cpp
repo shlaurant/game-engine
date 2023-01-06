@@ -82,6 +82,10 @@ WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine,
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             } else {
+                std::wstring txt = L"fps: ";
+                txt += std::to_wstring(1 / timer.DeltaTime());
+
+                SetWindowText(hwnd, txt.c_str());
                 timer.Tick();
                 input.Update();
                 handle_input(input, camera, timer);
