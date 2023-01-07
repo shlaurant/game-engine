@@ -170,6 +170,10 @@ namespace fuse::directx {
             desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
             desc.TextureCube.MipLevels = meta.mipLevels;
             desc.TextureCube.MostDetailedMip = 0;
+
+            auto handle = _res_desc_heap->GetCPUDescriptorHandleForHeapStart();
+            handle.ptr += group_size() * OBJ_CNT;
+            _device->CreateShaderResourceView(buf.Get(), &desc, handle);
         } else if (meta.arraySize == 1) {
             desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
             desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -261,7 +265,9 @@ namespace fuse::directx {
         _cmd_list->RSSetScissorRects(1, &_scissors_rect);
         ID3D12DescriptorHeap *heaps[] = {_res_desc_heap.Get()};
         _cmd_list->SetDescriptorHeaps(_countof(heaps), heaps);
-
+        auto skybox_handle = _res_desc_heap->GetGPUDescriptorHandleForHeapStart();
+        skybox_handle.ptr += group_size() * OBJ_CNT;
+        _cmd_list->SetGraphicsRootDescriptorTable(4, skybox_handle);
 
         auto barrier0 = CD3DX12_RESOURCE_BARRIER::Transition(
                 _rtv_buffer[_back_buffer].Get(), D3D12_RESOURCE_STATE_PRESENT,
@@ -599,7 +605,7 @@ namespace fuse::directx {
 
         D3D12_DESCRIPTOR_HEAP_DESC h_desc = {};
         h_desc.NodeMask = 0;
-        h_desc.NumDescriptors = OBJ_CNT * TABLE_SIZE;
+        h_desc.NumDescriptors = OBJ_CNT * TABLE_SIZE + 1;//1 is for cube map;
         h_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         h_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         _device->CreateDescriptorHeap(&h_desc, IID_PPV_ARGS(&_res_desc_heap));

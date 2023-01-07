@@ -1,6 +1,8 @@
 #ifndef GUARD_REGISTER
 #define GUARD_REGISTER
 
+#define TEX_CAPACITY  10
+
 cbuffer globals :register(b0) {
     row_major float4x4 reflection_matrix[10];
     int reflection_count;
@@ -26,7 +28,8 @@ cbuffer object_const :register(b3) {
     row_major float4x4 w;
 };
 
-TextureCube cube_ssmap : register(t0);
+TextureCube cube_map : register(t0);
+Texture2D textures[TEX_CAPACITY];
 StructuredBuffer<material> materials : register(t0, space1);
 
 SamplerState sam_pw : register(s0);
