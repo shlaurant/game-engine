@@ -53,6 +53,11 @@ float4 PS_Main(VS_OUT input) : SV_Target
     float3 to_eye = normalize(camera_pos - input.pos_w.xyz);
     float4 light_color = calc_light(lights, active_light_counts, new_mat, input.pos_w.xyz, input.normal, to_eye);
     float4 color = light_color;
+
+    float3 ref = reflect(-to_eye, input.normal);
+    float4 cube_color = cube_map.Sample(sam_lw, ref);
+    color.rgb += (1.f-new_mat.roughness) * fresnel_shlick(new_mat.fresnel_r0, input.normal, ref) * cube_color.rgb;
+
     color.w = diffuse_albedo.w;
 #endif
 
