@@ -8,8 +8,8 @@
 #define DELTA_FOR_NORMAL 0.01f
 #define HEIGHT_CONST 80.f
 
-Texture2D tex_diffuse : register(t0);
-Texture2D tex_height : register(t1);
+Texture2D tex_diffuse : register(t1);
+Texture2D tex_height : register(t2);
 
 struct VS_IN {
     float3 pos:POSITION;

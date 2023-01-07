@@ -26,6 +26,7 @@ cbuffer object_const :register(b3) {
     row_major float4x4 w;
 };
 
+TextureCube cube_ssmap : register(t0);
 StructuredBuffer<material> materials : register(t0, space1);
 
 SamplerState sam_pw : register(s0);

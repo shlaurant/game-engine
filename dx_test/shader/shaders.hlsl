@@ -1,7 +1,7 @@
 #include "light.hlsl"
 #include "register.hlsl"
 
-Texture2D tex : register(t0);
+Texture2D tex : register(t1);
 
 struct VS_IN
 {

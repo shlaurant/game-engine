@@ -87,7 +87,6 @@ namespace fuse::directx {
             wait_cmd_queue_sync();
         }
         void load_texture(const std::string &name, const std::wstring &path);
-        void bind_texture(int obj, const std::string &texture, int regi);
         void load_material(const std::vector<std::string> &names, const std::vector<material> &mat);
 
         void update_camera(const camera &);
@@ -171,6 +170,8 @@ namespace fuse::directx {
         std::unordered_map<std::string, std::pair<D3D12_SHADER_RESOURCE_VIEW_DESC,
                 ComPtr<ID3D12Resource>>> _textures;
         ComPtr<ID3D12DescriptorHeap> _res_desc_heap;
+        ComPtr<ID3D12Resource> _env_map_buffer;
+        ComPtr<ID3D12DescriptorHeap> _env_desc_heap;
 
         //shader
         std::vector<ComPtr<ID3D12PipelineState>> _pso_list;
@@ -188,6 +189,7 @@ namespace fuse::directx {
         void init_camera_buf();
         void init_light_buf();
         void init_resources();
+        void bind_texture(int obj, const std::string &texture, int regi);
 
         void init_root_signature();
         void init_shader();

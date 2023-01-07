@@ -1,7 +1,7 @@
 #include "light.hlsl"
 #include "register.hlsl"
 
-TextureCube cube_map : register(t0);
+TextureCube cube_map : register(t1);
 
 struct VS_IN
 {

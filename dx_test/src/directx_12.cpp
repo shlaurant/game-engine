@@ -260,7 +260,8 @@ namespace fuse::directx {
         _cmd_list->RSSetViewports(1, &_view_port);
         _cmd_list->RSSetScissorRects(1, &_scissors_rect);
         ID3D12DescriptorHeap *heaps[] = {_res_desc_heap.Get()};
-        _cmd_list->SetDescriptorHeaps(1, heaps);
+        _cmd_list->SetDescriptorHeaps(_countof(heaps), heaps);
+
 
         auto barrier0 = CD3DX12_RESOURCE_BARRIER::Transition(
                 _rtv_buffer[_back_buffer].Get(), D3D12_RESOURCE_STATE_PRESENT,
@@ -425,7 +426,7 @@ namespace fuse::directx {
     void directx_12::render(const std::shared_ptr<renderee> &r) {
         auto handle = _res_desc_heap->GetGPUDescriptorHandleForHeapStart();
         handle.ptr += group_size() * r->id;
-        _cmd_list->SetGraphicsRootDescriptorTable(4, handle);
+        _cmd_list->SetGraphicsRootDescriptorTable(5, handle);
 
         _cmd_list->DrawIndexedInstanced(r->geo.index_count, 1,
                                         r->geo.index_offset,
@@ -602,6 +603,7 @@ namespace fuse::directx {
         h_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         h_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         _device->CreateDescriptorHeap(&h_desc, IID_PPV_ARGS(&_res_desc_heap));
+
         auto w_addr = _obj_const_buffer->GetGPUVirtualAddress();
 
         for (auto i = 0; i < OBJ_CNT; ++i) {
@@ -677,16 +679,20 @@ namespace fuse::directx {
                                                            &_signatures[shader_type::blur])));
     }
     void directx_12::init_default_signature() {
+        auto cube = CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+
         CD3DX12_DESCRIPTOR_RANGE ranges[] = {
                 CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 3),
-                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 0)
+                CD3DX12_DESCRIPTOR_RANGE(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1)
         };
-        CD3DX12_ROOT_PARAMETER param[5];
-        param[0].InitAsConstantBufferView(static_cast<uint32_t>(0));//global
-        param[1].InitAsConstantBufferView(static_cast<uint32_t>(1));//camera
-        param[2].InitAsConstantBufferView(static_cast<uint32_t>(2));//lights
+
+        CD3DX12_ROOT_PARAMETER param[6];
+        param[0].InitAsConstantBufferView(0);//global
+        param[1].InitAsConstantBufferView(1);//camera
+        param[2].InitAsConstantBufferView(2);//lights
         param[3].InitAsShaderResourceView(0, 1);//mats
-        param[4].InitAsDescriptorTable(_countof(ranges), ranges);//object const
+        param[4].InitAsDescriptorTable(1, &cube);//skybox texture
+        param[5].InitAsDescriptorTable(_countof(ranges), ranges);//object const
 
         auto sampler_arr = sampler::samplers();
 
