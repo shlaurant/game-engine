@@ -235,4 +235,14 @@ namespace fuse::directx {
 //        ret.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
         return ret;
     }
+
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC
+    pipeline_state::skybox_desc(D3D12_INPUT_ELEMENT_DESC *ed, UINT ed_cnt,
+                ID3D12RootSignature *rs, const std::vector<uint8_t> &vs,
+                const std::vector<uint8_t> &ps) {
+        auto ret = default_desc(ed, ed_cnt, rs, vs, ps);
+        ret.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+        ret.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+        return ret;
+    }
 }

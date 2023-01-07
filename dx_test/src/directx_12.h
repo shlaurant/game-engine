@@ -113,6 +113,7 @@ namespace fuse::directx {
             blur_h,
             blur_v,
             terrain,
+            skybox,
             end
         };
 

@@ -113,6 +113,7 @@ void load_textures(fuse::directx::directx_12 &dx12) {
     dx12.load_texture("tree_arr", L"resource\\treeArray2.dds");
     dx12.load_texture("terrain_d", L"resource\\terrain_d.png");
     dx12.load_texture("terrain_h", L"resource\\terrain_h.png");
+    dx12.load_texture("skybox", L"resource\\skybox.dds");
 }
 void load_materials(fuse::directx::directx_12 &dx12) {
     dx12.load_material({"default", "metal", "rough", "glass", "terrain"},
@@ -218,6 +219,15 @@ std::vector<std::shared_ptr<fuse::directx::renderee>> build_renderees() {
         terrain->material = "terrain";
         terrain->tr.position = Vector3(0.f, 0.f, 0.f);
         renderees.emplace_back(terrain);
+
+        auto sky = std::make_shared<fuse::directx::renderee>();
+        sky->name = "sky";
+        sky->type = fuse::directx::renderee_type::skybox;
+        sky->geometry = "cube";
+        sky->texture[0] = "skybox";
+        sky->material = "";
+        sky->tr.position = Vector3(0.f, 0.f, 0.f);
+        renderees.emplace_back(sky);
     }
     return renderees;
 }
@@ -283,7 +293,7 @@ fuse::directx::light_info create_light_info() {
         li.active_count = 2;
 
         li.lights[0].type = 0;
-        li.lights[0].color = DirectX::SimpleMath::Vector3(1.f, 1.f, 1.f);
+        li.lights[0].color = DirectX::SimpleMath::Vector3(.8f, .8f, .8f);
         li.lights[0].fo_start;
         li.lights[0].direction = Vector3(0.f, -1.f, 1.f);
         li.lights[0].direction.Normalize();
@@ -292,7 +302,7 @@ fuse::directx::light_info create_light_info() {
         li.lights[0].spot_pow;
 
         li.lights[1].type = 3;
-        li.lights[1].color = DirectX::SimpleMath::Vector3(.5f, .5f, .5f);
+        li.lights[1].color = DirectX::SimpleMath::Vector3(.4f, .4f, .4f);
         li.lights[1].fo_start;
         li.lights[1].direction;
         li.lights[1].fo_end;

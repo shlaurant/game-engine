@@ -76,6 +76,9 @@ namespace fuse::directx {
                     case renderee_type::count:
                         //do nothing
                         break;
+                    case renderee_type::skybox:
+                        tid = type_id<vertex>();
+                        break;
                 }
                 ptr->geo = _geo_infos[tid][ptr->geometry];
 
@@ -84,7 +87,7 @@ namespace fuse::directx {
                         bind_texture(ptr->id, ptr->texture[i], i);
                 }
 
-                ptr->constants.mat_id = _mat_ids[ptr->material];
+                if (!ptr->material.empty()) ptr->constants.mat_id = _mat_ids[ptr->material];
                 ptr->constants.position = ptr->tr.position;
                 ptr->constants.world_matrix = ptr->tr.world_matrix();
 
@@ -121,10 +124,17 @@ namespace fuse::directx {
             render(e);
         }
 
+
         _cmd_list->IASetPrimitiveTopology(
                 D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         _cmd_list->SetPipelineState(
-                _pso_list[static_cast<uint8_t>(layer::opaque)].Get());
+                _pso_list[static_cast<uint8_t>(layer::skybox)].Get());
+        for (const auto &e: _renderees[static_cast<uint8_t>(renderee_type::skybox)]) {
+            render(e);
+        }
+
+        _cmd_list->SetPipelineState(
+                        _pso_list[static_cast<uint8_t>(layer::opaque)].Get());
 
         for (const auto &e: _renderees[static_cast<uint8_t>(renderee_type::opaque)]) {
             render(e);
@@ -155,7 +165,12 @@ namespace fuse::directx {
         auto &meta = image.GetMetadata();
         desc.Format = meta.format;
 
-        if (meta.arraySize == 1) {
+        if (meta.IsCubemap()) {
+            desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+            desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+            desc.TextureCube.MipLevels = meta.mipLevels;
+            desc.TextureCube.MostDetailedMip = 0;
+        } else if (meta.arraySize == 1) {
             desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
             desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
             desc.Texture2D.MipLevels = meta.mipLevels;
@@ -812,6 +827,16 @@ namespace fuse::directx {
         ThrowIfFailed(_device->CreateGraphicsPipelineState(&terrain_pso,
                                                            IID_PPV_ARGS(
                                                                    &_pso_list[static_cast<uint8_t>(layer::terrain)])));
+
+        auto vs_skybox = DX::ReadData(L"shader\\vs_skybox.cso");
+        auto ps_skybox = DX::ReadData(L"shader\\ps_skybox.cso");
+        auto skybox_pso = pipeline_state::skybox_desc(ie_desc,
+                                                      _countof(ie_desc),
+                                                      _signatures[shader_type::general].Get(),
+                                                      vs_skybox, ps_skybox);
+        ThrowIfFailed(_device->CreateGraphicsPipelineState(&skybox_pso,
+                                                           IID_PPV_ARGS(
+                                                                   &_pso_list[static_cast<uint8_t>(layer::skybox)])));
     }
 
     void directx_12::execute_cmd_list() {

@@ -16,3 +16,6 @@ fxc "terrain.hlsl" /Od /Zi /T vs_5_1 /E "VS" /Fo "vs_terrain.cso"
 fxc "terrain.hlsl" /Od /Zi /T hs_5_1 /E "CPHS" /Fo "hs_terrain.cso"
 fxc "terrain.hlsl" /Od /Zi /T ds_5_1 /E "DS" /Fo "ds_terrain.cso"
 fxc "terrain.hlsl" /Od /Zi /T ps_5_1 /E "PS" /Fo "ps_terrain.cso"
+
+fxc "skybox.hlsl" /Od /Zi /T vs_5_1 /E "VS" /Fo "vs_skybox.cso"
+fxc "skybox.hlsl" /Od /Zi /T ps_5_1 /E "PS" /Fo "ps_skybox.cso"
